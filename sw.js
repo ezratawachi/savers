@@ -1,4 +1,4 @@
-const CACHE = "savers-v4";
+const CACHE = "savers-v5";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -25,7 +25,8 @@ self.addEventListener("fetch", (e) => {
       if (req.mode === "navigate") {
         // Network first for the page so fixes arrive on the next open; cached copy when offline.
         try {
-          const res = await fetch(req);
+          // Skip the HTTP cache (GitHub Pages sets max-age=600) so updates show up on the next open.
+          const res = await fetch(req, { cache: "no-store" });
           if (res && res.ok) cache.put("./index.html", res.clone());
           return res;
         } catch (err) {
