@@ -41,7 +41,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
-html,body{overflow-x:hidden;max-width:100%}
+html,body{overflow-x:clip;max-width:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 img{max-width:100%}
 button,input,textarea{font:inherit;color:inherit}
@@ -77,6 +77,8 @@ button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
 .lt span{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center}
 .lt:active{transform:scale(.96)}
 .lt.done{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.14)}65%{transform:scale(.97)}100%{transform:scale(1)}}
+.bump{animation:bump .34s cubic-bezier(.3,.7,.4,1.4)}
 .progress{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:.9rem;color:var(--muted)}
 .progress strong{color:var(--ink)}
 .bar{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;margin-top:6px}
@@ -101,8 +103,8 @@ details[open] .caret{transform:rotate(-135deg);margin-bottom:-2px}
 .body ol,.body ul{margin:0 0 8px;padding-left:20px}
 .body li{margin-bottom:6px}
 .note{font-size:.88rem;color:var(--muted)}
-.safety{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:.88rem}
-.safety b{display:block;margin-bottom:2px}
+.affs p{margin:0 0 16px;line-height:1.6}
+.affs p:last-child{margin-bottom:10px}
 
 /* timer */
 .timer{margin:4px 0 12px;padding:14px;border-radius:14px;background:var(--surface-2)}
@@ -119,15 +121,12 @@ label.f:first-child{margin-top:0}
 label.f small{font-weight:400;color:var(--muted)}
 textarea,input[type=text],input[type=number]{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 11px;font-size:16px}
 textarea{resize:vertical;min-height:64px}
+textarea.grow{resize:none;overflow:hidden;min-height:0;line-height:1.5}
 .prio{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .prio input[type=checkbox]{width:22px;height:22px;accent-color:var(--dawn);flex:0 0 auto}
 .prio input[type=text]{flex:1}
 .prio.done input[type=text]{text-decoration:line-through;color:var(--muted)}
 .body.wide{padding-left:14px}
-.book{display:flex;gap:10px;align-items:center;margin:4px 0 8px;flex-wrap:wrap}
-.book input{width:90px}
-.bookbar{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;margin:4px 0 6px}
-.bookbar i{display:block;height:100%;background:var(--sky)}
 
 .rest{margin-top:18px;padding:22px 18px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
 .rest h2{font-family:var(--display);font-weight:800;font-size:1.6rem;margin:0 0 6px}
@@ -163,15 +162,43 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .empty{padding:16px;border-radius:14px;background:var(--surface);border:1px dashed var(--line);color:var(--muted);font-size:.92rem}
 
 /* guide */
+.gtop{position:sticky;top:0;z-index:4;background:var(--bg);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:0 -16px 6px;padding:4px 16px 8px}
+.gtop h2{grid-column:1;margin:0;font-family:var(--display);font-weight:800;font-size:1.5rem;white-space:nowrap}
+.gtop.editing h2{grid-column:2;font-size:1.05rem;font-weight:700}
+.tbtn{background:none;border:0;color:var(--sky);font-weight:700;font-size:1rem;min-height:44px;padding:0 4px;cursor:pointer}
+.tbtn.left{justify-self:start;font-weight:400}
+.tbtn.right{justify-self:end;grid-column:3}
 .gblock{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
 .gblock h3{font-family:var(--display);font-weight:700;font-size:1.12rem;margin:0 0 8px}
 .gblock p{margin:0 0 8px}
-.gblock.backup{border-color:var(--dawn)}
+.gblock .lead{margin-bottom:12px}
+.gitem{padding:12px 0;border-top:1px solid var(--line)}
+.gitem:first-of-type{border-top:0;padding-top:4px}
+.glabel{display:block;font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.01em;margin-bottom:2px}
+.gitem p{margin:0;font-size:1.02rem;line-height:1.6}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:.88rem}
 th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-weight:700;color:var(--muted)}
-.aff textarea{min-height:56px;margin-bottom:8px}
+.eitem{padding:12px 0;border-top:1px solid var(--line)}
+.eitem:first-of-type{border-top:0;padding-top:2px}
+.eitem input{font-weight:700;margin-bottom:6px}
+.ectl{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.ibtn{min-width:44px;height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:1rem;font-weight:700;cursor:pointer;color:var(--ink)}
+.ibtn.del{color:var(--warn)}
+.ibtn:disabled{opacity:.35;cursor:default}
+.addbtn{width:100%;margin-top:6px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:transparent;color:var(--sky);font-weight:700;cursor:pointer}
+.remind{font-size:.85rem;color:var(--muted);text-align:center;margin:18px 0 4px}
+.remind .linkbtn{padding:6px 2px}
+
+/* sheet */
+.backdrop{position:fixed;inset:0;background:rgba(10,14,22,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sheet{width:100%;max-width:420px;background:var(--surface);border-radius:18px;padding:18px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.sheet h3{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:0 0 4px}
+.sheet p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
+.sheet .row{margin-top:0}
+.sheet .row .btn{flex:1}
+.sheet .linkbtn{display:block;width:100%;text-align:center;margin-top:6px;min-height:44px}
 
 /* tabs */
 .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px calc(8px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));z-index:5}
@@ -182,7 +209,7 @@ th{font-weight:700;color:var(--muted)}
 .toast.show{opacity:1}
 [hidden]{display:none!important}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}.bump{animation:none}}
 </style>
 </head>
 <body>
@@ -212,19 +239,23 @@ const LETTERS = [
   {key:"lectura", L:"R", name:"Lectura"},
   {key:"escritura", L:"S", name:"Escritura"}
 ];
-// Personal data (name, affirmations, book, schedule) is never in this file: it comes from the imported backup.
-const AFF_COUNT = 5;
+// Personal data (name, affirmations, schedule) is never in this file: it comes from the imported backup.
+const DEFAULT_VIS = {
+  items: [
+    {label: "Mi día", text: "¿Cómo me veo haciendo bien lo más importante de hoy?"},
+    {label: "Mi obstáculo", text: "¿Qué es lo que más probablemente me saque del camino hoy?"},
+    {label: "Mi plan", text: "Si pasa eso, ¿qué hago?"}
+  ],
+  note: "Un minuto por pregunta, con los ojos cerrados. Si la mente se queda en blanco, respóndelas en voz baja."
+};
 const DEFAULT_SETTINGS = {
   name: "",
-  affirmations: Array.from({length: AFF_COUNT}, function(){ return {label: "", text: ""}; }),
-  book: {title: "", page: 0, total: 0, note: ""},
+  affirmations: [{label: "", text: ""}],
+  visualization: DEFAULT_VIS,
   schedule: null
 };
-const VIS = [
-  ["Mi día", "¿Cómo me veo haciendo bien lo más importante de hoy?"],
-  ["Mi obstáculo", "¿Qué es lo que más probablemente me saque del camino hoy?"],
-  ["Mi plan", "Si pasa eso, ¿qué hago?"]
-];
+const SECS_PER_AFFIRMATION = 25;
+const BACKUP_REMIND_DAYS = 30;
 const CIRCUIT = [
   ["Bird dog", "En cuatro apoyos, estira un brazo y la pierna contraria. Sostén 2–3 segundos y cambia. La pierna no sube más alto que la cadera."],
   ["Dead bug", "Boca arriba, brazos al techo y rodillas dobladas. Baja despacio un brazo y la pierna contraria con la espalda baja pegada al piso."],
@@ -248,6 +279,7 @@ const STEPS = buildSteps();
 const $ = function(sel, root){ return (root||document).querySelector(sel); };
 const $$ = function(sel, root){ return Array.from((root||document).querySelectorAll(sel)); };
 function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function pad(n){ return String(n).padStart(2,"0"); }
 function fmt(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
 function parse(ds){ const p = ds.split("-").map(Number); return new Date(p[0], p[1]-1, p[2]); }
@@ -269,7 +301,8 @@ function blankDay(ds){ return {date:ds, checks:{}, gratitude:"", priorities:["",
 function countDone(d){ return d ? LETTERS.filter(function(l){ return d.checks && d.checks[l.key]; }).length : 0; }
 function isComplete(ds){ return countDone(state.days[ds]) === 6; }
 function hasContent(d){ return d && (countDone(d) > 0 || d.gratitude || d.bookIdea || d.notes || (d.priorities||[]).some(Boolean)); }
-function hasPersonalData(){ const s = state.settings; return !!(s.name || s.schedule || s.affirmations.some(function(a){ return a.text; })); }
+function filled(items){ return items.filter(function(a){ return a.text.trim(); }); }
+function hasPersonalData(){ const s = state.settings; return !!(s.name || s.schedule || filled(s.affirmations).length); }
 
 let toastT;
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("show"); }, 2600); }
@@ -280,30 +313,34 @@ const state = {
   viewDate: todayStr(),
   today: todayStr(),
   days: {},
-  settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
+  settings: clone(DEFAULT_SETTINGS),
   month: (function(){ const d = new Date(); return {y:d.getFullYear(), m:d.getMonth()}; })(),
   showSunday: false,
-  lastExport: null
+  lastExport: null,
+  since: null,
+  edit: null,        // draft while Mi guía is in edit mode
+  editSnapshot: ""
 };
 
+function normItems(list){
+  if(!Array.isArray(list)) return null;
+  return list.map(function(a){
+    if(typeof a === "string") return {label: "", text: a};
+    if(a && typeof a === "object") return {label: String(a.label || ""), text: String(a.text || "")};
+    return null;
+  }).filter(Boolean);
+}
 function normalizeSettings(s){
-  const out = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  const out = clone(DEFAULT_SETTINGS);
   if(!s || typeof s !== "object") return out;
   if(typeof s.name === "string") out.name = s.name;
-  if(Array.isArray(s.affirmations)){
-    out.affirmations = out.affirmations.map(function(def, i){
-      const a = s.affirmations[i];
-      if(typeof a === "string") return {label: "", text: a};
-      if(a && typeof a === "object") return {label: String(a.label || ""), text: String(a.text || "")};
-      return def;
-    });
-  }
-  if(s.book && typeof s.book === "object"){
-    out.book = {
-      title: String(s.book.title || ""),
-      page: Math.max(0, parseInt(s.book.page, 10) || 0),
-      total: Math.max(0, parseInt(s.book.total, 10) || 0),
-      note: String(s.book.note || "")
+  const aff = normItems(s.affirmations);
+  if(aff && aff.length) out.affirmations = aff;
+  if(s.visualization && typeof s.visualization === "object"){
+    const items = normItems(s.visualization.items);
+    out.visualization = {
+      items: items && items.length ? items : clone(DEFAULT_VIS.items),
+      note: typeof s.visualization.note === "string" ? s.visualization.note : DEFAULT_VIS.note
     };
   }
   if(s.schedule && typeof s.schedule === "object") out.schedule = s.schedule;
@@ -316,8 +353,13 @@ const store = {
   set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } },
   load: function(){
     const d = this.get("savers:days"); if(d && typeof d === "object") state.days = d;
-    state.settings = normalizeSettings(this.get("savers:settings"));
+    const raw = this.get("savers:settings");
+    state.settings = normalizeSettings(raw);
+    // Migrate older formats (e.g. drop the book) right away.
+    if(raw && JSON.stringify(raw) !== JSON.stringify(state.settings)) this.set("savers:settings", state.settings);
     state.lastExport = this.get("savers:lastExport");
+    state.since = this.get("savers:since");
+    if(!state.since){ state.since = new Date().toISOString(); this.set("savers:since", state.since); }
   },
   save: function(){
     const ok = this.set("savers:days", state.days) && this.set("savers:settings", state.settings);
@@ -335,7 +377,6 @@ function saveDay(ds, delay){
   if(d) d.updatedAt = new Date().toISOString();
   debounce("save", delay == null ? 400 : delay, function(){ store.save(); });
 }
-function saveSettings(delay){ debounce("save", delay == null ? 400 : delay, function(){ store.save(); }); }
 // Never lose the last keystrokes when iOS suspends the app.
 function flushSave(){ Object.keys(debouncers).forEach(function(k){ clearTimeout(debouncers[k]); }); store.save(); }
 window.addEventListener("pagehide", flushSave);
@@ -351,16 +392,41 @@ function getDay(ds, create){
   return state.days[ds];
 }
 
+/* ---------- sheet (Guardar / Descartar) ---------- */
+function ask(title, text, buttons){
+  return new Promise(function(resolve){
+    const bd = document.createElement("div");
+    bd.className = "backdrop";
+    bd.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t">' +
+      '<h3 id="sheet-t">' + esc(title) + '</h3>' + (text ? '<p>' + esc(text) + '</p>' : '') +
+      '<div class="row">' + buttons.filter(function(b){ return !b.link; }).map(function(b){
+        return '<button class="btn' + (b.primary ? " primary" : "") + '" data-v="' + b.value + '">' + esc(b.label) + '</button>';
+      }).join("") + '</div>' +
+      buttons.filter(function(b){ return b.link; }).map(function(b){
+        return '<button class="linkbtn" data-v="' + b.value + '">' + esc(b.label) + '</button>';
+      }).join("") +
+    '</div>';
+    function close(v){ bd.remove(); resolve(v); }
+    bd.addEventListener("click", function(e){
+      const b = e.target.closest("[data-v]");
+      if(b) close(b.getAttribute("data-v"));
+      else if(e.target === bd) close("stay");
+    });
+    document.body.appendChild(bd);
+    const primary = $(".btn.primary", bd); if(primary) primary.focus();
+  });
+}
+
 /* ---------- backup ---------- */
 function exportBackup(){
   flushSave();
-  const payload = {app: "savers", version: 1, exportedAt: new Date().toISOString(), settings: state.settings, days: state.days};
+  const payload = {app: "savers", version: 2, exportedAt: new Date().toISOString(), settings: state.settings, days: state.days};
   const json = JSON.stringify(payload, null, 2);
   const name = "savers-copia-" + todayStr() + ".json";
   function markDone(){
     state.lastExport = new Date().toISOString();
     store.set("savers:lastExport", state.lastExport);
-    if(state.tab === "guide") renderGuide();
+    if(state.tab === "guide") rerenderGuideKeepScroll();
   }
   let file = null;
   try { file = new File([json], name, {type: "application/json"}); } catch(e){}
@@ -387,7 +453,7 @@ function importBackupText(text){
   if(!data || data.app !== "savers" || typeof data.settings !== "object"){ toast("Ese archivo no es una copia de SAVERS"); return; }
   const incomingDays = data.days && typeof data.days === "object" ? data.days : {};
   const n = Object.keys(incomingDays).length;
-  const msg = "¿Importar esta copia?\n\nSe reemplazan tu nombre, afirmaciones, libro y horario." +
+  const msg = "¿Importar esta copia?\n\nSe reemplazan tu nombre, afirmaciones, visualización y horario." +
     (n ? "\nSe agregan " + n + " día(s) de registro; si un día ya existe, se queda el más reciente." : "");
   if(!confirm(msg)) return;
   state.settings = normalizeSettings(data.settings);
@@ -396,6 +462,7 @@ function importBackupText(text){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(ds) || !inc || typeof inc !== "object") return;
     if(!cur || !hasContent(cur) || String(inc.updatedAt || "") >= String(cur.updatedAt || "")) state.days[ds] = Object.assign(blankDay(ds), inc);
   });
+  state.edit = null;
   flushSave();
   toast("Copia importada");
   switchTab(state.tab);
@@ -410,6 +477,70 @@ $("#import-file").addEventListener("change", function(e){
   r.onerror = function(){ toast("No se pudo leer el archivo"); };
   r.readAsText(f);
 });
+
+/* ---------- feel: haptic, pop, bounce ---------- */
+// iOS Safari has no vibration API, but toggling a native switch control gives a system haptic (iOS 18+).
+function haptic(){
+  try {
+    if(navigator.vibrate && navigator.vibrate(12)) return;
+    const label = document.createElement("label");
+    label.setAttribute("aria-hidden", "true");
+    label.style.display = "none";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.setAttribute("switch", "");
+    label.appendChild(input);
+    document.head.appendChild(label);
+    label.click();
+    label.remove();
+  } catch(e){}
+}
+function setAudioMode(mode){
+  // "ambient" follows the silent switch; "playback" ignores it (used only while the timer runs).
+  try { if(navigator.audioSession && navigator.audioSession.type !== mode) navigator.audioSession.type = mode; } catch(e){}
+}
+function ensureAudio(){
+  try {
+    if(!timer.audio) timer.audio = new (window.AudioContext || window.webkitAudioContext)();
+    if(timer.audio.state !== "running") timer.audio.resume();
+    const b = timer.audio.createBuffer(1, 1, 22050), src = timer.audio.createBufferSource();
+    src.buffer = b; src.connect(timer.audio.destination); src.start(0);
+  } catch(e){}
+}
+function tone(freqFrom, freqTo, dur, peak, delay){
+  try {
+    const ctx = timer.audio; if(!ctx) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    const t0 = ctx.currentTime + (delay || 0);
+    o.type = "sine";
+    o.frequency.setValueAtTime(freqFrom, t0);
+    if(freqTo !== freqFrom) o.frequency.exponentialRampToValueAtTime(freqTo, t0 + dur * 0.8);
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  } catch(e){}
+}
+function popSound(){
+  if(!timer.running) setAudioMode("ambient");
+  ensureAudio();
+  tone(720, 340, 0.09, 0.14);
+}
+function completeSound(){
+  if(!timer.running) setAudioMode("ambient");
+  ensureAudio();
+  tone(660, 660, 0.16, 0.12);
+  tone(990, 990, 0.3, 0.12, 0.13);
+}
+function bump(key){
+  $$('[data-toggle="' + key + '"]').forEach(function(b){
+    b.classList.remove("bump");
+    void b.offsetWidth;
+    b.classList.add("bump");
+  });
+}
+document.addEventListener("animationend", function(e){ if(e.target.classList) e.target.classList.remove("bump"); });
 
 /* ---------- streak ---------- */
 function streak(){
@@ -440,15 +571,6 @@ function letterInfo(key, type){
   const gym = type === "gym";
   const s = state.settings;
   const sc = s.schedule || {};
-  const book = s.book;
-  const pct = book.total ? Math.min(100, Math.round((book.page / book.total) * 100)) : 0;
-  const bookBlock = book.title
-    ? '<p><b>' + esc(book.title) + '</b></p>' +
-      '<div class="bookbar"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="book"><label for="bk-page" class="note">Voy en la página</label>' +
-      '<input id="bk-page" type="number" inputmode="numeric" min="0" value="' + esc(book.page) + '">' +
-      '<span class="note">de ' + esc(book.total) + ' (' + pct + '%)</span></div>'
-    : '<p class="note">Escribe tu libro actual en Mi guía.</p>';
   switch(key){
     case "silencio": return {
       sub: "Daily Calm", time: "10 min",
@@ -456,20 +578,25 @@ function letterInfo(key, type){
         (gym ? '<p class="note">Hoy va después del gym.</p>' : '<p class="note">Si hoy dura 11 minutos, ese minuto sale de la lectura.</p>')
     };
     case "afirmaciones": {
-      const list = s.affirmations.filter(function(a){ return a.text; });
+      const list = filled(s.affirmations);
+      const mins = Math.max(1, Math.ceil(list.length * SECS_PER_AFFIRMATION / 60));
       return {
-        sub: "En voz alta", time: "2 min",
-        html: (list.length
-          ? '<ol>' + list.map(function(a){ return '<li>' + esc(a.text) + '</li>'; }).join("") + '</ol>'
-          : '<p>Todavía no tienes afirmaciones.</p>') +
-          '<p class="note">Despacio, sintiendo cada frase. Las editas en Mi guía.</p>'
+        sub: "En voz alta", time: mins + " min",
+        html: list.length
+          ? '<div class="affs">' + list.map(function(a){ return '<p>' + esc(a.text) + '</p>'; }).join("") + '</div>' +
+            '<p class="note">Despacio, sintiendo cada frase.</p>'
+          : '<p>Todavía no tienes afirmaciones. Agrégalas en Mi guía.</p>'
       };
     }
-    case "visualizacion": return {
-      sub: "Ojos cerrados", time: "3 min",
-      html: '<ol>' + VIS.map(function(v){ return '<li><b>' + v[0] + ':</b> ' + v[1] + '</li>'; }).join("") + '</ol>' +
-        '<p class="note">Un minuto por pregunta. No hace falta ver imágenes claras: pensarlo paso a paso cuenta.</p>'
-    };
+    case "visualizacion": {
+      const vis = s.visualization;
+      const list = filled(vis.items);
+      return {
+        sub: "Ojos cerrados", time: Math.max(1, list.length) + " min",
+        html: '<ol>' + list.map(function(v){ return '<li>' + (v.label.trim() ? '<b>' + esc(v.label) + ':</b> ' : '') + esc(v.text) + '</li>'; }).join("") + '</ol>' +
+          (vis.note.trim() ? '<p class="note">' + esc(vis.note) + '</p>' : '')
+      };
+    }
     case "ejercicio":
       if(gym) return {
         sub: "Gym con tu entrenador", time: sc.gymTime || "Gym",
@@ -494,16 +621,16 @@ function letterInfo(key, type){
           '<li><b>Minuto 1–7:</b> 2 rondas de 40 segundos por ejercicio:<ul>' +
           CIRCUIT.map(function(c){ return '<li><b>' + c[0] + ':</b> ' + c[1] + '</li>'; }).join("") +
           '</ul></li><li><b>Minuto 7–8:</b> boca arriba con las piernas sobre una silla, respiraciones lentas.</li></ol>' +
-          '<div class="safety"><b>Cuida tu espalda</b>Movimientos lentos, sin arquear ni girar la espalda. Si algo duele, haz una versión más suave. Para de inmediato si aparece dolor que aumenta, hormigueo, adormecimiento o dolor que baja por la pierna.</div>'
+          '<p class="note">Para si hay hormigueo o dolor que baja por la pierna.</p>'
       };
     case "lectura":
       if(gym) return {
         sub: "Más tarde", time: "4 min",
-        html: '<p>Hoy lees en otro momento' + (sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Márcala cuando lo hagas.</p>' + bookBlock
+        html: '<p>Hoy lees más tarde' + (sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Márcala cuando lo hagas.</p>'
       };
       return {
         sub: "Con tu café", time: "4 min",
-        html: bookBlock + '<p class="note">La meta son 4 minutos, no un número de páginas.</p>'
+        html: '<p>4 minutos con tu café. La meta es el tiempo, no las páginas.</p>'
       };
     case "escritura": return {
       sub: "Agradezco y prioridades", time: "3 min",
@@ -632,7 +759,16 @@ function toggleLetter(key){
   d.checks[key] = !d.checks[key];
   refreshChecks();
   saveDay(ds, 150);
-  if(countDone(d) === 6 && d.checks[key]) toast("¡Mañana completa!");
+  if(!d.checks[key]){ haptic(); return; }
+  bump(key);
+  if(countDone(d) === 6){
+    haptic(); setTimeout(haptic, 140);
+    completeSound();
+    toast("¡Mañana completa!");
+  } else {
+    haptic();
+    popSound();
+  }
 }
 
 function bindToday(){
@@ -677,18 +813,6 @@ function bindToday(){
       saveDay(state.viewDate, 150);
     });
   });
-  const bp = $("#bk-page", root);
-  if(bp) bp.addEventListener("input", function(){
-    const v = parseInt(bp.value, 10);
-    if(isNaN(v) || v < 0) return;
-    state.settings.book = Object.assign({}, state.settings.book, {page: v});
-    const bk = state.settings.book;
-    const pct = bk.total ? Math.min(100, Math.round(v / bk.total * 100)) : 0;
-    const box = bp.closest(".body");
-    const bar = box && $(".bookbar i", box); if(bar) bar.style.width = pct + "%";
-    const note = bp.nextElementSibling; if(note) note.textContent = "de " + bk.total + " (" + pct + "%)";
-    saveSettings();
-  });
 
   // timer buttons
   const go = $("#tm-go", root), sk = $("#tm-skip", root), rs = $("#tm-reset", root);
@@ -724,28 +848,9 @@ function restoreTimer(){
   if(timer.running && !timer.iv) timer.iv = setInterval(tick, 250);
 }
 
-function unlockAudio(){
-  // Play through the media channel so beeps sound even with the silent switch on (iOS 17+).
-  try { if(navigator.audioSession) navigator.audioSession.type = "playback"; } catch(e){}
-  try {
-    if(!timer.audio) timer.audio = new (window.AudioContext || window.webkitAudioContext)();
-    if(timer.audio.state !== "running") timer.audio.resume();
-    const b = timer.audio.createBuffer(1, 1, 22050), src = timer.audio.createBufferSource();
-    src.buffer = b; src.connect(timer.audio.destination); src.start(0);
-  } catch(e){}
-}
 function beep(freq, dur){
-  try {
-    const ctx = timer.audio; if(!ctx) return;
-    if(ctx.state !== "running") ctx.resume();
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = "sine"; o.frequency.value = freq; o.connect(g); g.connect(ctx.destination);
-    const t0 = ctx.currentTime;
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(0.16, t0 + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.start(t0); o.stop(t0 + dur + 0.02);
-  } catch(e){}
+  try { if(timer.audio && timer.audio.state !== "running") timer.audio.resume(); } catch(e){}
+  tone(freq, freq, dur, 0.16);
 }
 async function requestWake(){
   try {
@@ -758,7 +863,9 @@ async function requestWake(){
 function releaseWake(){ try { if(timer.wake) timer.wake.release(); } catch(e){} timer.wake = null; }
 
 function startTimer(){
-  unlockAudio();
+  // Timer beeps must sound even with the silent switch on (iOS 17+).
+  setAudioMode("playback");
+  ensureAudio();
   if(!timer.started){ timer.base = 0; timer.lastIdx = 0; timer.day = todayStr(); }
   timer.running = true; timer.started = true; timer.runStart = Date.now(); timer.lastRemain = null;
   if(!timer.iv) timer.iv = setInterval(tick, 250);
@@ -767,17 +874,18 @@ function startTimer(){
   persistTimer();
   updateTimerUI();
 }
-function pauseTimer(){
+function pauseTimer(keepAudioMode){
   if(timer.running) timer.base = elapsedSecs();
   timer.running = false;
   clearInterval(timer.iv); timer.iv = null;
   releaseWake();
+  if(keepAudioMode !== true) setAudioMode("ambient");
   persistTimer();
   updateTimerUI();
 }
 function resetTimer(){ pauseTimer(); timer.base = 0; timer.started = false; timer.lastIdx = 0; timer.lastRemain = null; persistTimer(); updateTimerUI(); }
 function skipStep(){
-  if(!timer.started){ unlockAudio(); timer.started = true; timer.day = todayStr(); timer.base = 0; }
+  if(!timer.started){ setAudioMode("playback"); ensureAudio(); timer.started = true; timer.day = todayStr(); timer.base = 0; }
   const idx = stepAt(elapsedSecs());
   if(idx >= STEPS.length - 1){ finishTimer(); return; }
   timer.base = STEP_START[idx + 1]; timer.runStart = Date.now();
@@ -802,8 +910,9 @@ function tick(){
   updateTimerUI();
 }
 function finishTimer(){
-  pauseTimer();
+  pauseTimer(true);
   beep(988, .25); setTimeout(function(){ beep(1318, .35); }, 260);
+  setTimeout(function(){ if(!timer.running) setAudioMode("ambient"); }, 900);
   const ds = timer.day || state.today;
   timer.base = 0; timer.started = false; timer.lastIdx = 0; timer.lastRemain = null;
   persistTimer();
@@ -921,84 +1030,171 @@ function scheduleHTML(){
   (sc.note ? '<p class="note" style="margin-top:8px">' + esc(sc.note) + '</p>' : '');
 }
 
+function readItemsHTML(items, emptyText){
+  const list = filled(items);
+  if(!list.length) return '<p class="note">' + emptyText + '</p>';
+  return list.map(function(a){
+    return '<div class="gitem">' + (a.label.trim() ? '<span class="glabel">' + esc(a.label) + '</span>' : '') + '<p>' + esc(a.text) + '</p></div>';
+  }).join("");
+}
+
+function editItemsHTML(listKey, items, noun, textPlaceholder){
+  return items.map(function(a, i){
+    const n = i + 1;
+    return '<div class="eitem">' +
+      '<label class="sr-only" for="e-' + listKey + '-l-' + i + '">Título de ' + noun + ' ' + n + '</label>' +
+      '<input type="text" id="e-' + listKey + '-l-' + i + '" data-elist="' + listKey + '" data-i="' + i + '" data-k="label" value="' + esc(a.label) + '" placeholder="Título (opcional)">' +
+      '<label class="sr-only" for="e-' + listKey + '-t-' + i + '">Texto de ' + noun + ' ' + n + '</label>' +
+      '<textarea class="grow" rows="1" id="e-' + listKey + '-t-' + i + '" data-elist="' + listKey + '" data-i="' + i + '" data-k="text" placeholder="' + textPlaceholder + '">' + esc(a.text) + '</textarea>' +
+      '<div class="ectl">' +
+        '<button class="ibtn" data-act="up" data-list="' + listKey + '" data-i="' + i + '" aria-label="Subir ' + noun + ' ' + n + '"' + (i === 0 ? " disabled" : "") + '>↑</button>' +
+        '<button class="ibtn" data-act="down" data-list="' + listKey + '" data-i="' + i + '" aria-label="Bajar ' + noun + ' ' + n + '"' + (i === items.length - 1 ? " disabled" : "") + '>↓</button>' +
+        '<button class="ibtn del" data-act="del" data-list="' + listKey + '" data-i="' + i + '" aria-label="Borrar ' + noun + ' ' + n + '"' + (items.length === 1 ? " disabled" : "") + '>Borrar</button>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+function backupReminderHTML(){
+  const ref = state.lastExport || state.since;
+  if(!ref) return "";
+  const days = Math.floor((Date.now() - new Date(ref).getTime()) / 86400000);
+  if(days <= BACKUP_REMIND_DAYS) return "";
+  const text = state.lastExport ? "Última copia hace " + days + " días" : "Sin copia exportada en " + days + " días";
+  return '<p class="remind">' + text + ' · <button class="linkbtn" data-act="export">Exportar</button></p>';
+}
+
 function renderGuide(){
   const root = $("#view-guide");
   const s = state.settings;
-  const bk = s.book;
-  const lastExp = state.lastExport ? new Date(state.lastExport).toLocaleDateString("es", {day:"numeric", month:"long", year:"numeric"}) : null;
-  root.innerHTML =
-    '<div class="top"><h2 class="sec">Mi guía</h2><span class="status" id="status"></span></div>' +
+  const e = state.edit;
+  let html;
 
-    '<div class="gblock backup"><h3>Copia de seguridad</h3>' +
-      '<p class="note">Tus registros viven solo en este iPhone. Si borras el ícono de la pantalla de inicio, se borran. Exporta una copia cada semana y guárdala en Archivos o iCloud.</p>' +
-      '<p class="note"><b>Última copia:</b> ' + (lastExp ? esc(lastExp) : "nunca") + '</p>' +
-      '<div class="row"><button class="btn primary" id="bk-export">Exportar copia</button><button class="btn" id="bk-import">Importar copia</button></div>' +
-    '</div>' +
-
-    '<div class="gblock"><h3>Horario</h3>' + scheduleHTML() + '</div>' +
-
-    '<div class="gblock"><h3>Tu nombre</h3>' +
-      '<label class="f sr-only" for="g-name">Tu nombre</label><input id="g-name" type="text" autocomplete="given-name" value="' + esc(s.name) + '" placeholder="Para el saludo">' +
-    '</div>' +
-
-    '<div class="gblock aff"><h3>Mis afirmaciones</h3>' +
-      '<p class="note">Revísalas el día 1 de cada mes. La que ya no sientas, reescríbela.</p>' +
-      s.affirmations.map(function(a, i){
-        return '<label class="f" for="aff-' + i + '">' + esc(a.label || ("Afirmación " + (i+1))) + '</label>' +
-          '<textarea id="aff-' + i + '" data-aff="' + i + '" rows="2">' + esc(a.text) + '</textarea>';
-      }).join("") +
-    '</div>' +
-
-    '<div class="gblock"><h3>Visualización</h3><ol>' +
-      VIS.map(function(v){ return '<li><b>' + v[0] + ':</b> ' + v[1] + '</li>'; }).join("") +
-    '</ol><p class="note">Un minuto por pregunta, con los ojos cerrados. Si la mente se queda en blanco, respóndelas en voz baja.</p></div>' +
-
-    '<div class="gblock"><h3>Ejercicio en casa</h3>' +
-      '<p>Lunes, martes y jueves. Miércoles y viernes es el gym con tu entrenador.</p>' +
-      '<ol><li>Minuto 0–1: marchar en el sitio.</li><li>Minuto 1–7: 2 rondas, 40 segundos por ejercicio:<ul>' +
-      CIRCUIT.map(function(c){ return '<li><b>' + c[0] + ':</b> ' + c[1] + '</li>'; }).join("") +
-      '</ul></li><li>Minuto 7–8: piernas sobre una silla y respiraciones lentas.</li></ol>' +
-      '<div class="safety"><b>Cuida tu espalda</b>Movimientos lentos y controlados, sin arquear ni girar la espalda baja. Para de inmediato si aparece dolor que aumenta, hormigueo, adormecimiento o dolor que baja por la pierna.</div>' +
-    '</div>' +
-
-    '<div class="gblock"><h3>Lectura</h3>' +
-      '<label class="f" for="g-title">Libro actual</label><input id="g-title" type="text" value="' + esc(bk.title) + '">' +
-      '<div class="row" style="margin-top:0">' +
-        '<div style="flex:1"><label class="f" for="g-page">Página actual</label><input id="g-page" type="number" inputmode="numeric" min="0" value="' + esc(bk.page) + '"></div>' +
-        '<div style="flex:1"><label class="f" for="g-total">Total de páginas</label><input id="g-total" type="number" inputmode="numeric" min="1" value="' + esc(bk.total) + '"></div>' +
+  if(!e){
+    html =
+      '<div class="gtop"><h2>Mi guía</h2><button class="tbtn right" data-act="edit">Editar</button></div>' +
+      '<div class="gblock"><h3>Horario</h3>' + scheduleHTML() + '</div>' +
+      '<div class="gblock"><h3>Mis afirmaciones</h3>' +
+        '<p class="note lead">Revísalas el día 1 de cada mes. La que ya no sientas, reescríbela.</p>' +
+        readItemsHTML(s.affirmations, "Todavía no tienes afirmaciones. Toca Editar para agregarlas.") +
       '</div>' +
-      (bk.note ? '<p class="note" style="margin-top:10px">' + esc(bk.note) + '</p>' : '') +
-      '<p class="note" style="margin-top:10px">La meta son 4 minutos al día.</p>' +
-    '</div>' +
-
-    '<div class="gblock"><h3>Escritura</h3><p>Cada mañana: una cosa concreta que agradeces de ayer y por qué, tus 3 prioridades del día y, si leíste, una idea del libro.</p><p class="note">Las 3 prioridades no son toda tu lista: son lo que haría que el día valga la pena.</p></div>';
-
-  setStatus(statusMsg);
-
-  $("#bk-export", root).addEventListener("click", exportBackup);
-  $("#bk-import", root).addEventListener("click", function(){ $("#import-file").click(); });
-  $("#g-name", root).addEventListener("input", function(e){ state.settings.name = e.target.value.trim(); saveSettings(); });
-  $$("[data-aff]", root).forEach(function(el){
-    el.addEventListener("input", function(){
-      const i = Number(el.getAttribute("data-aff"));
-      state.settings.affirmations[i] = Object.assign({}, state.settings.affirmations[i], {text: el.value});
-      saveSettings();
-    });
-  });
-  function bookUpdate(){
-    const t = $("#g-title").value;
-    const p = parseInt($("#g-page").value, 10);
-    const tot = parseInt($("#g-total").value, 10);
-    state.settings.book = {
-      title: t,
-      page: isNaN(p) || p < 0 ? 0 : p,
-      total: isNaN(tot) || tot < 1 ? 0 : tot,
-      note: state.settings.book.note || ""
-    };
-    saveSettings();
+      '<div class="gblock"><h3>Visualización</h3>' +
+        readItemsHTML(s.visualization.items, "Toca Editar para agregar preguntas.") +
+        (s.visualization.note.trim() ? '<p class="note" style="margin:10px 0 0">' + esc(s.visualization.note) + '</p>' : '') +
+      '</div>' +
+      '<div class="gblock"><h3>Ejercicio en casa</h3>' +
+        '<p>Lunes, martes y jueves. Miércoles y viernes es el gym con tu entrenador.</p>' +
+        '<ol><li>Minuto 0–1: marchar en el sitio.</li><li>Minuto 1–7: 2 rondas, 40 segundos por ejercicio:<ul>' +
+        CIRCUIT.map(function(c){ return '<li><b>' + c[0] + ':</b> ' + c[1] + '</li>'; }).join("") +
+        '</ul></li><li>Minuto 7–8: piernas sobre una silla y respiraciones lentas.</li></ol>' +
+      '</div>' +
+      '<div class="gblock"><h3>Escritura</h3><p>Cada mañana: una cosa concreta que agradeces de ayer y por qué, tus 3 prioridades del día y, si leíste, una idea del libro.</p><p class="note">Las 3 prioridades no son toda tu lista: son lo que haría que el día valga la pena.</p></div>' +
+      backupReminderHTML();
+  } else {
+    const lastExp = state.lastExport ? new Date(state.lastExport).toLocaleDateString("es", {day:"numeric", month:"long", year:"numeric"}) : "nunca";
+    html =
+      '<div class="gtop editing"><button class="tbtn left" data-act="cancel">Cancelar</button><h2>Editar guía</h2><button class="tbtn right" data-act="done">Listo</button></div>' +
+      '<div class="gblock"><h3>Tu nombre</h3>' +
+        '<label class="sr-only" for="e-name">Tu nombre</label>' +
+        '<input type="text" id="e-name" data-ename="1" autocomplete="given-name" value="' + esc(e.name) + '" placeholder="Para el saludo">' +
+      '</div>' +
+      '<div class="gblock"><h3>Mis afirmaciones</h3>' +
+        editItemsHTML("aff", e.affirmations, "afirmación", "Escribe tu afirmación") +
+        '<button class="addbtn" data-act="add" data-list="aff">＋ Agregar afirmación</button>' +
+      '</div>' +
+      '<div class="gblock"><h3>Visualización</h3>' +
+        editItemsHTML("vis", e.visualization.items, "pregunta", "Escribe la pregunta") +
+        '<button class="addbtn" data-act="add" data-list="vis">＋ Agregar pregunta</button>' +
+        '<label class="f" for="e-vnote" style="margin-top:14px">Nota <small>opcional</small></label>' +
+        '<textarea class="grow" rows="1" id="e-vnote" data-evnote="1">' + esc(e.visualization.note) + '</textarea>' +
+      '</div>' +
+      '<div class="gblock"><h3>Copia de seguridad</h3>' +
+        '<p class="note">Tus registros viven solo en este iPhone. Exporta una copia de vez en cuando y guárdala en Archivos o iCloud.</p>' +
+        '<p class="note"><b>Última copia:</b> ' + esc(lastExp) + '</p>' +
+        '<div class="row"><button class="btn" data-act="export">Exportar copia</button><button class="btn" data-act="import">Importar copia</button></div>' +
+      '</div>';
   }
-  ["#g-title","#g-page","#g-total"].forEach(function(id){ $(id, root).addEventListener("input", bookUpdate); });
+  root.innerHTML = html;
+  $$("textarea.grow", root).forEach(autoGrow);
+  setStatus(statusMsg);
 }
+
+function autoGrow(el){ el.style.height = "auto"; el.style.height = (el.scrollHeight + 2) + "px"; }
+function rerenderGuideKeepScroll(focusSel, block){
+  const y = window.scrollY;
+  renderGuide();
+  window.scrollTo(0, y);
+  if(focusSel){ const f = $(focusSel); if(f){ f.focus({preventScroll: true}); f.scrollIntoView({block: block || "nearest", behavior: "smooth"}); } }
+}
+function editList(key){ return key === "aff" ? state.edit.affirmations : state.edit.visualization.items; }
+function isEditDirty(){ return !!state.edit && JSON.stringify(state.edit) !== state.editSnapshot; }
+
+function startEdit(){
+  state.edit = {name: state.settings.name, affirmations: clone(state.settings.affirmations), visualization: clone(state.settings.visualization)};
+  state.editSnapshot = JSON.stringify(state.edit);
+  renderGuide();
+  window.scrollTo(0, 0);
+}
+function commitEdit(){
+  const e = state.edit;
+  function clean(items){
+    const out = items.map(function(a){ return {label: a.label.trim(), text: a.text.trim()}; }).filter(function(a){ return a.label || a.text; });
+    return out.length ? out : [{label: "", text: ""}];
+  }
+  state.settings.name = e.name.trim();
+  state.settings.affirmations = clean(e.affirmations);
+  state.settings.visualization = {items: clean(e.visualization.items), note: e.visualization.note.trim()};
+  state.edit = null;
+  flushSave();
+}
+function endEdit(save){
+  if(save && isEditDirty()){ commitEdit(); toast("Cambios guardados"); }
+  state.edit = null;
+  renderGuide();
+  window.scrollTo(0, 0);
+}
+
+(function bindGuide(){
+  const root = $("#view-guide");
+  root.addEventListener("click", function(ev){
+    const b = ev.target.closest("[data-act]");
+    if(!b || b.disabled) return;
+    const act = b.getAttribute("data-act");
+    if(act === "edit") return startEdit();
+    if(act === "cancel") return endEdit(false);
+    if(act === "done") return endEdit(true);
+    if(act === "export") return exportBackup();
+    if(act === "import") return $("#import-file").click();
+    const key = b.getAttribute("data-list");
+    if(!state.edit || !key) return;
+    const list = editList(key);
+    const i = Number(b.getAttribute("data-i"));
+    if(act === "add"){
+      list.push({label: "", text: ""});
+      rerenderGuideKeepScroll("#e-" + key + "-t-" + (list.length - 1), "center");
+    } else if(act === "del" && list.length > 1){
+      list.splice(i, 1);
+      rerenderGuideKeepScroll();
+    } else if(act === "up" && i > 0){
+      const t = list[i-1]; list[i-1] = list[i]; list[i] = t;
+      rerenderGuideKeepScroll('[data-act="up"][data-list="' + key + '"][data-i="' + (i-1) + '"]');
+    } else if(act === "down" && i < list.length - 1){
+      const t = list[i+1]; list[i+1] = list[i]; list[i] = t;
+      rerenderGuideKeepScroll('[data-act="down"][data-list="' + key + '"][data-i="' + (i+1) + '"]');
+    }
+  });
+  root.addEventListener("input", function(ev){
+    const el = ev.target;
+    if(!state.edit) return;
+    if(el.tagName === "TEXTAREA" && el.classList.contains("grow")) autoGrow(el);
+    if(el.hasAttribute("data-ename")) state.edit.name = el.value;
+    else if(el.hasAttribute("data-evnote")) state.edit.visualization.note = el.value;
+    else if(el.hasAttribute("data-elist")){
+      const item = editList(el.getAttribute("data-elist"))[Number(el.getAttribute("data-i"))];
+      if(item) item[el.getAttribute("data-k")] = el.value;
+    }
+  });
+})();
 
 /* ---------- tabs ---------- */
 function switchTab(tab){
@@ -1012,8 +1208,20 @@ function switchTab(tab){
   if(tab === "guide") renderGuide();
   window.scrollTo(0, 0);
 }
-$$(".tab").forEach(function(b){ b.addEventListener("click", function(){
+$$(".tab").forEach(function(b){ b.addEventListener("click", async function(){
   const t = b.getAttribute("data-tab");
+  if(state.tab === "guide" && t !== "guide" && state.edit){
+    if(isEditDirty()){
+      const v = await ask("¿Guardar los cambios?", "Hiciste cambios en Mi guía.", [
+        {label: "Descartar", value: "discard"},
+        {label: "Guardar", value: "save", primary: true},
+        {label: "Seguir editando", value: "stay", link: true}
+      ]);
+      if(v === "stay") return;
+      if(v === "save"){ commitEdit(); toast("Cambios guardados"); }
+    }
+    state.edit = null;
+  }
   if(t === "today" && state.tab === "today" && state.viewDate !== state.today){ state.viewDate = state.today; }
   if(t === "history"){ const d = new Date(); if(state.tab !== "history"){ state.month = {y:d.getFullYear(), m:d.getMonth()}; } }
   switchTab(t);
@@ -1029,7 +1237,8 @@ function checkRollover(){
   state.showSunday = false;
   const a = document.activeElement;
   if(a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT")) return;
-  if(!timer.running) switchTab(state.tab);
+  if(timer.running || state.tab === "guide") return;
+  switchTab(state.tab);
 }
 setInterval(checkRollover, 30000);
 document.addEventListener("visibilitychange", function(){
