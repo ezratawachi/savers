@@ -177,6 +177,27 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .glabel{display:block;font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.01em;margin-bottom:2px}
 .gitem p{margin:0;font-size:1.02rem;line-height:1.6}
 .tablewrap{overflow-x:auto}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--surface-2);border-radius:12px;padding:3px;margin:2px 0 16px}
+.seg button{border:0;background:transparent;border-radius:9px;padding:7px 6px;min-height:48px;cursor:pointer;color:var(--muted);line-height:1.2;transition:background .2s ease,color .2s ease}
+.seg button b{display:block;font-size:.95rem}
+.seg button small{display:block;font-size:.74rem;font-weight:400}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.tgroup{font-size:.78rem;font-weight:700;color:var(--muted);margin:0 0 6px}
+.tlist{list-style:none;margin:0;padding:0}
+.tlist + .tgroup,.tlist + .tlist{margin-top:16px}
+.tstep{display:grid;grid-template-columns:74px 14px minmax(0,1fr);column-gap:10px;align-items:start}
+.tstep .tt{font-family:var(--display);font-weight:700;font-size:1rem;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.5}
+.tstep .rail{position:relative;align-self:stretch}
+.tstep .rail::before{content:"";position:absolute;left:6px;top:15px;bottom:-4px;width:2px;background:var(--line)}
+.tstep:last-child .rail::before{display:none}
+.tstep .rail::after{content:"";position:absolute;left:1px;top:7px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--muted);box-sizing:border-box}
+.tstep.key .rail::after{background:var(--dawn);border-color:var(--dawn)}
+.tstep .tx{padding-bottom:14px;line-height:1.5}
+.tstep:last-child .tx{padding-bottom:0}
+.tstep .tx span{display:block;color:var(--muted);font-size:.86rem;line-height:1.35;margin-top:1px}
+.tlist.muted .tt,.tlist.muted .tx{color:var(--muted)}
+.tlist.muted .tx{font-weight:400}
+.snote{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line)}
 table{border-collapse:collapse;width:100%;font-size:.88rem}
 th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-weight:700;color:var(--muted)}
@@ -318,6 +339,7 @@ const state = {
   showSunday: false,
   lastExport: null,
   since: null,
+  schedTab: null,    // Normal | Gym selector in Mi guía; null = today's type
   edit: null,        // draft while Mi guía is in edit mode
   editSnapshot: ""
 };
@@ -453,10 +475,18 @@ function importBackupText(text){
   if(!data || data.app !== "savers" || typeof data.settings !== "object"){ toast("Ese archivo no es una copia de SAVERS"); return; }
   const incomingDays = data.days && typeof data.days === "object" ? data.days : {};
   const n = Object.keys(incomingDays).length;
-  const msg = "¿Importar esta copia?\n\nSe reemplazan tu nombre, afirmaciones, visualización y horario." +
+  // Replace only the parts the file brings, so a schedule-only file never touches affirmations.
+  const PARTS = [["name", "tu nombre"], ["affirmations", "tus afirmaciones"], ["visualization", "tu visualización"], ["schedule", "tu horario"]];
+  const parts = PARTS.filter(function(p){ return Object.prototype.hasOwnProperty.call(data.settings, p[0]); });
+  if(!parts.length && !n){ toast("Esa copia no trae nada para importar"); return; }
+  const names = parts.map(function(p){ return p[1]; });
+  const list = names.length > 1 ? names.slice(0, -1).join(", ") + " y " + names[names.length - 1] : names[0];
+  const msg = "¿Importar este archivo?\n\n" +
+    (parts.length ? "Se reemplaza solo " + list + "." : "No cambia tu guía.") +
     (n ? "\nSe agregan " + n + " día(s) de registro; si un día ya existe, se queda el más reciente." : "");
   if(!confirm(msg)) return;
-  state.settings = normalizeSettings(data.settings);
+  const incoming = normalizeSettings(data.settings);
+  parts.forEach(function(p){ state.settings[p[0]] = incoming[p[0]]; });
   Object.keys(incomingDays).forEach(function(ds){
     const inc = incomingDays[ds], cur = state.days[ds];
     if(!/^\d{4}-\d{2}-\d{2}$/.test(ds) || !inc || typeof inc !== "object") return;
@@ -464,7 +494,7 @@ function importBackupText(text){
   });
   state.edit = null;
   flushSave();
-  toast("Copia importada");
+  toast(parts.length === 1 && parts[0][0] === "schedule" ? "Horario importado" : "Copia importada");
   switchTab(state.tab);
 }
 
@@ -560,7 +590,10 @@ function streak(){
 /* ---------- today view ---------- */
 function timelineHTML(type){
   const sc = state.settings.schedule;
-  const items = sc && Array.isArray(type === "gym" ? sc.timelineGym : sc.timelineNormal) ? (type === "gym" ? sc.timelineGym : sc.timelineNormal) : null;
+  let items = null;
+  const t = scheduleType(type);
+  if(t) items = (t.steps || []).filter(function(st){ return st.short; }).map(function(st){ return [st.time, st.short]; });
+  else if(sc && Array.isArray(type === "gym" ? sc.timelineGym : sc.timelineNormal)) items = type === "gym" ? sc.timelineGym : sc.timelineNormal;
   if(!items || !items.length) return "";
   return '<div class="timeline" style="grid-template-columns:repeat(' + items.length + ',minmax(0,1fr))">' + items.map(function(it){
     return '<div class="tl' + (/savers/i.test(it[1]) ? " on" : "") + '"><b>' + esc(it[0]) + '</b><span>' + esc(it[1]) + '</span></div>';
@@ -1017,8 +1050,33 @@ function renderHistory(){
 }
 
 /* ---------- guide ---------- */
+function scheduleType(type){
+  const sc = state.settings.schedule;
+  return sc && sc.types && sc.types[type] && typeof sc.types[type] === "object" ? sc.types[type] : null;
+}
+function defaultScheduleTab(){ return dayType(state.today) === "gym" ? "gym" : "normal"; }
+function stepsHTML(list, cls){
+  return '<ol class="tlist' + (cls ? " " + cls : "") + '">' + list.map(function(st){
+    const key = /savers/i.test(st.short || st.title || "");
+    return '<li class="tstep' + (key && !cls ? " key" : "") + '"><span class="tt">' + esc(st.time) + '</span><span class="rail" aria-hidden="true"></span>' +
+      '<span class="tx">' + esc(st.title) + (st.detail ? '<span>' + esc(st.detail) + '</span>' : '') + '</span></li>';
+  }).join("") + '</ol>';
+}
 function scheduleHTML(){
   const sc = state.settings.schedule;
+  if(sc && sc.types && (sc.types.normal || sc.types.gym)){
+    const tab = scheduleType(state.schedTab) ? state.schedTab : (scheduleType(defaultScheduleTab()) ? defaultScheduleTab() : (sc.types.normal ? "normal" : "gym"));
+    const t = scheduleType(tab);
+    const seg = ["normal", "gym"].filter(scheduleType).map(function(k){
+      const x = scheduleType(k);
+      return '<button data-act="sched" data-type="' + k + '" aria-pressed="' + (k === tab) + '"><b>' + esc(x.label || (k === "gym" ? "Gym" : "Normal")) + '</b>' + (x.days ? '<small>' + esc(x.days) + '</small>' : '') + '</button>';
+    }).join("");
+    return '<div class="seg" role="group" aria-label="Tipo de día">' + seg + '</div>' +
+      (Array.isArray(t.night) && t.night.length ? '<p class="tgroup">La noche anterior</p>' + stepsHTML(t.night, "muted") : '') +
+      (Array.isArray(t.steps) && t.steps.length ? stepsHTML(t.steps) : '') +
+      (Array.isArray(t.later) && t.later.length ? '<p class="tgroup">Más tarde</p>' + stepsHTML(t.later) : '') +
+      (sc.note ? '<p class="note snote">' + esc(sc.note) + '</p>' : '');
+  }
   if(!sc || !sc.table || !Array.isArray(sc.table.rows)){
     return '<p class="note">Tu horario se carga al importar tu copia.</p>';
   }
@@ -1161,6 +1219,7 @@ function endEdit(save){
     if(!b || b.disabled) return;
     const act = b.getAttribute("data-act");
     if(act === "edit") return startEdit();
+    if(act === "sched"){ state.schedTab = b.getAttribute("data-type"); return rerenderGuideKeepScroll(); }
     if(act === "cancel") return endEdit(false);
     if(act === "done") return endEdit(true);
     if(act === "export") return exportBackup();
@@ -1205,7 +1264,7 @@ function switchTab(tab){
   $("#view-guide").hidden = tab !== "guide";
   if(tab === "today") renderToday();
   if(tab === "history") renderHistory();
-  if(tab === "guide") renderGuide();
+  if(tab === "guide"){ state.schedTab = null; renderGuide(); }
   window.scrollTo(0, 0);
 }
 $$(".tab").forEach(function(b){ b.addEventListener("click", async function(){
