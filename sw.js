@@ -1,4 +1,4 @@
-const CACHE = "savers-v1";
+const CACHE = "savers-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -22,8 +22,18 @@ self.addEventListener("fetch", (e) => {
   if (!cacheable) return;
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
-      const key = req.mode === "navigate" ? "./index.html" : req;
-      const cached = await cache.match(key, { ignoreSearch: req.mode === "navigate" });
+      if (req.mode === "navigate") {
+        // Network first for the page so fixes arrive on the next open; cached copy when offline.
+        try {
+          const res = await fetch(req);
+          if (res && res.ok) cache.put("./index.html", res.clone());
+          return res;
+        } catch (err) {
+          return (await cache.match("./index.html")) || Response.error();
+        }
+      }
+      const key = req;
+      const cached = await cache.match(key);
       const network = fetch(req)
         .then((res) => {
           if (res && (res.ok || res.type === "opaque")) cache.put(key, res.clone());

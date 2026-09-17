@@ -41,10 +41,11 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
+html,body{overflow-x:hidden;max-width:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 img{max-width:100%}
 button,input,textarea{font:inherit;color:inherit}
-button{touch-action:manipulation}
+button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
 :focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:6px}
 .wrap{max-width:560px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
 
@@ -61,7 +62,7 @@ button{touch-action:manipulation}
 .linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap}
 
 /* timeline */
-.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 0}
+.timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:12px 0 0}
 .tl{border-top:3px solid var(--line);padding-top:5px}
 .tl.on{border-color:var(--dawn)}
 .tl b{display:block;font-family:var(--display);font-size:.98rem;line-height:1.2}
@@ -69,10 +70,11 @@ button{touch-action:manipulation}
 
 /* hero letters */
 .hero{margin:16px 0 4px}
-.letters{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.lt{aspect-ratio:1/1.15;border-radius:14px;border:2px solid var(--line);background:var(--surface);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,8vw,2.8rem);
-  color:var(--muted);transition:background .25s ease,color .25s ease,border-color .25s ease,transform .12s ease;padding:0}
+.letters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.lt{position:relative;display:block;width:100%;min-width:0;height:0;padding:0 0 calc(115% - 4px);align-self:start;border-radius:14px;border:2px solid var(--line);background:var(--surface);cursor:pointer;
+  font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,8vw,2.8rem);
+  color:var(--muted);transition:background .25s ease,color .25s ease,border-color .25s ease,transform .12s ease}
+.lt span{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center}
 .lt:active{transform:scale(.96)}
 .lt.done{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
 .progress{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:.9rem;color:var(--muted)}
@@ -134,18 +136,18 @@ textarea{resize:vertical;min-height:64px}
 /* history */
 h2.sec{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:6px 0 12px}
 h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 0 8px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
 .stat b{display:block;font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1}
 .stat span{font-size:.78rem;color:var(--muted);line-height:1.25;display:block;margin-top:4px}
 .monthnav{display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px}
 .monthnav h3{margin:0;font-family:var(--display);font-weight:700;font-size:1.15rem;text-transform:capitalize}
 .navbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:1.1rem}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:start}
 .dow{font-size:.75rem;color:var(--muted);text-align:center}
-.cell{aspect-ratio:1;border-radius:50%;border:0;padding:3px;cursor:pointer;
+.cell{position:relative;display:block;width:100%;min-width:0;height:0;padding:0 0 100%;margin:0;align-self:start;border-radius:50%;border:0;cursor:pointer;
   background:conic-gradient(var(--dawn) calc(var(--p,0) * 1turn), var(--surface-2) 0)}
-.cell span{display:flex;width:100%;height:100%;border-radius:50%;background:var(--surface);align-items:center;justify-content:center;font-size:.85rem;font-weight:700}
+.cell span{position:absolute;top:3px;left:3px;right:3px;bottom:3px;display:flex;border-radius:50%;background:var(--surface);align-items:center;justify-content:center;font-size:.85rem;font-weight:700}
 .cell.full span{background:var(--dawn);color:var(--dawn-ink)}
 .cell.off{background:transparent;cursor:default}
 .cell.off span{background:transparent;color:var(--muted);font-weight:400}
@@ -429,7 +431,7 @@ function timelineHTML(type){
   const sc = state.settings.schedule;
   const items = sc && Array.isArray(type === "gym" ? sc.timelineGym : sc.timelineNormal) ? (type === "gym" ? sc.timelineGym : sc.timelineNormal) : null;
   if(!items || !items.length) return "";
-  return '<div class="timeline" style="grid-template-columns:repeat(' + items.length + ',1fr)">' + items.map(function(it){
+  return '<div class="timeline" style="grid-template-columns:repeat(' + items.length + ',minmax(0,1fr))">' + items.map(function(it){
     return '<div class="tl' + (/savers/i.test(it[1]) ? " on" : "") + '"><b>' + esc(it[0]) + '</b><span>' + esc(it[1]) + '</span></div>';
   }).join("") + '</div>';
 }
@@ -574,7 +576,7 @@ function renderToday(){
     '<div class="hero"><div class="letters" role="group" aria-label="Marcar letras">' +
       LETTERS.map(function(l){
         const on = !!d.checks[l.key];
-        return '<button class="lt' + (on ? " done" : "") + '" data-toggle="' + l.key + '" aria-pressed="' + on + '" aria-label="' + l.name + '">' + l.L + '</button>';
+        return '<button class="lt' + (on ? " done" : "") + '" data-toggle="' + l.key + '" aria-pressed="' + on + '" aria-label="' + l.name + '"><span>' + l.L + '</span></button>';
       }).join("") +
     '</div>' +
     '<div class="progress"><span><strong id="p-count">' + n + ' de 6</strong> <span id="p-msg">' + progressMsg(n) + '</span></span><span>Racha: <strong id="p-streak">' + streak() + '</strong></span></div>' +
