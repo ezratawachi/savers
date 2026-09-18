@@ -97,8 +97,24 @@ details.card>summary::-webkit-details-marker{display:none}
 .ttl span{display:block;font-size:.84rem;color:var(--muted)}
 .time{font-size:.84rem;font-weight:700;color:var(--muted);white-space:nowrap}
 .caret{flex:0 0 auto;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .2s}
-details[open] .caret{transform:rotate(-135deg);margin-bottom:-2px}
+details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin-bottom:-2px}
 .body{padding:0 14px 14px 64px}
+details.card.done>summary .ttl,details.card.done>summary .time{opacity:.5}
+details.card.done{background:transparent}
+
+/* finished morning */
+.finish{margin-top:16px;padding:22px 18px 18px;border-radius:18px;background:var(--dawn-soft);text-align:center}
+.finish .big{width:64px;height:64px;margin:0 auto 10px;border-radius:50%;background:var(--dawn);color:var(--dawn-ink);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800}
+.finish h2{font-family:var(--display);font-weight:800;font-size:1.6rem;margin:0}
+.finish p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.finish p strong{color:var(--ink)}
+.after{margin-top:12px;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+details.more{margin-top:12px}
+details.more>summary{list-style:none;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;color:var(--sky);font-weight:700;cursor:pointer}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary .caret{border-color:var(--sky)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeUp .45s ease both}
 .body p{margin:0 0 8px}
 .body ol,.body ul{margin:0 0 8px;padding-left:20px}
 .body li{margin-bottom:6px}
@@ -133,10 +149,19 @@ label.f small{font-weight:400;color:var(--muted)}
 textarea,input[type=text],input[type=number]{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 11px;font-size:16px}
 textarea{resize:vertical;min-height:64px}
 textarea.grow{resize:none;overflow:hidden;min-height:0;line-height:1.5}
-.prio{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.prio input[type=checkbox]{width:22px;height:22px;accent-color:var(--dawn);flex:0 0 auto}
-.prio input[type=text]{flex:1}
-.prio.done input[type=text]{text-decoration:line-through;color:var(--muted)}
+/* writing: a saved field reads as text; tap it to edit */
+.wf{margin-bottom:4px}
+.wf label.f{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.saved{display:none;font-size:.76rem;font-weight:700;color:var(--ok);white-space:nowrap}
+.wf.has:not(:has(textarea:focus)) .saved{display:inline}
+.wf.has:not(:has(textarea:focus)) label.f small{display:none}
+.save-failed .saved{display:none}
+textarea.wt{display:block;transition:background .2s ease,border-color .2s ease,padding .2s ease}
+.has>textarea.wt:not(:focus),.prio.has textarea.wt:not(:focus){background:transparent;border-color:transparent;padding-left:0;padding-right:0}
+.prio{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.prio input[type=checkbox]{width:22px;height:22px;accent-color:var(--dawn);flex:0 0 auto;margin:11px 0 0}
+.prio textarea.wt{flex:1;min-width:0}
+.prio.done textarea.wt{text-decoration:line-through;color:var(--muted)}
 .body.wide{padding-left:14px}
 
 .rest{margin-top:18px;padding:22px 18px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
@@ -166,10 +191,17 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .cell.blank{visibility:hidden}
 .legend{font-size:.8rem;color:var(--muted);margin-top:8px}
 .entries{display:flex;flex-direction:column;gap:8px}
-.entry{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;width:100%}
-.entry b{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;text-transform:capitalize}
-.entry b em{font-style:normal;color:var(--muted);font-weight:400;text-transform:none}
-.entry p{margin:4px 0 0;font-size:.88rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.entry{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.entry-h{display:block;text-align:left;background:none;border:0;padding:10px 12px;cursor:pointer;width:100%;min-height:44px}
+.entry-h b{display:flex;align-items:center;gap:8px;font-size:.95rem;text-transform:capitalize}
+.entry-h b span:first-child{flex:1}
+.entry-h b em{font-style:normal;color:var(--muted);font-weight:400;text-transform:none}
+.entry.open .entry-h p{display:none}
+.entry-b{padding:0 12px 10px}
+.entry-b .wf{margin-top:4px}
+.entry-b .none{margin:0 0 6px;color:var(--muted);font-size:.92rem}
+.entry-b .linkbtn{display:block;margin-left:auto;min-height:44px}
+.entry-h p{margin:4px 0 0;font-size:.88rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .empty{padding:16px;border-radius:14px;background:var(--surface);border:1px dashed var(--line);color:var(--muted);font-size:.92rem}
 
 /* guide */
@@ -241,7 +273,7 @@ th{font-weight:700;color:var(--muted)}
 .toast.show{opacity:1}
 [hidden]{display:none!important}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}.bump{animation:none}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}.bump,.fade-in{animation:none}}
 </style>
 </head>
 <body>
@@ -417,6 +449,7 @@ window.addEventListener("pagehide", flushSave);
 let statusMsg = "";
 function setStatus(msg){
   statusMsg = msg || "";
+  document.body.classList.toggle("save-failed", !!statusMsg);
   const el = $("#status"); if(el) el.textContent = statusMsg;
 }
 
@@ -709,28 +742,101 @@ function letterInfo(key, type){
   }
 }
 
-function writingHTML(d){
-  return '<div class="body wide">' +
-    '<label class="f" for="w-grat">Agradezco <small>algo concreto de ayer y por qué</small></label>' +
-    '<textarea id="w-grat" data-field="gratitude" rows="2">' + esc(d.gratitude) + '</textarea>' +
-    '<label class="f">Mis 3 prioridades de hoy</label>' +
-    [0,1,2].map(function(i){
-      return '<div class="prio' + (d.prioDone[i] ? " done" : "") + '">' +
-        '<input type="checkbox" data-pdone="' + i + '" aria-label="Prioridad ' + (i+1) + ' hecha"' + (d.prioDone[i] ? " checked" : "") + '>' +
-        '<input type="text" data-prio="' + i + '" placeholder="Prioridad ' + (i+1) + '" value="' + esc(d.priorities[i]) + '">' +
-      '</div>';
-    }).join("") +
-    '<label class="f" for="w-book">Del libro <small>una idea, si leíste</small></label>' +
-    '<textarea id="w-book" data-field="bookIdea" rows="2">' + esc(d.bookIdea) + '</textarea>' +
-    '<label class="f" for="w-notes">Notas <small>opcional</small></label>' +
-    '<textarea id="w-notes" data-field="notes" rows="3">' + esc(d.notes) + '</textarea>' +
-    '<p class="note" style="margin-top:8px">Se guarda solo mientras escribes.</p>' +
+/* ---------- writing: one component for Hoy and Historial ---------- */
+const W_FIELDS = [
+  {k:"gratitude", label:"Agradezco", hint:"algo concreto de ayer y por qué"},
+  {k:"bookIdea", label:"Del libro", hint:"una idea, si leíste"},
+  {k:"notes", label:"Notas", hint:"opcional"}
+];
+const SAVED = '<span class="saved" aria-hidden="true">✓ Guardado</span>';
+// Hoy and Historial can show the same day at once: scope keeps their ids apart.
+function wId(scope, ds, k){ return "w" + scope + "-" + ds + "-" + k; }
+function wFieldHTML(scope, ds, d, f){
+  const v = d[f.k] || "";
+  return '<div class="wf' + (v ? " has" : "") + '">' +
+    '<label class="f" for="' + wId(scope, ds, f.k) + '"><span>' + f.label + ' <small>' + f.hint + '</small></span>' + SAVED + '</label>' +
+    '<textarea class="grow wt" rows="' + (v ? 1 : 3) + '" id="' + wId(scope, ds, f.k) + '" data-w="' + f.k + '" data-ds="' + ds + '">' + esc(v) + '</textarea>' +
   '</div>';
 }
+// only: for Historial, list just the priorities that have text.
+function prioHTML(ds, d, title, only){
+  const pr = d.priorities || [], dn = d.prioDone || [];
+  const idx = [0,1,2].filter(function(i){ return !only || pr[i]; });
+  return '<div class="wf' + (pr.some(Boolean) ? " has" : "") + '">' +
+    '<label class="f"><span>' + title + '</span>' + SAVED + '</label>' +
+    idx.map(function(i){
+      return '<div class="prio' + (dn[i] ? " done" : "") + (pr[i] ? " has" : "") + '">' +
+        '<input type="checkbox" data-pdone="' + i + '" data-ds="' + ds + '" aria-label="Prioridad ' + (i+1) + ' hecha"' + (dn[i] ? " checked" : "") + '>' +
+        '<textarea class="grow wt" rows="1" data-w="prio" data-i="' + i + '" data-ds="' + ds + '" enterkeyhint="done" aria-label="Prioridad ' + (i+1) + '" placeholder="Prioridad ' + (i+1) + '">' + esc(pr[i]) + '</textarea>' +
+      '</div>';
+    }).join("") +
+  '</div>';
+}
+function writingHTML(ds, d){
+  return '<div class="body wide">' + wFieldHTML("t", ds, d, W_FIELDS[0]) + prioHTML(ds, d, "Mis 3 prioridades de hoy") +
+    wFieldHTML("t", ds, d, W_FIELDS[1]) + wFieldHTML("t", ds, d, W_FIELDS[2]) + '</div>';
+}
+function hasWriting(d){ return !!(d && (d.gratitude || d.bookIdea || d.notes || (d.priorities || []).some(Boolean))); }
+function writingReadHTML(ds, d){
+  const f = W_FIELDS.filter(function(x){ return d[x.k]; });
+  return f.slice(0, 1).map(function(x){ return wFieldHTML("h", ds, d, x); }).join("") +
+    ((d.priorities || []).some(Boolean) ? prioHTML(ds, d, "Prioridades", true) : "") +
+    f.slice(1).map(function(x){ return wFieldHTML("h", ds, d, x); }).join("");
+}
+// Empty or being edited: at least 3 lines. Saved: exactly as tall as its text.
+function fitField(el){
+  if(el.getAttribute("data-w") !== "prio") el.rows = (!el.value || document.activeElement === el) ? 3 : 1;
+  if(el.offsetParent) autoGrow(el);
+}
+function fitFields(root){ $$("textarea.wt", root).forEach(fitField); }
+document.addEventListener("toggle", function(e){ if(e.target.open) fitFields(e.target); }, true);
+window.addEventListener("resize", function(){ fitFields(document); });
+
+document.addEventListener("input", function(e){
+  const el = e.target;
+  if(!el.hasAttribute || !el.hasAttribute("data-w")) return;
+  const ds = el.getAttribute("data-ds"), k = el.getAttribute("data-w");
+  const d = getDay(ds, true);
+  if(k === "prio"){
+    if(/\n/.test(el.value)) el.value = el.value.replace(/\s*\n\s*/g, " ");
+    d.priorities[Number(el.getAttribute("data-i"))] = el.value;
+    el.parentElement.classList.toggle("has", !!el.value);
+    const wf = el.closest(".wf"); if(wf) wf.classList.toggle("has", d.priorities.some(Boolean));
+  } else {
+    d[k] = el.value;
+    el.parentElement.classList.toggle("has", !!el.value);
+  }
+  fitField(el);
+  saveDay(ds);
+});
+document.addEventListener("change", function(e){
+  const el = e.target;
+  if(!el.hasAttribute || !el.hasAttribute("data-pdone")) return;
+  const ds = el.getAttribute("data-ds");
+  const d = getDay(ds, true);
+  d.prioDone[Number(el.getAttribute("data-pdone"))] = el.checked;
+  el.parentElement.classList.toggle("done", el.checked);
+  saveDay(ds, 150);
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Enter" && e.target.getAttribute && e.target.getAttribute("data-w") === "prio"){ e.preventDefault(); e.target.blur(); }
+});
+document.addEventListener("focusin", function(e){ if(e.target.classList && e.target.classList.contains("wt")) fitField(e.target); });
+document.addEventListener("focusout", function(e){
+  const el = e.target;
+  if(!el.classList || !el.classList.contains("wt")) return;
+  flushSave();   // "Guardado" should be true the moment it shows
+  setTimeout(function(){
+    fitField(el);
+    const card = el.closest("details.card.done");
+    if(card && !card.contains(document.activeElement)) closeCard(card);
+    if(state.tab === "today") refreshChecks();
+  }, 0);
+});
 
 const openCards = new Set(["escritura"]);
 
-function renderToday(){
+function renderToday(opts){
   const root = $("#view-today");
   const ds = state.viewDate;
   const isToday = ds === state.today;
@@ -767,9 +873,9 @@ function renderToday(){
     root.innerHTML = html; bindToday(); setStatus(statusMsg); return;
   }
 
-  html += timelineHTML(type === "gym" ? "gym" : "normal");
+  let morning = timelineHTML(type === "gym" ? "gym" : "normal");
   const n = countDone(d);
-  html +=
+  morning +=
     '<div class="hero"><div class="letters" role="group" aria-label="Marcar letras">' +
       LETTERS.map(function(l){
         const on = !!d.checks[l.key];
@@ -779,11 +885,11 @@ function renderToday(){
     '<div class="progress"><span><strong id="p-count">' + n + ' de 6</strong> <span id="p-msg">' + progressMsg(n) + '</span></span><span>Racha: <strong id="p-streak">' + streak() + '</strong></span></div>' +
     '<div class="bar"><i id="p-bar" style="width:' + (n/6*100) + '%"></i></div></div>';
 
-  html += '<div class="list">' + LETTERS.map(function(l){
+  morning += '<div class="list">' + LETTERS.map(function(l){
     const info = letterInfo(l.key, type === "gym" ? "gym" : "normal");
     const on = !!d.checks[l.key];
-    const inner = l.key === "escritura" ? writingHTML(d) : '<div class="body">' + info.html + '</div>';
-    return '<details class="card" data-card="' + l.key + '"' + (openCards.has(l.key) ? " open" : "") + '>' +
+    const inner = l.key === "escritura" ? writingHTML(ds, d) : '<div class="body">' + info.html + '</div>';
+    return '<details class="card' + (on ? " done" : "") + '" data-card="' + l.key + '"' + (openCards.has(l.key) && !on ? " open" : "") + '>' +
       '<summary>' +
         letterToggleHTML("chk", l, on, "Marcar " + l.name, '<span class="chk-t">' + (on ? "✓" : l.L) + '</span>') +
         '<span class="ttl"><b>' + l.name + '</b><span>' + info.sub + '</span></span>' +
@@ -791,12 +897,30 @@ function renderToday(){
       '</summary>' + inner + '</details>';
   }).join("") + '</div>';
 
+  if(n === 6){
+    const fade = opts && opts.fade ? " fade-in" : "";
+    html +=
+      '<div class="finish' + fade + '"><div class="big" aria-hidden="true">✓</div>' +
+        '<h2>' + (isToday ? "Mañana completa" : "Registro completo") + '</h2>' +
+        (isToday ? '<p>Racha: <strong>' + streak() + (streak() === 1 ? ' día' : ' días') + '</strong></p>' : '') +
+      '</div>' +
+      '<div class="after' + fade + '">' + prioHTML(ds, d, isToday ? "Mis 3 prioridades de hoy" : "Prioridades del día") + '</div>' +
+      '<details class="more"' + (morningOpen === ds ? " open" : "") + '><summary>Ver mi mañana <span class="caret" aria-hidden="true"></span></summary>' + morning + '</details>';
+  } else {
+    html += morning;
+  }
+
   root.innerHTML = html;
   bindToday();
   updateAllRunUI();
   syncReading();
   setStatus(statusMsg);
+  fitFields(root);
 }
+let morningOpen = null;   // date whose "Ver mi mañana" is unfolded
+let finishT = null;
+
+function closeCard(card){ card.open = false; openCards.delete(card.getAttribute("data-card")); }
 
 let toggleSeq = 0;
 function letterToggleHTML(cls, l, on, label, inner){
@@ -823,7 +947,33 @@ function refreshChecks(){
       const t = $(".chk-t", b); if(t) t.textContent = on ? "✓" : l.L;
     });
   });
+  $$("#view-today details.card").forEach(function(card){
+    const on = !!d.checks[card.getAttribute("data-card")];
+    if(on && !card.classList.contains("done")){
+      card.classList.add("done");
+      // Writing that's still being typed closes when the field is left.
+      if(!card.contains(document.activeElement)) closeCard(card);
+    } else if(!on) card.classList.remove("done");
+  });
   const n = countDone(d);
+  if(state.tab === "today"){
+    const showingFinish = !!$("#view-today .finish");
+    clearTimeout(finishT);
+    if(n === 6 && !showingFinish){
+      // Let the last letter light up and the arpeggio play first.
+      finishT = setTimeout(function(){
+        if(state.tab !== "today" || state.viewDate !== ds || countDone(state.days[ds]) !== 6) return;
+        const a = document.activeElement;
+        if(a && a.classList && a.classList.contains("wt")) return;
+        morningOpen = null;
+        renderToday({fade: true});
+        window.scrollTo({top: 0, behavior: "smooth"});
+      }, 1000);
+    } else if(n < 6 && showingFinish){
+      morningOpen = null;
+      renderToday();
+    }
+  }
   const c = $("#p-count"); if(c) c.textContent = n + " de 6";
   const m = $("#p-msg"); if(m) m.textContent = progressMsg(n);
   const b = $("#p-bar"); if(b) b.style.width = (n/6*100) + "%";
@@ -859,6 +1009,8 @@ function bindToday(){
       if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleLetter(key); }
     });
   });
+  const more = $("details.more", root);
+  if(more) more.addEventListener("toggle", function(){ morningOpen = more.open ? state.viewDate : null; });
   $$("details.card", root).forEach(function(det){
     det.addEventListener("toggle", function(){
       const k = det.getAttribute("data-card");
@@ -871,31 +1023,6 @@ function bindToday(){
   if(gi) gi.addEventListener("click", function(){ $("#import-file").click(); });
   const sg = $("#sun-go", root);
   if(sg) sg.addEventListener("click", function(){ state.showSunday = true; const d = getDay(state.viewDate, true); d.extra = true; saveDay(state.viewDate, 150); renderToday(); });
-
-  // writing fields
-  $$("[data-field]", root).forEach(function(el){
-    el.addEventListener("input", function(){
-      const d = getDay(state.viewDate, true);
-      d[el.getAttribute("data-field")] = el.value;
-      saveDay(state.viewDate);
-    });
-  });
-  $$("[data-prio]", root).forEach(function(el){
-    el.addEventListener("input", function(){
-      const d = getDay(state.viewDate, true);
-      d.priorities[Number(el.getAttribute("data-prio"))] = el.value;
-      saveDay(state.viewDate);
-    });
-  });
-  $$("[data-pdone]", root).forEach(function(el){
-    el.addEventListener("change", function(){
-      const i = Number(el.getAttribute("data-pdone"));
-      const d = getDay(state.viewDate, true);
-      d.prioDone[i] = el.checked;
-      el.parentElement.classList.toggle("done", el.checked);
-      saveDay(state.viewDate, 150);
-    });
-  });
 
   // guided timers, reading
   $$(".timer[data-run]", root).forEach(function(box){
@@ -1211,6 +1338,7 @@ function shortcutHelpHTML(){
 }
 
 /* ---------- history ---------- */
+const openEntries = new Set();
 function renderHistory(){
   const root = $("#view-history");
   const y = state.month.y, m = state.month.m;
@@ -1261,14 +1389,33 @@ function renderHistory(){
     html += '<div class="empty">Todavía no hay registros este mes. Marca tu primera letra en Hoy.</div>';
   } else {
     html += '<div class="entries">' + entries.map(function(e){
-      const d = e[1];
+      const ds = e[0], d = e[1];
+      const open = openEntries.has(ds);
       const text = d.gratitude ? "Agradezco: " + d.gratitude : (d.priorities || []).filter(Boolean).join(", ") || d.bookIdea || d.notes || "";
-      return '<button class="entry" data-day="' + e[0] + '"><b>' + esc(shortDate(e[0])) + '<em>' + countDone(d) + ' de 6</em></b>' + (text ? '<p>' + esc(text) + '</p>' : '') + '</button>';
+      return '<div class="entry' + (open ? " open" : "") + '" data-entry="' + ds + '">' +
+        '<button class="entry-h" aria-expanded="' + open + '" aria-controls="eb-' + ds + '"><b><span>' + esc(shortDate(ds)) + '</span><em>' + countDone(d) + ' de 6</em><span class="caret" aria-hidden="true"></span></b>' + (text ? '<p>' + esc(text) + '</p>' : '') + '</button>' +
+        '<div class="entry-b" id="eb-' + ds + '"' + (open ? "" : " hidden") + '>' +
+          (hasWriting(d) ? writingReadHTML(ds, d) : '<p class="none">Este día no escribiste nada.</p>') +
+          '<button class="linkbtn" data-day="' + ds + '">Abrir día en Hoy</button>' +
+        '</div>' +
+      '</div>';
     }).join("") + '</div>';
   }
   root.innerHTML = html;
   setStatus(statusMsg);
 
+  fitFields(root);
+  $$(".entry-h", root).forEach(function(h){
+    h.addEventListener("click", function(){
+      const box = h.parentElement, ds = box.getAttribute("data-entry");
+      const open = !openEntries.has(ds);
+      if(open) openEntries.add(ds); else openEntries.delete(ds);
+      box.classList.toggle("open", open);
+      h.setAttribute("aria-expanded", open);
+      $(".entry-b", box).hidden = !open;
+      if(open) fitFields(box);
+    });
+  });
   $("#m-prev").addEventListener("click", function(){ state.month.m--; if(state.month.m < 0){ state.month.m = 11; state.month.y--; } renderHistory(); });
   $("#m-next").addEventListener("click", function(){ state.month.m++; if(state.month.m > 11){ state.month.m = 0; state.month.y++; } renderHistory(); });
   $$("[data-day]", root).forEach(function(b){
