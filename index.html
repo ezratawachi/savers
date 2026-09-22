@@ -250,7 +250,6 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .tstep .tx span{display:block;color:var(--muted);font-size:.86rem;line-height:1.35;margin-top:1px}
 .tlist.muted .tt,.tlist.muted .tx{color:var(--muted)}
 .tlist.muted .tx{font-weight:400}
-.snote{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line)}
 table{border-collapse:collapse;width:100%;font-size:.88rem}
 th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-weight:700;color:var(--muted)}
@@ -270,7 +269,7 @@ th{font-weight:700;color:var(--muted)}
 .backdrop{position:fixed;inset:0;background:rgba(10,14,22,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:contain}
 .sheet{width:100%;max-width:420px;background:var(--surface);border-radius:18px;padding:18px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 .sheet h3{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:0 0 4px}
-.sheet p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
+.sheet:not(.tall) p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
 .sheet .row{margin-top:0}
 .sheet .row .btn{flex:1}
 .sheet .linkbtn{display:block;width:100%;text-align:center;margin-top:6px;min-height:44px}
@@ -1477,8 +1476,7 @@ function scheduleHTML(){
     return '<div class="seg" role="group" aria-label="Tipo de día">' + seg + '</div>' +
       (Array.isArray(t.night) && t.night.length ? '<p class="tgroup">La noche anterior</p>' + stepsHTML(t.night, "muted") : '') +
       (Array.isArray(t.steps) && t.steps.length ? stepsHTML(t.steps) : '') +
-      (Array.isArray(t.later) && t.later.length ? '<p class="tgroup">Más tarde</p>' + stepsHTML(t.later) : '') +
-      (sc.note ? '<p class="note snote">' + esc(sc.note) + '</p>' : '');
+      (Array.isArray(t.later) && t.later.length ? '<p class="tgroup">Más tarde</p>' + stepsHTML(t.later) : '');
   }
   if(!sc || !sc.table || !Array.isArray(sc.table.rows)){
     return '<p class="note">Tu horario se carga al importar tu copia.</p>';
@@ -1487,8 +1485,7 @@ function scheduleHTML(){
   return '<div class="tablewrap"><table>' +
     (head.length ? '<tr>' + head.map(function(h){ return '<th>' + esc(h) + '</th>'; }).join("") + '</tr>' : '') +
     sc.table.rows.map(function(r){ return '<tr>' + (Array.isArray(r) ? r : []).map(function(c){ return '<td>' + esc(c) + '</td>'; }).join("") + '</tr>'; }).join("") +
-  '</table></div>' +
-  (sc.note ? '<p class="note" style="margin-top:8px">' + esc(sc.note) + '</p>' : '');
+  '</table></div>';
 }
 
 function readItemsHTML(items, emptyText){
