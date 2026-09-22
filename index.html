@@ -88,8 +88,9 @@ button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
 
 /* cards */
 .list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
-details.card{background:var(--surface);border-radius:16px;border:1px solid var(--line)}
-details.card>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer}
+.card{background:var(--surface);border-radius:16px;border:1px solid var(--line)}
+.card>summary,.card>.cardrow{list-style:none;display:flex;align-items:center;gap:12px;padding:10px 12px}
+.card>summary{cursor:pointer}
 details.card>summary::-webkit-details-marker{display:none}
 .chk{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:transparent;cursor:pointer;
   display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--muted);padding:0}
@@ -98,11 +99,13 @@ details.card>summary::-webkit-details-marker{display:none}
 .ttl b{display:block;font-size:1rem}
 .ttl span{display:block;font-size:.84rem;color:var(--muted)}
 .time{font-size:.84rem;font-weight:700;color:var(--muted);white-space:nowrap}
+/* a row with nothing inside keeps the caret's width so every time lines up */
+.nocaret{flex:0 0 auto;width:16px}
 .caret{flex:0 0 auto;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .2s}
 details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin-bottom:-2px}
 .body{padding:0 14px 14px 64px}
-details.card.done>summary .ttl,details.card.done>summary .time{opacity:.5}
-details.card.done{background:transparent}
+.card.done .ttl,.card.done .time{opacity:.5}
+.card.done{background:transparent}
 
 /* finished morning */
 .finish{margin-top:16px;padding:22px 18px 18px;border-radius:18px;background:var(--dawn-soft);text-align:center}
@@ -739,9 +742,7 @@ function letterInfo(key, type){
   const sc = s.schedule || {};
   switch(key){
     case "silencio": return {
-      sub: "Daily Calm", time: "10 min",
-      html: '<p>Abre Calm y haz el Daily Calm.</p>' +
-        (gym ? '<p class="note">Hoy va después del gym.</p>' : '')
+      sub: gym ? "Daily Calm · después del gym" : "Daily Calm", time: "10 min", fixed: true
     };
     case "afirmaciones": {
       const list = filled(s.affirmations);
@@ -769,8 +770,7 @@ function letterInfo(key, type){
     }
     case "ejercicio":
       if(gym) return {
-        sub: "Gym con tu entrenador", time: sc.gymTime || "Gym",
-        html: '<p>Hoy el ejercicio es tu clase. Márcala cuando termines.</p>'
+        sub: "Gym con tu entrenador", time: sc.gymTime || "Gym", fixed: true
       };
       return {
         sub: "Rutina en casa", time: "8 min",
@@ -907,13 +907,16 @@ function renderToday(opts){
   morning += '<div class="list">' + LETTERS.map(function(l){
     const info = letterInfo(l.key, type === "gym" ? "gym" : "normal");
     const on = !!d.checks[l.key];
+    const cls = 'class="card' + (on ? " done" : "") + '" data-card="' + l.key + '"';
+    const row =
+      letterToggleHTML("chk", l, on, "Marcar " + l.name, '<span class="chk-t">' + (on ? "✓" : l.L) + '</span>') +
+      '<span class="ttl"><b>' + l.name + '</b><span>' + info.sub + '</span></span>' +
+      '<span class="time">' + esc(info.time) + '</span>';
+    // Only a card with something to do inside opens (Silencio, and Ejercicio on gym days, don't).
+    if(info.fixed) return '<div ' + cls + '><div class="cardrow">' + row + '<span class="nocaret"></span></div></div>';
     const inner = l.key === "escritura" ? writingHTML(ds, d) : '<div class="body">' + info.html + '</div>';
-    return '<details class="card' + (on ? " done" : "") + '" data-card="' + l.key + '"' + (openCards.has(l.key) && !on ? " open" : "") + '>' +
-      '<summary>' +
-        letterToggleHTML("chk", l, on, "Marcar " + l.name, '<span class="chk-t">' + (on ? "✓" : l.L) + '</span>') +
-        '<span class="ttl"><b>' + l.name + '</b><span>' + info.sub + '</span></span>' +
-        '<span class="time">' + esc(info.time) + '</span><span class="caret" aria-hidden="true"></span>' +
-      '</summary>' + inner + '</details>';
+    return '<details ' + cls + (openCards.has(l.key) && !on ? " open" : "") + '>' +
+      '<summary>' + row + '<span class="caret" aria-hidden="true"></span></summary>' + inner + '</details>';
   }).join("") + '</div>';
 
   if(n === 6){
@@ -966,12 +969,12 @@ function refreshChecks(){
       const t = $(".chk-t", b); if(t) t.textContent = on ? "✓" : l.L;
     });
   });
-  $$("#view-today details.card").forEach(function(card){
+  $$("#view-today .card").forEach(function(card){
     const on = !!d.checks[card.getAttribute("data-card")];
     if(on && !card.classList.contains("done")){
       card.classList.add("done");
       // Writing that's still being typed closes when the field is left.
-      if(!card.contains(document.activeElement)) closeCard(card);
+      if(card.open && !card.contains(document.activeElement)) closeCard(card);
     } else if(!on) card.classList.remove("done");
   });
   const n = countDone(d);
