@@ -110,7 +110,6 @@ details.card.done{background:transparent}
 .finish h2{font-family:var(--display);font-weight:800;font-size:1.6rem;margin:0}
 .finish p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
 .finish p strong{color:var(--ink)}
-.after{margin-top:12px;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
 details.more{margin-top:12px}
 details.more>summary{list-style:none;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;color:var(--sky);font-weight:700;cursor:pointer}
 details.more>summary::-webkit-details-marker{display:none}
@@ -159,10 +158,7 @@ textarea.grow{resize:none;overflow:hidden;min-height:0;line-height:1.5}
 .wf.has:not(:has(textarea:focus)) label.f small{display:none}
 .save-failed .saved{display:none}
 textarea.wt{display:block;transition:background .2s ease,border-color .2s ease,padding .2s ease}
-.has>textarea.wt:not(:focus),.prio.has textarea.wt:not(:focus){background:transparent;border-color:transparent;padding-left:0;padding-right:0}
-.prio{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
-.pnum{flex:0 0 auto;width:18px;padding-top:9px;font-family:var(--display);font-weight:700;color:var(--muted);line-height:1.5}
-.prio textarea.wt{flex:1;min-width:0}
+.has>textarea.wt:not(:focus){background:transparent;border-color:transparent;padding-left:0;padding-right:0}
 .body.wide{padding-left:14px}
 
 .rest{margin-top:18px;padding:22px 18px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
@@ -383,10 +379,16 @@ function dayType(ds){
   return "shabbat";
 }
 function isScheduled(ds){ const t = dayType(ds); return t==="normal" || t==="gym"; }
-function blankDay(ds){ return {date:ds, checks:{}, gratitude:"", priorities:["","",""], prioDone:[false,false,false], bookIdea:"", notes:"", extra:false}; }
+function blankDay(ds){ return {date:ds, checks:{}, gratitude:"", bookIdea:"", notes:"", extra:false}; }
+// The "gran día" lines (and the checkboxes before them) were dropped with everything written in them.
+function dropOldFields(d){
+  const had = "priorities" in d || "prioDone" in d;
+  delete d.priorities; delete d.prioDone;
+  return had;
+}
 function countDone(d){ return d ? LETTERS.filter(function(l){ return d.checks && d.checks[l.key]; }).length : 0; }
 function isComplete(ds){ return countDone(state.days[ds]) === 6; }
-function hasContent(d){ return d && (countDone(d) > 0 || d.gratitude || d.bookIdea || d.notes || (d.priorities||[]).some(Boolean)); }
+function hasContent(d){ return d && (countDone(d) > 0 || d.gratitude || d.bookIdea || d.notes); }
 function filled(items){ return items.filter(function(a){ return a.text.trim(); }); }
 function monthKey(ds){ return ds.slice(0, 7); }
 function hasPersonalData(){ const s = state.settings; return !!(s.name || s.schedule || filled(s.affirmations).length); }
@@ -443,7 +445,12 @@ const store = {
   get: function(k){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch(e){ return null; } },
   set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } },
   load: function(){
-    const d = this.get("savers:days"); if(d && typeof d === "object") state.days = d;
+    const d = this.get("savers:days");
+    if(d && typeof d === "object"){
+      state.days = d;
+      const dropped = Object.keys(d).filter(function(ds){ return d[ds] && typeof d[ds] === "object" && dropOldFields(d[ds]); });
+      if(dropped.length) this.set("savers:days", d);
+    }
     const raw = this.get("savers:settings");
     state.settings = normalizeSettings(raw);
     // Migrate older formats (e.g. drop the book) right away.
@@ -574,7 +581,7 @@ function importBackupText(text){
   Object.keys(incomingDays).forEach(function(ds){
     const inc = incomingDays[ds], cur = state.days[ds];
     if(!/^\d{4}-\d{2}-\d{2}$/.test(ds) || !inc || typeof inc !== "object") return;
-    if(!cur || !hasContent(cur) || String(inc.updatedAt || "") >= String(cur.updatedAt || "")) state.days[ds] = Object.assign(blankDay(ds), inc);
+    if(!cur || !hasContent(cur) || String(inc.updatedAt || "") >= String(cur.updatedAt || "")){ state.days[ds] = Object.assign(blankDay(ds), inc); dropOldFields(state.days[ds]); }
   });
   state.edit = null;
   flushSave();
@@ -786,7 +793,7 @@ function letterInfo(key, type){
         html: readingHTML() + '<p>' + READ_MIN + ' minutos con tu café. La meta es el tiempo, no las páginas.</p>' + shortcutHelpHTML()
       };
     case "escritura": return {
-      sub: "Agradezco y un gran día", time: "3 min",
+      sub: "Agradecer y anotar", time: "2 min",
       html: ""
     };
   }
@@ -808,35 +815,16 @@ function wFieldHTML(scope, ds, d, f){
     '<textarea class="grow wt" rows="' + (v ? 1 : 3) + '" id="' + wId(scope, ds, f.k) + '" data-w="' + f.k + '" data-ds="' + ds + '">' + esc(v) + '</textarea>' +
   '</div>';
 }
-// Five Minute Journal's "What would make today great?": an intention, not a to-do list (that lives in Todoist).
-// Stored in the old `priorities` field. only: for Historial, list just the lines that have text.
-function greatQ(ds){ return ds === state.today ? "¿Qué haría que hoy fuera un gran día?" : "¿Qué haría que ese día fuera un gran día?"; }
-function prioHTML(ds, d, only){
-  const pr = d.priorities || [];
-  const idx = [0,1,2].filter(function(i){ return !only || pr[i]; });
-  return '<div class="wf' + (pr.some(Boolean) ? " has" : "") + '">' +
-    '<label class="f"><span>' + greatQ(ds) + ' <small>no es tu lista de tareas</small></span>' + SAVED + '</label>' +
-    idx.map(function(i){
-      return '<div class="prio' + (pr[i] ? " has" : "") + '"><span class="pnum" aria-hidden="true">' + (i+1) + '</span>' +
-        '<textarea class="grow wt" rows="1" data-w="prio" data-i="' + i + '" data-ds="' + ds + '" enterkeyhint="done" aria-label="' + greatQ(ds) + ' ' + (i+1) + '">' + esc(pr[i]) + '</textarea>' +
-      '</div>';
-    }).join("") +
-  '</div>';
-}
 function writingHTML(ds, d){
-  return '<div class="body wide">' + wFieldHTML("t", ds, d, W_FIELDS[0]) + prioHTML(ds, d) +
-    wFieldHTML("t", ds, d, W_FIELDS[1]) + wFieldHTML("t", ds, d, W_FIELDS[2]) + '</div>';
+  return '<div class="body wide">' + W_FIELDS.map(function(f){ return wFieldHTML("t", ds, d, f); }).join("") + '</div>';
 }
-function hasWriting(d){ return !!(d && (d.gratitude || d.bookIdea || d.notes || (d.priorities || []).some(Boolean))); }
+function hasWriting(d){ return !!(d && (d.gratitude || d.bookIdea || d.notes)); }
 function writingReadHTML(ds, d){
-  const f = W_FIELDS.filter(function(x){ return d[x.k]; });
-  return f.slice(0, 1).map(function(x){ return wFieldHTML("h", ds, d, x); }).join("") +
-    ((d.priorities || []).some(Boolean) ? prioHTML(ds, d, true) : "") +
-    f.slice(1).map(function(x){ return wFieldHTML("h", ds, d, x); }).join("");
+  return W_FIELDS.filter(function(x){ return d[x.k]; }).map(function(x){ return wFieldHTML("h", ds, d, x); }).join("");
 }
 // Empty or being edited: at least 3 lines. Saved: exactly as tall as its text.
 function fitField(el){
-  if(el.getAttribute("data-w") !== "prio") el.rows = (!el.value || document.activeElement === el) ? 3 : 1;
+  el.rows = (!el.value || document.activeElement === el) ? 3 : 1;
   if(el.offsetParent) autoGrow(el);
 }
 function fitFields(root){ $$("textarea.wt", root).forEach(fitField); }
@@ -848,20 +836,10 @@ document.addEventListener("input", function(e){
   if(!el.hasAttribute || !el.hasAttribute("data-w")) return;
   const ds = el.getAttribute("data-ds"), k = el.getAttribute("data-w");
   const d = getDay(ds, true);
-  if(k === "prio"){
-    if(/\n/.test(el.value)) el.value = el.value.replace(/\s*\n\s*/g, " ");
-    d.priorities[Number(el.getAttribute("data-i"))] = el.value;
-    el.parentElement.classList.toggle("has", !!el.value);
-    const wf = el.closest(".wf"); if(wf) wf.classList.toggle("has", d.priorities.some(Boolean));
-  } else {
-    d[k] = el.value;
-    el.parentElement.classList.toggle("has", !!el.value);
-  }
+  d[k] = el.value;
+  el.parentElement.classList.toggle("has", !!el.value);
   fitField(el);
   saveDay(ds);
-});
-document.addEventListener("keydown", function(e){
-  if(e.key === "Enter" && e.target.getAttribute && e.target.getAttribute("data-w") === "prio"){ e.preventDefault(); e.target.blur(); }
 });
 document.addEventListener("focusin", function(e){ if(e.target.classList && e.target.classList.contains("wt")) fitField(e.target); });
 document.addEventListener("focusout", function(e){
@@ -947,7 +925,6 @@ function renderToday(opts){
         (isToday ? '<p>Racha: <strong>' + streak() + (streak() === 1 ? ' día' : ' días') + '</strong></p>' : '') +
         (isToday && backupOverdue() ? '<p class="remind">' + (state.lastExport ? "Hace " + backupAge() + " días sin copia" : "Todavía no exportas una copia") + ' · <button class="linkbtn" data-act="export">Exportar</button></p>' : '') +
       '</div>' +
-      '<div class="after' + fade + '">' + prioHTML(ds, d) + '</div>' +
       '<details class="more"' + (morningOpen === ds ? " open" : "") + '><summary>Ver mi mañana <span class="caret" aria-hidden="true"></span></summary>' + morning + '</details>';
   } else {
     html += morning;
@@ -1438,7 +1415,7 @@ function renderHistory(){
     html += '<div class="entries">' + entries.map(function(e){
       const ds = e[0], d = e[1];
       const open = openEntries.has(ds);
-      const text = d.gratitude ? "Agradezco: " + d.gratitude : (d.priorities || []).filter(Boolean).join(", ") || d.bookIdea || d.notes || "";
+      const text = d.gratitude ? "Agradezco: " + d.gratitude : d.bookIdea || d.notes || "";
       return '<div class="entry' + (open ? " open" : "") + '" data-entry="' + ds + '">' +
         '<button class="entry-h" aria-expanded="' + open + '" aria-controls="eb-' + ds + '"><b><span>' + esc(shortDate(ds)) + '</span><em>' + countDone(d) + ' de 6</em><span class="caret" aria-hidden="true"></span></b>' + (text ? '<p>' + esc(text) + '</p>' : '') + '</button>' +
         '<div class="entry-b" id="eb-' + ds + '"' + (open ? "" : " hidden") + '>' +
