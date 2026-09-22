@@ -853,7 +853,7 @@ document.addEventListener("focusout", function(e){
   }, 0);
 });
 
-const openCards = new Set(["escritura"]);
+const openCards = new Set();   // every card starts closed; this remembers the ones opened this session
 
 function renderToday(opts){
   const root = $("#view-today");
