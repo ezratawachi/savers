@@ -330,8 +330,10 @@ const DEFAULT_VIS = {
     {label: "Mi obstáculo", text: "¿Qué es lo que más probablemente me saque del camino hoy?"},
     {label: "Mi plan", text: "Si pasa eso, ¿qué hago?"}
   ],
-  note: "Un minuto por pregunta, con los ojos cerrados. Si la mente se queda en blanco, respóndelas en voz baja."
+  note: ""
 };
+// The old default note, removed from phones and old copies that still carry it untouched.
+const OLD_VIS_NOTE = "Un minuto por pregunta, con los ojos cerrados. Si la mente se queda en blanco, respóndelas en voz baja.";
 const DEFAULT_SETTINGS = {
   name: "",
   affirmations: [{label: "", text: ""}],
@@ -429,7 +431,7 @@ function normalizeSettings(s){
     const items = normItems(s.visualization.items);
     out.visualization = {
       items: items && items.length ? items : clone(DEFAULT_VIS.items),
-      note: typeof s.visualization.note === "string" ? s.visualization.note : DEFAULT_VIS.note
+      note: typeof s.visualization.note === "string" && s.visualization.note !== OLD_VIS_NOTE ? s.visualization.note : DEFAULT_VIS.note
     };
   }
   if(s.schedule && typeof s.schedule === "object") out.schedule = s.schedule;
