@@ -47,6 +47,9 @@
 html,body{margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 html,body{overflow-x:clip;max-width:100%}
+/* horizontal drags (back from the edge, months) are the app's; vertical ones stay the page's scroll */
+html{touch-action:pan-y}
+html.dragging,html.dragging *{-webkit-user-select:none;user-select:none}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 img{max-width:100%}
 button,input,textarea{font:inherit;color:inherit}
@@ -61,11 +64,14 @@ button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
 .date{font-family:var(--display);font-weight:800;font-size:1.4rem;line-height:1.15;margin:0;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .status{font-size:.8rem;color:var(--warn)}
 .chip{flex:0 0 auto;display:inline-block;padding:3px 10px;border-radius:999px;background:var(--surface-2);font-size:.8rem;font-weight:700;white-space:nowrap}
-button.chip{border:0;cursor:pointer;color:inherit;padding:6px 12px}
+button.chip{border:0;cursor:pointer;color:inherit;padding:6px 12px;transition:transform .25s var(--ease)}
+button.chip:active{transform:scale(.97);transition-duration:.08s}
 button.chip span{font-weight:400;margin-left:2px}
 
 .banner{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.92rem}
-.linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap}
+.linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap;transition:opacity .2s ease}
+/* text buttons dim on touch-down, like iOS */
+.linkbtn:active,.tbtn:active{opacity:.5;transition-duration:0s}
 
 /* hero letters */
 .hero{margin:14px 0 4px}
@@ -181,14 +187,20 @@ textarea.wt{display:block;transition:background .2s ease,border-color .2s ease,p
 /* history */
 h2.sec{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:6px 0 12px}
 h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 0 8px}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.stat{min-width:0;background:var(--surface);border:1px solid var(--edge);box-shadow:var(--shadow);border-radius:14px;padding:12px}
-.stat b{display:block;font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1}
-.stat span{font-size:.78rem;color:var(--muted);line-height:1.25;display:block;margin-top:4px}
-.monthnav{display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px}
-.monthnav h3{margin:0;font-family:var(--display);font-weight:700;font-size:1.15rem;text-transform:capitalize}
-.navbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:1.1rem}
+/* months: three panes side by side; the strip follows the finger and settles on one */
+.calwrap{position:relative;overflow:hidden;margin:2px -16px 0;padding:0 16px}
+.calstrip{display:flex;gap:32px;align-items:flex-start;will-change:transform}
+.calpane{flex:0 0 100%;min-width:0}
+.monthhead{text-align:center;padding:2px 52px 12px}
+.monthhead h3{margin:0;font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1.3}
+.mcount{margin:2px 0 0;font-size:.85rem;color:var(--muted)}
+.navbtn{position:absolute;top:0;z-index:1;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:1.1rem;color:var(--ink);transition:transform .25s var(--ease),opacity .2s ease}
+.navbtn.prev{left:16px}
+.navbtn.next{right:16px}
+.navbtn:disabled{opacity:.3;cursor:default}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:start}
+.cell{transition:transform .25s var(--ease)}
+.cell:not(:disabled):active,.navbtn:not(:disabled):active{transform:scale(.94);transition-duration:.08s}
 .dow{font-size:.75rem;color:var(--muted);text-align:center}
 .cell{position:relative;display:block;width:100%;min-width:0;height:0;padding:0 0 100%;margin:0;align-self:start;border-radius:50%;border:0;cursor:pointer;
   background:conic-gradient(var(--dawn) calc(var(--p,0) * 1turn), var(--surface-2) 0)}
@@ -201,21 +213,21 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .cell.blank{visibility:hidden}
 .legend{font-size:.8rem;color:var(--muted);margin-top:8px}
 .entries{display:flex;flex-direction:column;gap:8px}
-.entry{background:var(--surface);border:1px solid var(--edge);box-shadow:var(--shadow);border-radius:14px}
-.entry-h{display:block;text-align:left;background:none;border:0;padding:10px 12px;cursor:pointer;width:100%;min-height:44px}
-.entry-h b{display:flex;align-items:center;gap:8px;font-size:.95rem;text-transform:capitalize}
-.entry-h b span:first-child{flex:1}
-.entry-h b em{font-style:normal;color:var(--muted);font-weight:400;text-transform:none}
-.entry.open .entry-h p{display:none}
-.entry-b{padding:0 12px 10px}
-.entry-b .wf{margin-top:4px}
-.entry-b .none{margin:0 0 6px;color:var(--muted);font-size:.92rem}
-.entry-b .linkbtn{display:block;margin-left:auto;min-height:44px}
-.entry-h p{margin:4px 0 0;font-size:.88rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+/* a day's record, read in full; tapping it opens the day */
+.entry{background:var(--surface);border:1px solid var(--edge);box-shadow:var(--shadow);border-radius:14px;padding:11px 12px 12px;cursor:pointer}
+.entry-h{display:flex;align-items:center;gap:8px;min-height:22px}
+.entry-h b{flex:1;font-size:.95rem}
+.entry-h em{font-style:normal;color:var(--muted);font-size:.88rem}
+.etxt{margin:8px 0 0;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+.etxt .glabel{margin-bottom:1px}
+/* rows dim on touch-down, like an iOS list */
+button.srow:active,.entry:active{background-image:linear-gradient(var(--press),var(--press))}
 .empty{padding:16px;border-radius:14px;background:var(--surface);border:1px dashed var(--line);color:var(--muted);font-size:.92rem}
 
 /* settings */
-.gtop{position:sticky;top:0;z-index:4;background:var(--bg);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:0 -16px 6px;padding:4px 16px 8px}
+.gtop{position:sticky;top:0;z-index:4;background:var(--bg);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:0 -16px 6px;padding:4px 16px 8px;border-bottom:1px solid transparent;transition:border-color .2s ease}
+/* the bar gets its line only while content passes under it */
+.gtop.edge{border-bottom-color:var(--line)}
 .gtop h2{grid-column:1;margin:0;font-family:var(--display);font-weight:800;font-size:1.5rem;white-space:nowrap}
 .gtop.nav h2{grid-column:2;font-size:1.05rem;font-weight:700}
 .slist{background:var(--surface);border:1px solid var(--edge);box-shadow:var(--shadow);border-radius:16px;overflow:hidden;margin-top:14px}
@@ -230,7 +242,7 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .chev{flex:0 0 auto;width:8px;height:8px;border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 0 2px}
 .sfoot{font-size:.82rem;color:var(--muted);margin:6px 4px 0}
 .warn{color:var(--warn)}
-.tbtn{background:none;border:0;color:var(--sky);font-weight:700;font-size:1rem;min-height:44px;padding:0 4px;cursor:pointer}
+.tbtn{background:none;border:0;color:var(--sky);font-weight:700;font-size:1rem;min-height:44px;padding:0 4px;cursor:pointer;transition:opacity .2s ease}
 .tbtn.left{justify-self:start;font-weight:400}
 .tbtn.back{display:flex;align-items:center;gap:6px}
 .tbtn.back::before{content:"";width:9px;height:9px;border-left:2.5px solid var(--sky);border-bottom:2.5px solid var(--sky);transform:rotate(45deg);margin-left:3px}
@@ -271,17 +283,21 @@ th{font-weight:700;color:var(--muted)}
 .eitem:first-of-type{border-top:0;padding-top:2px}
 .eitem input{font-weight:700;margin-bottom:6px}
 .ectl{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
-.ibtn{min-width:44px;height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:1rem;font-weight:700;cursor:pointer;color:var(--ink)}
+.ibtn{min-width:44px;height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:1rem;font-weight:700;cursor:pointer;color:var(--ink);transition:transform .25s var(--ease)}
 .ibtn.del{color:var(--warn)}
 .ibtn:disabled{opacity:.35;cursor:default}
-.addbtn{width:100%;margin-top:6px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:transparent;color:var(--sky);font-weight:700;cursor:pointer}
+.addbtn{width:100%;margin-top:6px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:transparent;color:var(--sky);font-weight:700;cursor:pointer;transition:transform .25s var(--ease)}
+.ibtn:not(:disabled):active,.addbtn:active{transform:scale(.97);transition-duration:.08s}
 .remind{font-size:.85rem;color:var(--muted);text-align:center;margin:18px 0 4px}
 .remind .linkbtn{padding:6px 2px}
 .finish .remind{margin:10px 0 0}
 
-/* sheet */
-.backdrop{position:fixed;inset:0;background:rgba(10,14,22,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:contain}
-.sheet{width:100%;max-width:420px;background:var(--surface);border-radius:18px;padding:18px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+/* sheet: rises from the bottom, and is dragged down to close */
+.backdrop{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+.scrim{position:absolute;inset:0;background:rgba(10,14,22,.45)}
+.sheet{position:relative;width:100%;max-width:420px;background:var(--surface);border-radius:18px;padding:18px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.25);touch-action:none;will-change:transform}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--line);margin:-10px auto 12px}
+.sheet.tall .grab{margin:8px auto 0;flex:0 0 auto}
 .sheet h3{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:0 0 4px}
 .sheet:not(.tall) p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
 .sheet .row{margin-top:0}
@@ -291,7 +307,15 @@ th{font-weight:700;color:var(--muted)}
 .sheet.tall{max-width:560px;max-height:100%;display:flex;flex-direction:column;padding:0}
 .shead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 4px 16px}
 .shead h3{margin:0}
-.sbody{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:6px 16px 18px}
+.sbody{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:6px 16px 18px;touch-action:pan-y}
+
+/* screens moving inside a tab: both live in fixed layers laid out like the page */
+.navlayer{position:fixed;left:0;right:0;top:0;z-index:4;background:var(--bg);pointer-events:none;will-change:transform}
+.navlayer.navtop{box-shadow:-12px 0 32px rgba(0,0,0,.14)}
+.navdim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
+/* a day in Historial: a record, not a morning in progress */
+.dhead{margin:4px 0 2px}
+.dsub{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.92rem;color:var(--muted)}
 
 /* tabs */
 .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--edge);padding:6px calc(8px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));z-index:5}
@@ -449,7 +473,7 @@ function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add
 /* ---------- state ---------- */
 const state = {
   tab: "today",
-  viewDate: todayStr(),
+  histDay: null,      // the day open in Historial, or null for the month
   today: todayStr(),
   days: {},
   settings: clone(DEFAULT_SETTINGS),
@@ -544,28 +568,118 @@ function getDay(ds, create){
   return state.days[ds];
 }
 
-/* ---------- sheet (Guardar / Descartar) ---------- */
-function ask(title, text, buttons){
+/* ---------- sheets: rise from the bottom, dragged down to close ---------- */
+// opts: labelledby, tall, dismiss (the value for closing without a choice), onClose(value).
+function openSheet(html, opts){
+  opts = opts || {};
+  const opener = document.activeElement;
+  const bd = document.createElement("div");
+  bd.className = "backdrop";
+  bd.innerHTML = '<div class="scrim"></div><div class="sheet' + (opts.tall ? " tall" : "") + '" role="dialog" aria-modal="true"' +
+    (opts.labelledby ? ' aria-labelledby="' + opts.labelledby + '"' : '') + '><div class="grab" aria-hidden="true"></div>' + html + '</div>';
+  document.body.appendChild(bd);
+  const sheet = $(".sheet", bd), scrim = $(".scrim", bd), body = $(".sbody", bd);
+  // How far down the sheet has to go to be fully out of sight.
+  const off = Math.max(1, window.innerHeight - sheet.getBoundingClientRect().top);
+  const sp = new Spring(off, function(y){
+    sheet.style.transform = "translateY(" + (y < 0 ? -rubberband(-y, off) : y) + "px)";
+    scrim.style.opacity = Math.max(0, Math.min(1, 1 - y / off));
+  });
+  let closed = false;
+  const api = {el: bd, sheet: sheet, close: close};
+  function close(value, v){
+    if(closed) return;
+    closed = true;
+    document.removeEventListener("keydown", onKey);
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onUp);
+    if(opts.onClose) opts.onClose(value);
+    if(opener && opener.focus && opener.isConnected) opener.focus({preventScroll: true});
+    if(reduceMotion()){ bd.style.pointerEvents = "none"; bd.animate([{opacity: 1}, {opacity: 0}], {duration: 150, easing: "ease-out"}).onfinish = function(){ bd.remove(); }; return; }
+    bd.style.pointerEvents = "none";
+    sp.to(off, v || 0, function(){ bd.remove(); });
+  }
+  function onKey(e){ if(e.key === "Escape") close(opts.dismiss); }
+  document.addEventListener("keydown", onKey);
+  scrim.addEventListener("click", function(){ close(opts.dismiss); });
+  if(reduceMotion()){ sp.set(0); fadeIn(bd); } else { sp.set(off); sp.to(0, 0); }
+
+  // Dragging: anywhere on a small sheet; on a tall one from its top bar, or from the list when it's
+  // scrolled to the top and the finger goes down (touch events, so the list's own scroll can be stopped).
+  let g = null;
+  function begin(y){ sp.stop(); g.live = true; g.y0 = y - sp.x; document.documentElement.classList.add("dragging"); }
+  function move(y){ g.tr.add(0, y); sp.x = y - g.y0; sp.paint(sp.x); }
+  function end(){
+    const d = g; g = null;
+    document.documentElement.classList.remove("dragging");
+    if(!d || !d.live || closed) return;
+    swallowUntil = performance.now() + 350;
+    const v = d.tr.v("y");
+    if(sp.x + project(v) > off * 0.5) close(opts.dismiss, v);
+    else sp.to(0, v);
+  }
+  sheet.addEventListener("pointerdown", function(e){
+    if(closed || !e.isPrimary || (body && body.contains(e.target))) return;
+    g = {live: false, x0: e.clientX, ys: e.clientY, tr: new Tracker(), id: e.pointerId};
+    g.tr.add(0, e.clientY);
+    if(sp.raf) begin(e.clientY);   // caught while still moving
+  });
+  function onMove(e){
+    if(!g || e.pointerId !== g.id) return;
+    if(!g.live){
+      const dy = e.clientY - g.ys, dx = e.clientX - g.x0;
+      if(Math.abs(dy) < 6 || Math.abs(dy) < Math.abs(dx)) return;
+      begin(e.clientY);
+    }
+    move(e.clientY);
+  }
+  function onUp(e){ if(g && e.pointerId === g.id) end(); }
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onUp);
+  if(body){
+    body.addEventListener("touchstart", function(e){
+      if(closed || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      g = {live: false, x0: t.clientX, ys: t.clientY, tr: new Tracker(), touch: true};
+      g.tr.add(0, t.clientY);
+    }, {passive: true});
+    body.addEventListener("touchmove", function(e){
+      if(!g || !g.touch) return;
+      const t = e.touches[0];
+      if(!g.live){
+        const dy = t.clientY - g.ys, dx = t.clientX - g.x0;
+        if(body.scrollTop > 0 || dy <= 0 || Math.abs(dy) < Math.abs(dx)){ g = null; return; }
+        begin(t.clientY);
+      }
+      e.preventDefault();
+      move(t.clientY);
+    }, {passive: false});
+    body.addEventListener("touchend", function(){ if(g && g.touch) end(); });
+    body.addEventListener("touchcancel", function(){ if(g && g.touch) end(); });
+  }
+  return api;
+}
+
+// A question in a sheet. text can be one paragraph or a list of them; closing without a choice gives dismiss.
+function ask(title, text, buttons, dismiss){
   return new Promise(function(resolve){
-    const bd = document.createElement("div");
-    bd.className = "backdrop";
-    bd.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t">' +
-      '<h3 id="sheet-t">' + esc(title) + '</h3>' + (text ? '<p>' + esc(text) + '</p>' : '') +
+    const paras = Array.isArray(text) ? text : text ? [text] : [];
+    const s = openSheet(
+      '<h3 id="sheet-t">' + esc(title) + '</h3>' + paras.map(function(t){ return '<p>' + esc(t) + '</p>'; }).join("") +
       '<div class="row">' + buttons.filter(function(b){ return !b.link; }).map(function(b){
         return '<button class="btn' + (b.primary ? " primary" : "") + '" data-v="' + b.value + '">' + esc(b.label) + '</button>';
       }).join("") + '</div>' +
       buttons.filter(function(b){ return b.link; }).map(function(b){
         return '<button class="linkbtn" data-v="' + b.value + '">' + esc(b.label) + '</button>';
-      }).join("") +
-    '</div>';
-    function close(v){ bd.remove(); resolve(v); }
-    bd.addEventListener("click", function(e){
+      }).join(""),
+      {labelledby: "sheet-t", dismiss: dismiss || "stay", onClose: resolve});
+    s.sheet.addEventListener("click", function(e){
       const b = e.target.closest("[data-v]");
-      if(b) close(b.getAttribute("data-v"));
-      else if(e.target === bd) close("stay");
+      if(b) s.close(b.getAttribute("data-v"));
     });
-    document.body.appendChild(bd);
-    const primary = $(".btn.primary", bd); if(primary) primary.focus();
+    const primary = $(".btn.primary", s.sheet); if(primary) primary.focus({preventScroll: true});
   });
 }
 
@@ -622,10 +736,12 @@ function importBackupText(text){
   if(!parts.length && !n){ toast("Esa copia no trae nada para importar"); return; }
   const names = parts.map(function(p){ return p[1]; });
   const list = names.length > 1 ? names.slice(0, -1).join(", ") + " y " + names[names.length - 1] : names[0];
-  const msg = "¿Importar este archivo?\n\n" +
-    (parts.length ? "Se reemplaza solo " + list + "." : "Tus afirmaciones y tu horario no cambian.") +
-    (n ? "\nSe agregan " + n + " día(s) de registro; si un día ya existe, se queda el más reciente." : "");
-  if(!confirm(msg)) return;
+  const msg = [parts.length ? "Se reemplaza solo " + list + "." : "Tus afirmaciones y tu horario no cambian."];
+  if(n) msg.push("Se agrega" + (n === 1 ? " 1 día" : "n " + n + " días") + " de registro; si un día ya existe, se queda el más reciente.");
+  ask("¿Importar esta copia?", msg, [{label: "Cancelar", value: "cancel"}, {label: "Importar", value: "ok", primary: true}], "cancel")
+    .then(function(v){ if(v === "ok") applyImport(data, parts, incomingDays); });
+}
+function applyImport(data, parts, incomingDays){
   const incoming = normalizeSettings(data.settings);
   parts.forEach(function(p){ state.settings[p[0]] = incoming[p[0]]; });
   Object.keys(incomingDays).forEach(function(ds){
@@ -843,6 +959,66 @@ function reveal(el){
   window.scrollBy({top: dy, behavior: reduceMotion() ? "auto" : "smooth"});
 }
 
+/* ---------- springs and gestures ---------- */
+// A critically damped spring (no bounce). Retargeting keeps its position and velocity, so a moving
+// screen or sheet can be grabbed and redirected at any moment. Units are px and px/s.
+const RESPONSE = 0.36;
+function Spring(x, paint){ this.x = x; this.v = 0; this.target = x; this.paint = paint; this.raf = 0; this.done = null; }
+Spring.prototype.stop = function(){ if(this.raf) cancelAnimationFrame(this.raf); this.raf = 0; this.done = null; };
+Spring.prototype.set = function(x){ this.stop(); this.x = this.target = x; this.v = 0; this.paint(x); };
+Spring.prototype.to = function(target, v, done){
+  const s = this;
+  s.target = target;
+  if(v != null) s.v = v;
+  s.done = done || null;
+  if(reduceMotion()){
+    if(s.raf) cancelAnimationFrame(s.raf);
+    s.raf = 0; s.x = target; s.v = 0; s.paint(target);
+    const d = s.done; s.done = null; if(d) d();
+    return;
+  }
+  if(s.raf) return;
+  let last = performance.now();
+  function tick(now){
+    const dt = Math.min(0.032, Math.max(0, (now - last) / 1000));
+    last = now;
+    // Exact step of x(t) = target + (A + Bt)e^(-wt): stable at any frame rate.
+    const w = 2 * Math.PI / RESPONSE, d = s.x - s.target, B = s.v + w * d, e = Math.exp(-w * dt);
+    s.x = s.target + (d + B * dt) * e;
+    s.v = (s.v - w * B * dt) * e;
+    if(Math.abs(s.x - s.target) < 0.5 && Math.abs(s.v) < 30){
+      s.x = s.target; s.v = 0; s.raf = 0; s.paint(s.x);
+      const dn = s.done; s.done = null; if(dn) dn();
+      return;
+    }
+    s.paint(s.x);
+    s.raf = requestAnimationFrame(tick);
+  }
+  s.raf = requestAnimationFrame(tick);
+};
+
+// The finger's velocity over its last ~100ms; zero if it stopped before lifting.
+function Tracker(){ this.pts = []; }
+Tracker.prototype.add = function(x, y){
+  const t = performance.now();
+  this.pts.push({x: x, y: y, t: t});
+  while(this.pts.length > 2 && t - this.pts[0].t > 100) this.pts.shift();
+};
+Tracker.prototype.v = function(axis){
+  const p = this.pts;
+  if(p.length < 2 || performance.now() - p[p.length - 1].t > 80) return 0;
+  const a = p[0], b = p[p.length - 1], dt = (b.t - a.t) / 1000;
+  return dt > 0 ? (b[axis] - a[axis]) / dt : 0;
+};
+// Apple's projection: where a flick would come to rest, like scroll deceleration.
+function project(v){ return v / 1000 * 0.998 / (1 - 0.998); }
+// Past a boundary things follow less and less the further they go.
+function rubberband(over, dim){ const c = 0.55; return over * dim * c / (dim + c * Math.abs(over)); }
+// After a drag the finger lifting must not also count as a tap.
+let swallowUntil = 0;
+document.addEventListener("click", function(e){ if(performance.now() < swallowUntil){ e.stopPropagation(); e.preventDefault(); } }, true);
+function fadeIn(el){ if(el) el.animate([{opacity: 0}, {opacity: 1}], {duration: 150, easing: "ease-out"}); }
+
 /* ---------- streak ---------- */
 function streak(){
   let n = 0;
@@ -887,7 +1063,7 @@ function letterInfo(key, type){
     case "afirmaciones": {
       const list = filled(s.affirmations);
       const mins = Math.max(1, Math.ceil(list.length * SECS_PER_AFFIRMATION / 60));
-      const review = list.length && state.viewDate === state.today && affReviewDue();
+      const review = list.length && !dayView.record && affReviewDue();
       return {
         sub: review ? "Toca revisarlas" : "En voz alta", time: mins + " min",
         html: list.length
@@ -924,7 +1100,7 @@ function letterInfo(key, type){
       };
     case "lectura":
       if(gym){
-        const at = laterTime("gym", "lectura", state.viewDate);
+        const at = laterTime("gym", "lectura", dayView.ds);
         return {
           sub: "Tu libro", time: READ_MIN + " min",
           html: '<p>Hoy lees más tarde' + (at ? ", a las " + esc(at) : sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Empieza desde aquí y se marca sola.</p>' + readingHTML() + shortcutHelpHTML()
@@ -985,12 +1161,12 @@ const FINISH_RANK = {"": 0, morning: 1, day: 2};
 // opens (if it has something inside) and comes into view if it's out of it.
 let nowT = null;
 function updateNow(){
-  const ds = state.viewDate;
-  if(ds !== state.today) return;
+  if(dayView.record) return;
+  const ds = state.today;
   const d = state.days[ds] || blankDay(ds);
   const now = nextKey(dayBlocks(ds, schedTypeOf(ds)), d);
   let next = null;
-  $$("#view-today .card[data-card]").forEach(function(card){
+  $$(".card[data-card]", dayView.root).forEach(function(card){
     if(card.getAttribute("data-card") !== now) card.classList.remove("now");
     else if(!card.classList.contains("now")) next = card;
   });
@@ -1020,14 +1196,10 @@ function wFieldHTML(scope, ds, d, f){
     '<textarea class="grow wt" rows="' + (v ? 1 : 3) + '" id="' + wId(scope, ds, f.k) + '" data-w="' + f.k + '" data-ds="' + ds + '">' + esc(v) + '</textarea>' +
   '</div>';
 }
-function writingHTML(ds, d){
+function writingHTML(ds, d, scope){
   const l = LETTERS.filter(function(x){ return x.key === "escritura"; })[0];
-  return '<div class="body">' + W_FIELDS.map(function(f){ return wFieldHTML("t", ds, d, f); }).join("") +
+  return '<div class="body">' + W_FIELDS.map(function(f){ return wFieldHTML(scope, ds, d, f); }).join("") +
     '<div class="wdone-row">' + letterToggleHTML("btn primary wdone", l, false, "Listo, marcar Escritura", "Listo") + '</div></div>';
-}
-function hasWriting(d){ return !!(d && (d.gratitude || d.bookIdea || d.notes)); }
-function writingReadHTML(ds, d){
-  return W_FIELDS.filter(function(x){ return d[x.k]; }).map(function(x){ return wFieldHTML("h", ds, d, x); }).join("");
 }
 // Empty or being edited: at least 3 lines. Saved: exactly as tall as its text.
 function fitField(el){
@@ -1057,66 +1229,73 @@ document.addEventListener("focusout", function(e){
     fitField(el);
     const card = el.closest("details.card.done");
     if(card && !card.contains(document.activeElement)) closeCard(card);
-    if(state.tab === "today") refreshChecks();
+    if(dayView.root && dayView.root.contains(el)) refreshChecks();
   }, 0);
 });
 
 const openCards = new Set();   // every card starts closed; this remembers the ones opened this session
 let foldOpenFor = "";          // the day whose folded row was left open, same idea
 
-function renderToday(opts){
-  const root = $("#view-today");
-  const ds = state.viewDate;
-  const isToday = ds === state.today;
+// The day being shown: Hoy (today, as a guide) or a day open in Historial (a record to look at or correct).
+let dayView = {root: null, ds: todayStr(), record: false};
+function renderToday(opts){ renderDay($("#view-today"), state.today, false, opts); }
+function rerenderDay(){ if(dayView.record) renderDay(dayView.root, dayView.ds, true); else renderToday(); }
+function shortTitle(ds){ return cap(shortDate(ds)).replace(",", ""); }
+
+function renderDay(root, ds, record, opts){
+  dayView = {root: root, ds: ds, record: record};
   const type = dayType(ds);
   const d = state.days[ds] || blankDay(ds);
-  const h = new Date().getHours();
-  const name = state.settings.name ? ", " + state.settings.name : "";
-  const hello = (h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches") + name;
   const chip = type === "gym" ? '<button class="chip gym" id="day-type" aria-label="Día de gym. Cambiar a día normal">Día de gym <span aria-hidden="true">⇄</span></button>'
     : type === "normal" ? '<button class="chip" id="day-type" aria-label="Día normal. Cambiar a día de gym">Día normal <span aria-hidden="true">⇄</span></button>'
     : type === "domingo" ? '<span class="chip">Domingo</span>' : '<span class="chip">Shabbat</span>';
+  const showRoutine = type === "normal" || type === "gym" || (type === "domingo" && (d.extra || (!record && state.showSunday) || hasContent(d)));
 
-  let html =
-    '<div class="top"><div class="top-l">' +
-      '<p class="hello">' + esc(isToday ? hello : "Registro") + ' <span class="status" id="status"></span></p>' +
-      '<h1 class="date">' + esc(headDate(ds)) + '</h1>' +
-    '</div>' + chip + '</div>';
-
-  if(!isToday){
-    html += '<div class="banner"><span>Estás viendo un día pasado.</span><button class="linkbtn" id="go-today">Volver a hoy</button></div>';
-  } else if(!hasPersonalData()){
-    html += '<div class="banner"><span>Importa tu copia para cargar tus afirmaciones y horario.</span><button class="linkbtn" id="go-import">Importar</button></div>';
+  let html;
+  if(record){
+    html = '<div class="dhead"><h1 class="date">' + esc(cap(longDate(ds).replace(",", ""))) + '</h1>' +
+      '<div class="dsub">' + chip + (showRoutine ? '<span class="dcount">· ' + countDone(d) + ' de 6</span>' : '') + '</div></div>';
+  } else {
+    const h = new Date().getHours();
+    const name = state.settings.name ? ", " + state.settings.name : "";
+    const hello = (h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches") + name;
+    html =
+      '<div class="top"><div class="top-l">' +
+        '<p class="hello">' + esc(hello) + ' <span class="status" id="status"></span></p>' +
+        '<h1 class="date">' + esc(headDate(ds)) + '</h1>' +
+      '</div>' + chip + '</div>';
+    if(!hasPersonalData()) html += '<div class="banner"><span>Importa tu copia para cargar tus afirmaciones y horario.</span><button class="linkbtn" id="go-import">Importar</button></div>';
   }
-
-  const showRoutine = type === "normal" || type === "gym" || (type === "domingo" && (d.extra || state.showSunday || hasContent(d)));
 
   if(type === "shabbat"){
-    html += '<div class="rest"><h2>Shabbat Shalom</h2><p>Hoy no hay registro. Nos vemos el domingo.</p></div>';
-    root.innerHTML = html; bindToday(); setStatus(statusMsg); return;
+    html += '<div class="rest"><h2>Shabbat Shalom</h2><p>' + (record ? "Shabbat no tiene registro." : "Hoy no hay registro. Nos vemos el domingo.") + '</p></div>';
+    root.innerHTML = html; bindDay(root, record); setStatus(statusMsg); return;
   }
   if(!showRoutine){
-    html += '<div class="rest"><h2>Domingo</h2><p>Por ahora el domingo está fuera del plan. Si quieres, puedes hacer tus SAVERS igual y quedan registrados.</p>' +
-      '<button class="btn primary" id="sun-go">Hacer mis SAVERS hoy</button></div>';
-    root.innerHTML = html; bindToday(); setStatus(statusMsg); return;
+    html += record
+      ? '<div class="rest"><h2>Sin registro</h2><p>El domingo está fuera del plan. Si ese día hiciste tus SAVERS, puedes registrarlos.</p>' +
+        '<button class="btn primary" id="sun-go">Hacer mis SAVERS este día</button></div>'
+      : '<div class="rest"><h2>Domingo</h2><p>Por ahora el domingo está fuera del plan. Si quieres, puedes hacer tus SAVERS igual y quedan registrados.</p>' +
+        '<button class="btn primary" id="sun-go">Hacer mis SAVERS hoy</button></div>';
+    root.innerHTML = html; bindDay(root, record); setStatus(statusMsg); return;
   }
 
   const n = countDone(d);
   const schedType = schedTypeOf(ds);
-  const fin = finishState(ds, d);
+  const fin = record ? "" : finishState(ds, d);
   const settle = !!(opts && opts.settle);
-  let morning =
+  let morning = record ? "" :
     '<div class="hero"><div class="letters" role="img" aria-label="' + n + ' de 6">' +
       LETTERS.map(function(l){
         return '<span class="lt' + (d.checks[l.key] ? " done" : "") + '" data-letter="' + l.key + '" aria-hidden="true">' + l.L + '</span>';
       }).join("") +
     '</div>' +
     // With the day complete, the finish card already shows the streak.
-    '<div class="progress">' + (fin === "day" && isToday ? '<span></span>' : '<span>Racha: <strong id="p-streak">' + streakLabel(streak()) + '</strong></span>') +
+    '<div class="progress">' + (fin === "day" ? '<span></span>' : '<span>Racha: <strong id="p-streak">' + streakLabel(streak()) + '</strong></span>') +
       (hasSchedule(schedType) ? '<button class="linkbtn" data-sched="' + schedType + '">Ver horario ›</button>' : '') + '</div></div>';
 
   const blocks = dayBlocks(ds, schedType);
-  const now = isToday ? nextKey(blocks, d) : null;
+  const now = record ? null : nextKey(blocks, d);
   function blocksHTML(list){
     return list.map(function(b){
       return (b.head ? '<p class="bhead">' + b.head.filter(Boolean).map(function(x, i){ return i ? esc(x) : '<b>' + esc(x) + '</b>'; }).join(" · ") + '</p>' : '') +
@@ -1124,8 +1303,8 @@ function renderToday(opts){
     }).join("");
   }
   // Once today reaches a finish, what's behind it folds into one row: the morning for "Mañana lista",
-  // everything for "Día completo". Past days keep the whole list, it's what you came to see.
-  const folded = isToday && fin ? blocks.filter(function(b){ return fin === "day" || !b.later; }) : [];
+  // everything for "Día completo". A record keeps the whole list, it's what you came to see.
+  const folded = fin ? blocks.filter(function(b){ return fin === "day" || !b.later; }) : [];
   const rest = blocks.filter(function(b){ return folded.indexOf(b) < 0; });
   let foldHTML = "";
   if(folded.length){
@@ -1142,7 +1321,8 @@ function renderToday(opts){
 
   function cardHTML(l, isNow){
     const info = letterInfo(l.key, schedType);
-    if(!isToday && l.key !== "escritura") info.fixed = true;
+    // In a record only Escritura opens: it's a day to look at, not a morning to run again.
+    if(record && l.key !== "escritura") info.fixed = true;
     const on = !!d.checks[l.key];
     const cls = 'class="card' + (on ? " done" : "") + (isNow ? " now" : "") + '" data-card="' + l.key + '"';
     const row =
@@ -1150,33 +1330,30 @@ function renderToday(opts){
       '<span class="ttl"><b>' + l.name + '<span class="now-tag">Ahora</span></b><span>' + info.sub + '</span></span>' +
       '<span class="time">' + esc(info.time) + '</span>';
     // Only a card with something to do inside opens (Silencio, and Ejercicio on gym days, don't).
-    // On a past day only Escritura opens: it's a record, not a morning to run again.
     if(info.fixed) return '<div ' + cls + '><div class="cardrow">' + row + '<span class="nocaret"></span></div></div>';
-    const inner = l.key === "escritura" ? writingHTML(ds, d) : '<div class="body">' + info.html + '</div>';
-    return '<details ' + cls + ((isNow || openCards.has(l.key)) && !on ? " open" : "") + '>' +
+    const inner = l.key === "escritura" ? writingHTML(ds, d, record ? "d" : "t") : '<div class="body">' + info.html + '</div>';
+    return '<details ' + cls + ((isNow || (!record && openCards.has(l.key))) && !on ? " open" : "") + '>' +
       '<summary>' + row + '<span class="caret" aria-hidden="true"></span></summary>' + inner + '</details>';
   }
 
   if(fin){
-    const left = fin === "morning" ? dayBlocks(ds, schedType).filter(function(b){ return b.later; }) : [];
+    const left = fin === "morning" ? blocks.filter(function(b){ return b.later; }) : [];
     const pending = left.map(function(b){
       const names = b.keys.filter(function(k){ return !d.checks[k]; }).map(function(k){ return LETTER_BY[k].name; });
       return names.length ? names.join(" y ") + (b.head && b.head[1] ? " a las " + b.head[1] : "") : "";
     }).filter(Boolean).join(", ");
     html +=
       '<div class="finish-wrap"' + (settle ? ' style="height:0"' : '') + '><div class="finish" data-fin="' + fin + '"><div class="big" aria-hidden="true">✓</div>' +
-        '<h2>' + (fin === "morning" ? "Mañana lista" : isToday ? "Día completo" : "Registro completo") + '</h2>' +
-        (fin === "morning" ? '<p>Falta <strong>' + esc(pending) + '</strong></p>'
-          : isToday ? '<p>Racha: <strong>' + streakLabel(streak()) + '</strong></p>' : '') +
-        (isToday && backupOverdue() ? '<p class="remind">' + (state.lastExport ? "Hace " + backupAge() + " días sin copia" : "Todavía no exportas una copia") + ' · <button class="linkbtn" data-act="export">Exportar</button></p>' : '') +
+        '<h2>' + (fin === "morning" ? "Mañana lista" : "Día completo") + '</h2>' +
+        (fin === "morning" ? '<p>Falta <strong>' + esc(pending) + '</strong></p>' : '<p>Racha: <strong>' + streakLabel(streak()) + '</strong></p>') +
+        (backupOverdue() ? '<p class="remind">' + (state.lastExport ? "Hace " + backupAge() + " días sin copia" : "Todavía no exportas una copia") + ' · <button class="linkbtn" data-act="export">Exportar</button></p>' : '') +
       '</div></div>';
   }
   html += morning;
 
   root.innerHTML = html;
-  bindToday();
-  updateAllRunUI();
-  syncReading();
+  bindDay(root, record);
+  if(!record){ updateAllRunUI(); syncReading(); }
   setStatus(statusMsg);
   fitFields(root);
 }
@@ -1188,7 +1365,7 @@ function settleFinish(){
   const root = $("#view-today");
   const list = $(".hero + .list", root);
   if(!list || reduceMotion()){ renderToday(); reveal($(".finish-wrap", root)); return; }
-  const ds = state.viewDate, d = state.days[ds] || blankDay(ds), fin = finishState(ds, d);
+  const ds = state.today, d = state.days[ds] || blankDay(ds), fin = finishState(ds, d);
   const keys = [];
   dayBlocks(ds, schedTypeOf(ds)).forEach(function(b){ if(fin === "day" || !b.later) keys.push.apply(keys, b.keys); });
   const top = list.getBoundingClientRect().top;
@@ -1226,32 +1403,34 @@ function letterToggleHTML(cls, l, on, label, inner){
 }
 
 function refreshChecks(){
-  const ds = state.viewDate;
+  const root = dayView.root, ds = dayView.ds;
+  if(!root) return;
   const d = state.days[ds] || blankDay(ds);
   LETTERS.forEach(function(l){
     const on = !!d.checks[l.key];
-    $$('[data-toggle="' + l.key + '"]').forEach(function(b){
+    $$('[data-toggle="' + l.key + '"]', root).forEach(function(b){
       b.classList.toggle("done", on);
       b.setAttribute("aria-pressed", on);
       const t = $(".chk-t", b); if(t) t.textContent = on ? "✓" : l.L;
     });
   });
-  $$("#view-today .card[data-card]").forEach(function(card){
+  $$(".card[data-card]", root).forEach(function(card){
     const on = !!d.checks[card.getAttribute("data-card")];
     // Writing that's still being typed stays open and closes when the field is left.
     if(on && !card.classList.contains("done")) settleCard(card);
     else if(!on && card.classList.contains("done")) unsettleCard(card);
   });
   const n = countDone(d);
-  if(state.tab === "today"){
-    const shownEl = $("#view-today .finish");
+  const count = $(".dcount", root); if(count) count.textContent = "· " + n + " de 6";
+  if(!dayView.record && state.tab === "today"){
+    const shownEl = $(".finish", root);
     const shown = shownEl ? shownEl.getAttribute("data-fin") : "";
     const want = finishState(ds, d);
     clearTimeout(finishT);
     if(FINISH_RANK[want] > FINISH_RANK[shown]){
       // Let the last circle fill and the arpeggio start first.
       finishT = setTimeout(function(){
-        if(state.tab !== "today" || state.viewDate !== ds || finishState(ds, state.days[ds] || blankDay(ds)) !== want) return;
+        if(state.tab !== "today" || dayView.record || finishState(ds, state.days[ds] || blankDay(ds)) !== want) return;
         const a = document.activeElement;
         if(a && a.classList && a.classList.contains("wt")) return;
         settleFinish();
@@ -1260,52 +1439,52 @@ function refreshChecks(){
       renderToday();
     }
   }
-  LETTERS.forEach(function(l){ $$('[data-letter="' + l.key + '"]').forEach(function(t){ t.classList.toggle("done", !!d.checks[l.key]); }); });
-  $$("#view-today .letters").forEach(function(g){ g.setAttribute("aria-label", n + " de 6"); });
-  const s = $("#p-streak"); if(s) s.textContent = streakLabel(streak());
+  LETTERS.forEach(function(l){ $$('[data-letter="' + l.key + '"]', root).forEach(function(t){ t.classList.toggle("done", !!d.checks[l.key]); }); });
+  $$(".letters", root).forEach(function(g){ g.setAttribute("aria-label", n + " de 6"); });
+  const s = $("#p-streak", root); if(s) s.textContent = streakLabel(streak());
   updateNow();
   updateAllRunUI();
   renderReading(readingState());
 }
 
-function toggleLetter(key){
-  const ds = state.viewDate;
+function toggleLetter(key, ds){
+  ds = ds || dayView.ds;
   const d = getDay(ds, true);
   if(dayType(ds) === "domingo") d.extra = true;
   d.checks[key] = !d.checks[key];
-  refreshChecks();
+  if(ds === dayView.ds) refreshChecks();
   saveDay(ds, 150);
   if(key === "lectura" && d.checks[key] && readingState()) clearReading();
   if(!d.checks[key]) return;
   // The finish card says it; no toast on top of it.
-  if(finishState(ds, d)) completeSound(); else popSound();
+  if(!dayView.record && finishState(ds, d)) completeSound(); else popSound();
 }
 
 function switchDayType(){
-  const ds = state.viewDate, d = getDay(ds, true);
+  const ds = dayView.ds, d = getDay(ds, true);
   const next = dayType(ds) === "gym" ? "normal" : "gym";
   // Back to what the week says: nothing to remember.
   if(next === weekDayType(ds)) delete d.type; else d.type = next;
   saveDay(ds, 0);
-  renderToday();
+  rerenderDay();
   toast((ds === state.today ? "Hoy es " : "Queda como ") + (next === "gym" ? "día de gym" : "día normal"));
 }
 
-function bindToday(){
-  const root = $("#view-today");
+function bindDay(root, record){
+  const ds = dayView.ds;
   $$("[data-toggle]", root).forEach(function(b){
     const key = b.getAttribute("data-toggle");
     // The switch's own change is what vibrates; the click must not reach <summary> and fold the card.
-    $("input.tg", b).addEventListener("change", function(){ toggleLetter(key); });
+    $("input.tg", b).addEventListener("change", function(){ toggleLetter(key, ds); });
     b.addEventListener("click", function(e){ e.stopPropagation(); });
     b.addEventListener("keydown", function(e){
-      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleLetter(key); }
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleLetter(key, ds); }
     });
   });
   $$("details.card", root).forEach(function(det){
     $(":scope > summary", det).addEventListener("click", function(e){ e.preventDefault(); setOpen(det, !wantsOpen(det)); });
   });
-  $$("details.card[data-card]", root).forEach(function(det){
+  if(!record) $$("details.card[data-card]", root).forEach(function(det){
     det.addEventListener("toggle", function(){
       const k = det.getAttribute("data-card");
       // The "Ahora" card opens by itself; only cards opened by hand are remembered.
@@ -1313,11 +1492,9 @@ function bindToday(){
     });
   });
   const fold = $("details.fold", root);
-  if(fold) fold.addEventListener("toggle", function(){ foldOpenFor = fold.open ? state.viewDate : ""; });
+  if(fold) fold.addEventListener("toggle", function(){ foldOpenFor = fold.open ? state.today : ""; });
   const dt = $("#day-type", root);
   if(dt) dt.addEventListener("click", switchDayType);
-  const gt = $("#go-today", root);
-  if(gt) gt.addEventListener("click", function(){ state.viewDate = state.today; renderToday(); window.scrollTo(0,0); });
   const gi = $("#go-import", root);
   if(gi) gi.addEventListener("click", function(){ $("#import-file").click(); });
   $$("[data-sched]", root).forEach(function(b){ b.addEventListener("click", function(){ openSchedule(b.getAttribute("data-sched")); }); });
@@ -1325,7 +1502,11 @@ function bindToday(){
   const ex = $('.finish [data-act="export"]', root);
   if(ex) ex.addEventListener("click", exportBackup);
   const sg = $("#sun-go", root);
-  if(sg) sg.addEventListener("click", function(){ state.showSunday = true; const d = getDay(state.viewDate, true); d.extra = true; saveDay(state.viewDate, 150); renderToday(); });
+  if(sg) sg.addEventListener("click", function(){
+    if(!record) state.showSunday = true;
+    const d = getDay(ds, true); d.extra = true; saveDay(ds, 150);
+    if(record) renderDay(root, ds, true); else renderToday();
+  });
 
   // guided timers, reading
   $$(".timer[data-run]", root).forEach(function(box){
@@ -1528,7 +1709,7 @@ function finishRun(r){
   if(!d.checks[res.letter]){
     d.checks[res.letter] = true;
     saveDay(ds, 0);
-    if(state.viewDate === ds) refreshChecks();
+    if(dayView.ds === ds) refreshChecks();
   }
   toast(res.toast);
   updateRunUI(r);
@@ -1595,7 +1776,7 @@ function finishReading(){
   if(d.checks.lectura) return;
   d.checks.lectura = true;
   saveDay(r.day, 0);
-  if(state.viewDate === r.day) refreshChecks();
+  if(dayView.ds === r.day) refreshChecks();
   if(countDone(d) === 6) completeSound(); else popSound();
   toast("Lectura marcada");
 }
@@ -1639,30 +1820,184 @@ function shortcutHelpHTML(){
 }
 
 /* ---------- history ---------- */
-const openEntries = new Set();
-function renderHistory(){
-  const root = $("#view-history");
-  const y = state.month.y, m = state.month.m;
+/* ---------- screens inside a tab: push, pop, and back from the edge ---------- */
+// A detail screen sits over its list; x is how far right the detail is pushed (0 = detail shown,
+// W = list shown). While it moves, both screens live in fixed layers laid out like the page; when it
+// settles, the one that stays goes back into the tab's section with its scroll.
+let navT = null;
+const navY = {};   // each tab's list scroll, to come back to it
+function takeNodes(el){ const out = Array.from(el.childNodes); out.forEach(function(n){ el.removeChild(n); }); return out; }
+function navLayer(nodes, y){
+  const l = document.createElement("div");
+  l.className = "navlayer";
+  l.style.top = -y + "px";
+  l.style.minHeight = (y + window.innerHeight) + "px";
+  const w = document.createElement("div");
+  w.className = "wrap";
+  nodes.forEach(function(n){ w.appendChild(n); });
+  l.appendChild(w);
+  const dim = document.createElement("div");
+  dim.className = "navdim";
+  l.appendChild(dim);
+  document.body.appendChild(l);
+  // A sticky bar stays at the top of the screen as it was, not where it sits in the content.
+  const bar = $(".gtop", w);
+  if(bar){ const pad = bar.offsetTop; if(y > pad) bar.style.transform = "translateY(" + (y - pad) + "px)"; }
+  return l;
+}
+function navPaint(t, x){
+  const p = Math.max(0, Math.min(1, x / t.W));
+  t.top.style.transform = "translateX(" + Math.max(0, x) + "px)";
+  t.under.style.transform = "translateX(" + (-(1 - p) * 0.3 * t.W) + "px)";
+  $(".navdim", t.under).style.opacity = (1 - p) * 0.12;
+}
+// states: {detail: fn, list: fn}, the state each end leaves behind.
+function navStart(view, detailNodes, detailY, listNodes, listY, states){
+  const t = {view: view, W: window.innerWidth, states: states};
+  t.under = navLayer(listNodes, listY);
+  t.top = navLayer(detailNodes, detailY);
+  t.top.classList.add("navtop");
+  t.spring = new Spring(0, function(x){ navPaint(t, x); });
+  t.go = function(target, v){ t.spring.to(target, v, function(){ navSettle(t, target); }); };
+  navT = t;
+  return t;
+}
+function navSettle(t, x){
+  if(navT !== t) return;
+  navT = null;
+  t.spring.stop();
+  const detail = x < t.W / 2;
+  const keep = detail ? t.top : t.under;
+  const y = -parseFloat(keep.style.top) || 0;
+  const bar = $(".gtop", keep); if(bar) bar.style.transform = "";
+  const nodes = Array.from(keep.firstChild.childNodes);
+  nodes.forEach(function(n){ t.view.appendChild(n); });
+  t.top.remove(); t.under.remove();
+  window.scrollTo(0, y);
+  (detail ? t.states.detail : t.states.list)();
+  if(reduceMotion()) fadeIn(t.view);
+  updateEdge();
+}
+// Anything that re-renders a tab first lands a moving screen where it was going.
+function navFinishNow(){
+  const t = navT;
+  if(!t) return;
+  navDrag = null;
+  document.documentElement.classList.remove("dragging");
+  navSettle(t, t.spring.raf ? t.spring.target : (t.spring.x < t.W / 2 ? 0 : t.W));
+}
+function navPush(view, render, states){
+  navFinishNow();
+  const listY = window.scrollY;
+  navY[view.id] = listY;
+  const listNodes = takeNodes(view);
+  render();
+  const t = navStart(view, takeNodes(view), 0, listNodes, listY, states);
+  t.spring.set(t.W);
+  t.go(0, 0);
+}
+// Builds the pop (the list rendered underneath) without moving it: a button sends it, a finger drags it.
+function navPop(view, render, states){
+  navFinishNow();
+  const detailY = window.scrollY;
+  const detailNodes = takeNodes(view);
+  render();
+  const t = navStart(view, detailNodes, detailY, takeNodes(view), navY[view.id] || 0, states);
+  t.spring.set(0);
+  return t;
+}
+function popCurrent(){
+  if(state.tab === "history" && state.histDay){
+    const ds = state.histDay;
+    return navPop($("#view-history"), function(){ state.histDay = null; renderHistory(); },
+      {detail: function(){ state.histDay = ds; }, list: function(){ state.histDay = null; }});
+  }
+  if(state.tab === "settings" && state.page && !state.edit && state.from !== "today"){
+    const p = state.page;
+    return navPop($("#view-settings"), function(){ state.page = null; renderSettings(); },
+      {detail: function(){ state.page = p; }, list: function(){ state.page = null; }});
+  }
+  return null;
+}
+function canPop(){
+  if($(".backdrop")) return false;
+  if(state.tab === "history") return !!state.histDay;
+  return state.tab === "settings" && !!state.page && !state.edit && state.from !== "today";
+}
+function popScreen(){ const t = popCurrent(); if(t) t.go(t.W, 0); }
+
+// Back from the left edge: the screen follows the finger, and the release velocity decides.
+let navDrag = null;
+document.addEventListener("pointerdown", function(e){
+  if(!e.isPrimary || (e.pointerType === "mouse" && e.button !== 0)) return;
+  if(navT){
+    // Caught mid-flight: it follows the finger from where it is.
+    navT.spring.stop();
+    navDrag = {t: navT, x0: e.clientX - navT.spring.x, y0: e.clientY, live: true, tr: new Tracker()};
+    navDrag.tr.add(e.clientX, e.clientY);
+    document.documentElement.classList.add("dragging");
+    return;
+  }
+  if(e.clientX > 20 || !canPop()) return;
+  navDrag = {t: null, x0: e.clientX, y0: e.clientY, live: false, tr: new Tracker()};
+  navDrag.tr.add(e.clientX, e.clientY);
+}, true);
+window.addEventListener("pointermove", function(e){
+  const g = navDrag;
+  if(!g || !e.isPrimary) return;
+  g.tr.add(e.clientX, e.clientY);
+  if(!g.live){
+    const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+    if(Math.abs(dy) > 10 && Math.abs(dy) > dx){ navDrag = null; return; }
+    if(dx < 10) return;
+    const a = document.activeElement; if(a && a.blur && a !== document.body) a.blur();
+    g.t = popCurrent();
+    if(!g.t){ navDrag = null; return; }
+    g.x0 = e.clientX;
+    g.live = true;
+    document.documentElement.classList.add("dragging");
+  }
+  g.t.spring.x = Math.max(0, e.clientX - g.x0);
+  navPaint(g.t, g.t.spring.x);
+});
+function navRelease(){
+  const g = navDrag;
+  if(!g) return;
+  navDrag = null;
+  document.documentElement.classList.remove("dragging");
+  if(!g.live || !g.t || navT !== g.t) return;
+  swallowUntil = performance.now() + 350;
+  const v = g.tr.v("x"), x = g.t.spring.x;
+  g.t.go(x + project(v) > g.t.W / 2 ? g.t.W : 0, v);
+}
+window.addEventListener("pointerup", navRelease);
+window.addEventListener("pointercancel", navRelease);
+
+// The bar of an inner screen gets its line only while content passes under it.
+function updateEdge(){
+  const v = state.tab === "settings" ? $("#view-settings") : state.tab === "history" ? $("#view-history") : null;
+  const bar = v && $(".gtop.nav", v);
+  if(bar) bar.classList.toggle("edge", window.scrollY > 2);
+}
+window.addEventListener("scroll", updateEdge, {passive: true});
+
+/* ---------- historial ---------- */
+function monthName(y, m){ return cap(new Date(y, m, 1).toLocaleDateString("es", {month: "long", year: "numeric"})); }
+function isCurrentMonth(y, m){ const t = parse(state.today); return y === t.getFullYear() && m === t.getMonth(); }
+function shiftMonth(y, m, n){ const d = new Date(y, m + n, 1); return {y: d.getFullYear(), m: d.getMonth()}; }
+function monthPaneHTML(y, m){
   const first = new Date(y, m, 1);
   const daysIn = new Date(y, m + 1, 0).getDate();
-  const monthName = first.toLocaleDateString("es", {month:"long", year:"numeric"});
-  let completeMonth = 0, scheduledPast = 0;
-  for(let i=1;i<=daysIn;i++){
+  let complete = 0, scheduled = 0;
+  for(let i = 1; i <= daysIn; i++){
     const ds = fmt(new Date(y, m, i));
-    if(isScheduled(ds) && ds <= state.today){ scheduledPast++; if(isComplete(ds)) completeMonth++; }
+    if(isScheduled(ds) && ds <= state.today){ scheduled++; if(isComplete(ds)) complete++; }
   }
-  const totalChecks = Object.values(state.days).reduce(function(a, d){ return a + countDone(d); }, 0);
-
-  let html = '<div class="top"><h2 class="sec">Historial</h2><span class="status" id="status"></span></div>' +
-    '<div class="stats">' +
-      '<div class="stat"><b>' + streak() + '</b><span>Días seguidos</span></div>' +
-      '<div class="stat"><b>' + completeMonth + '/' + scheduledPast + '</b><span>Mañanas completas este mes</span></div>' +
-      '<div class="stat"><b>' + totalChecks + '</b><span>Letras marcadas en total</span></div>' +
-    '</div>' +
-    '<div class="monthnav"><button class="navbtn" id="m-prev" aria-label="Mes anterior">‹</button><h3>' + esc(monthName) + '</h3><button class="navbtn" id="m-next" aria-label="Mes siguiente">›</button></div>' +
+  let html = '<div class="calpane"><div class="monthhead"><h3>' + esc(monthName(y, m)) + '</h3>' +
+    '<p class="mcount">' + (scheduled ? complete + " de " + scheduled + (scheduled === 1 ? " mañana completa" : " mañanas completas") : "Sin mañanas todavía") + '</p></div>' +
     '<div class="cal">' + ["D","L","M","M","J","V","S"].map(function(x){ return '<div class="dow">' + x + '</div>'; }).join("");
-  for(let b=0; b<first.getDay(); b++) html += '<div class="cell blank"></div>';
-  for(let i=1;i<=daysIn;i++){
+  for(let b = 0; b < first.getDay(); b++) html += '<div class="cell blank"></div>';
+  for(let i = 1; i <= daysIn; i++){
     const ds = fmt(new Date(y, m, i));
     const d = state.days[ds];
     const n = countDone(d);
@@ -1677,57 +2012,153 @@ function renderHistory(){
     const label = longDate(ds) + (off ? "" : ", " + n + " de 6");
     html += '<button class="' + cls.join(" ") + '" style="--p:' + (n/6) + '" data-day="' + ds + '"' + (future || t === "shabbat" ? " disabled" : "") + ' aria-label="' + esc(label) + '"><span>' + i + '</span></button>';
   }
-  html += '</div><p class="legend">El anillo se llena con cada letra. Toca un día para ver o completar su registro.</p>';
-
-  const entries = [];
-  for(let i=daysIn;i>=1;i--){
-    const ds = fmt(new Date(y, m, i));
-    const d = state.days[ds];
-    if(hasContent(d)) entries.push([ds, d]);
-  }
-  html += '<h3 class="sub">Registros del mes</h3>';
-  if(!entries.length){
-    html += '<div class="empty">Todavía no hay registros este mes. Marca tu primera letra en Hoy.</div>';
-  } else {
-    html += '<div class="entries">' + entries.map(function(e){
-      const ds = e[0], d = e[1];
-      const open = openEntries.has(ds);
-      const text = d.gratitude ? "Agradezco: " + d.gratitude : d.bookIdea || d.notes || "";
-      return '<div class="entry' + (open ? " open" : "") + '" data-entry="' + ds + '">' +
-        '<button class="entry-h" aria-expanded="' + open + '" aria-controls="eb-' + ds + '"><b><span>' + esc(shortDate(ds)) + '</span><em>' + countDone(d) + ' de 6</em><span class="caret" aria-hidden="true"></span></b>' + (text ? '<p>' + esc(text) + '</p>' : '') + '</button>' +
-        '<div class="entry-b" id="eb-' + ds + '"' + (open ? "" : " hidden") + '>' +
-          (hasWriting(d) ? writingReadHTML(ds, d) : '<p class="none">Este día no escribiste nada.</p>') +
-          '<button class="linkbtn" data-day="' + ds + '">Abrir día en Hoy</button>' +
-        '</div>' +
-      '</div>';
-    }).join("") + '</div>';
-  }
-  root.innerHTML = html;
-  setStatus(statusMsg);
-
-  fitFields(root);
-  $$(".entry-h", root).forEach(function(h){
-    h.addEventListener("click", function(){
-      const box = h.parentElement, ds = box.getAttribute("data-entry");
-      const open = !openEntries.has(ds);
-      if(open) openEntries.add(ds); else openEntries.delete(ds);
-      box.classList.toggle("open", open);
-      h.setAttribute("aria-expanded", open);
-      $(".entry-b", box).hidden = !open;
-      if(open) fitFields(box);
-    });
-  });
-  $("#m-prev").addEventListener("click", function(){ state.month.m--; if(state.month.m < 0){ state.month.m = 11; state.month.y--; } renderHistory(); });
-  $("#m-next").addEventListener("click", function(){ state.month.m++; if(state.month.m > 11){ state.month.m = 0; state.month.y++; } renderHistory(); });
-  $$("[data-day]", root).forEach(function(b){
-    b.addEventListener("click", function(){
-      if(b.disabled) return;
-      state.viewDate = b.getAttribute("data-day");
-      if(dayType(state.viewDate) === "domingo") state.showSunday = true;
-      switchTab("today");
-    });
-  });
+  return html + '</div></div>';
 }
+// The month's records, read in full; tapping one opens its day.
+function entriesHTML(y, m){
+  const daysIn = new Date(y, m + 1, 0).getDate();
+  const entries = [];
+  for(let i = daysIn; i >= 1; i--){
+    const ds = fmt(new Date(y, m, i));
+    if(hasContent(state.days[ds])) entries.push(ds);
+  }
+  if(!entries.length) return '<div class="empty">Todavía no hay registros este mes. Marca tu primera letra en Hoy.</div>';
+  return '<div class="entries">' + entries.map(function(ds){
+    const d = state.days[ds];
+    return '<div class="entry" role="button" tabindex="0" data-open-day="' + ds + '" aria-label="' + esc(longDate(ds)) + ', ' + countDone(d) + ' de 6">' +
+      '<div class="entry-h"><b>' + esc(shortTitle(ds)) + '</b><em>' + countDone(d) + ' de 6</em><span class="chev" aria-hidden="true"></span></div>' +
+      W_FIELDS.filter(function(f){ return d[f.k]; }).map(function(f){
+        return '<p class="etxt"><span class="glabel">' + f.label + '</span>' + esc(d[f.k]) + '</p>';
+      }).join("") +
+    '</div>';
+  }).join("") + '</div>';
+}
+function calStripHTML(){
+  const y = state.month.y, m = state.month.m, prev = shiftMonth(y, m, -1), next = shiftMonth(y, m, 1);
+  return monthPaneHTML(prev.y, prev.m) + monthPaneHTML(y, m) +
+    (isCurrentMonth(y, m) ? '<div class="calpane" aria-hidden="true"></div>' : monthPaneHTML(next.y, next.m));
+}
+function renderHistory(){
+  const root = $("#view-history");
+  if(state.histDay){
+    root.innerHTML = '<div class="gtop nav"><button class="tbtn left back" data-act="hback">Historial</button><h2>' + esc(shortTitle(state.histDay)) + '</h2></div><div data-dayview></div>';
+    renderDay($("[data-dayview]", root), state.histDay, true);
+    updateEdge();
+    return;
+  }
+  root.innerHTML = '<div class="top"><h2 class="sec">Historial</h2><span class="status" id="status"></span></div>' +
+    '<div class="calwrap">' +
+      '<button class="navbtn prev" data-month="-1" aria-label="Mes anterior">‹</button>' +
+      '<button class="navbtn next" data-month="1" aria-label="Mes siguiente">›</button>' +
+      '<div class="calstrip">' + calStripHTML() + '</div>' +
+    '</div>' +
+    '<p class="legend">El anillo se llena con cada letra. Toca un día para ver o completar su registro.</p>' +
+    '<h3 class="sub">Registros del mes</h3><div class="hentries">' + entriesHTML(state.month.y, state.month.m) + '</div>';
+  setStatus(statusMsg);
+  layoutPager();
+}
+function openDay(ds){
+  navPush($("#view-history"), function(){ state.histDay = ds; renderHistory(); },
+    {detail: function(){ state.histDay = ds; }, list: function(){ state.histDay = null; }});
+}
+
+// Months: three panes (previous, this, next) on a strip; the strip follows the finger and settles on one.
+const pager = {spring: null, page: 0};
+function pagerPaint(x){
+  const strip = $("#view-history .calstrip");
+  if(strip) strip.style.transform = "translateX(" + (x - pager.page) + "px)";
+}
+pager.spring = new Spring(0, pagerPaint);
+function layoutPager(){
+  const wrap = $("#view-history .calwrap");
+  if(!wrap) return;
+  pager.page = wrap.clientWidth;   // a pane plus the gap
+  pager.spring.set(0);
+  const cur = $(".calstrip", wrap).children[1];
+  wrap.style.height = cur.offsetHeight + "px";
+  const next = $(".navbtn.next", wrap);
+  next.disabled = isCurrentMonth(state.month.y, state.month.m);
+}
+function hasNextMonth(){ return !isCurrentMonth(state.month.y, state.month.m); }
+// Lands on the month the strip moved to: the new middle pane is the one already in view.
+function commitMonth(dir){
+  const wrap = $("#view-history .calwrap");
+  if(!wrap) return;
+  state.month = shiftMonth(state.month.y, state.month.m, dir);
+  const from = wrap.offsetHeight;
+  $(".calstrip", wrap).innerHTML = calStripHTML();
+  layoutPager();
+  const to = wrap.offsetHeight;
+  if(Math.abs(to - from) > 0.5 && !reduceMotion()) animateHeight(wrap, from, to);
+  const list = $("#view-history .hentries");
+  list.innerHTML = entriesHTML(state.month.y, state.month.m);
+  fadeIn(list);
+  if(reduceMotion()) fadeIn(wrap);
+}
+function pageMonth(dir){
+  if(dir > 0 && !hasNextMonth()) return;
+  const sp = pager.spring;
+  if(sp.raf && sp.target !== 0){ const d = sp.target < 0 ? 1 : -1; sp.stop(); commitMonth(d); }
+  sp.to(dir > 0 ? -pager.page : pager.page, sp.v, function(){ commitMonth(dir); });
+}
+let pageDrag = null;
+document.addEventListener("pointerdown", function(e){
+  const wrap = e.target.closest && e.target.closest("#view-history .calwrap");
+  if(!wrap || !e.isPrimary || (e.pointerType === "mouse" && e.button !== 0) || navT) return;
+  const sp = pager.spring;
+  pageDrag = {x0: e.clientX, y0: e.clientY, sx: sp.x, live: false, tr: new Tracker()};
+  pageDrag.tr.add(e.clientX, e.clientY);
+  if(sp.raf){ sp.stop(); pageDrag.live = true; document.documentElement.classList.add("dragging"); }
+});
+window.addEventListener("pointermove", function(e){
+  const g = pageDrag;
+  if(!g || !e.isPrimary) return;
+  g.tr.add(e.clientX, e.clientY);
+  if(!g.live){
+    const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+    if(Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)){ pageDrag = null; return; }
+    if(Math.abs(dx) < 10) return;
+    g.x0 = e.clientX; g.live = true;
+    document.documentElement.classList.add("dragging");
+  }
+  let x = g.sx + e.clientX - g.x0;
+  // Past this month there's nothing: it gives, and comes back.
+  if(x < 0 && !hasNextMonth()) x = -rubberband(-x, pager.page);
+  pager.spring.x = x;
+  pagerPaint(x);
+});
+function pageRelease(){
+  const g = pageDrag;
+  if(!g) return;
+  pageDrag = null;
+  document.documentElement.classList.remove("dragging");
+  if(!g.live) return;
+  swallowUntil = performance.now() + 350;
+  const v = g.tr.v("x"), x = pager.spring.x, end = x + project(v), half = pager.page / 2;
+  const dir = end < -half && hasNextMonth() ? 1 : end > half ? -1 : 0;
+  pager.spring.to(-dir * pager.page, v, function(){ if(dir) commitMonth(dir); });
+}
+window.addEventListener("pointerup", pageRelease);
+window.addEventListener("pointercancel", pageRelease);
+window.addEventListener("resize", function(){ if(state.tab === "history" && !state.histDay) layoutPager(); });
+
+(function bindHistory(){
+  const root = $("#view-history");
+  root.addEventListener("click", function(e){
+    const back = e.target.closest('[data-act="hback"]');
+    if(back) return popScreen();
+    const mb = e.target.closest("[data-month]");
+    if(mb){ if(!mb.disabled) pageMonth(Number(mb.getAttribute("data-month"))); return; }
+    const cell = e.target.closest(".cell[data-day]");
+    if(cell){ if(!cell.disabled) openDay(cell.getAttribute("data-day")); return; }
+    const entry = e.target.closest("[data-open-day]");
+    if(entry) openDay(entry.getAttribute("data-open-day"));
+  });
+  root.addEventListener("keydown", function(e){
+    const entry = e.target.closest && e.target.closest("[data-open-day]");
+    if(entry && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); openDay(entry.getAttribute("data-open-day")); }
+  });
+})();
 
 /* ---------- horario ---------- */
 function scheduleType(type){
@@ -1805,32 +2236,21 @@ function editItemsHTML(listKey, items, noun, textPlaceholder){
 // Horario: tapping the strip in Hoy opens the whole schedule for that kind of day.
 function openSchedule(type){
   state.schedTab = type;
-  const opener = document.activeElement;
-  const bd = document.createElement("div");
-  bd.className = "backdrop";
-  bd.innerHTML = '<div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="sched-t">' +
+  const s = openSheet(
     '<div class="shead"><h3 id="sched-t">Horario</h3><button class="tbtn" data-close>Listo</button></div>' +
-    '<div class="sbody">' + scheduleHTML() + '</div>' +
-  '</div>';
-  function close(){
-    bd.remove();
-    document.removeEventListener("keydown", onKey);
-    if(opener && opener.focus) opener.focus({preventScroll: true});
-  }
-  function onKey(e){ if(e.key === "Escape") close(); }
-  bd.addEventListener("click", function(e){
+    '<div class="sbody">' + scheduleHTML() + '</div>',
+    {tall: true, labelledby: "sched-t"});
+  s.sheet.addEventListener("click", function(e){
     const seg = e.target.closest('[data-act="sched"]');
     if(seg){
       state.schedTab = seg.getAttribute("data-type");
-      $(".sbody", bd).innerHTML = scheduleHTML();
-      const on = $('[data-type="' + state.schedTab + '"]', bd); if(on) on.focus({preventScroll: true});
+      $(".sbody", s.sheet).innerHTML = scheduleHTML();
+      const on = $('[data-type="' + state.schedTab + '"]', s.sheet); if(on) on.focus({preventScroll: true});
       return;
     }
-    if(e.target === bd || e.target.closest("[data-close]")) close();
+    if(e.target.closest("[data-close]")) s.close();
   });
-  document.addEventListener("keydown", onKey);
-  document.body.appendChild(bd);
-  $("[data-close]", bd).focus({preventScroll: true});
+  $("[data-close]", s.sheet).focus({preventScroll: true});
 }
 
 /* ---------- ajustes ---------- */
@@ -1848,7 +2268,7 @@ function rowHTML(page, detail, warn){
 function settingsListHTML(){
   const s = state.settings;
   const affs = filled(s.affirmations).length, vis = filled(s.visualization.items).length;
-  return '<div class="gtop"><h2>Ajustes</h2></div>' +
+  return '<div class="top"><h2 class="sec">Ajustes</h2></div>' +
     '<div class="slist">' +
       '<label class="srow" for="s-name"><b>Tu nombre</b><input type="text" id="s-name" autocomplete="given-name" value="' + esc(s.name) + '" placeholder="Para el saludo"></label>' +
     '</div>' +
@@ -1894,10 +2314,12 @@ function renderSettings(){
   const root = $("#view-settings");
   root.innerHTML = state.page ? settingsPageHTML() : settingsListHTML();
   $$("textarea.grow", root).forEach(autoGrow);
+  updateEdge();
 }
 
 function autoGrow(el){ el.style.height = "auto"; el.style.height = (el.scrollHeight + 2) + "px"; }
 function rerenderSettingsKeepScroll(focusSel, block){
+  navFinishNow();
   const y = window.scrollY;
   renderSettings();
   window.scrollTo(0, y);
@@ -1935,12 +2357,13 @@ function endEdit(save){
   if(state.from === "today") return backToToday();
   renderSettings();
   window.scrollTo(0, 0);
+  fadeIn($("#view-settings .gblock"));
 }
+// Screens push in from the right and go back the same way.
 function openPage(page){
-  state.page = page;
-  state.edit = null;
-  renderSettings();
-  window.scrollTo(0, 0);
+  if(!page) return popScreen();
+  navPush($("#view-settings"), function(){ state.page = page; state.edit = null; renderSettings(); },
+    {detail: function(){ state.page = page; }, list: function(){ state.page = null; state.edit = null; }});
 }
 // "Revisar" and "Agregar" in Hoy open the screen already editing; Listo or Cancelar return to the same spot in Hoy.
 let todayY = 0;
@@ -1967,7 +2390,7 @@ function backToToday(){
     if(!b || b.disabled) return;
     const act = b.getAttribute("data-act");
     if(act === "back") return state.from === "today" ? backToToday() : openPage(null);
-    if(act === "edit"){ beginEdit(); renderSettings(); return window.scrollTo(0, 0); }
+    if(act === "edit"){ beginEdit(); renderSettings(); window.scrollTo(0, 0); return fadeIn($("#view-settings .gblock")); }
     if(act === "cancel") return endEdit(false);
     if(act === "done") return endEdit(true);
     if(act === "export") return exportBackup();
@@ -2018,6 +2441,7 @@ function backToToday(){
 
 /* ---------- tabs ---------- */
 function switchTab(tab){
+  navFinishNow();
   state.tab = tab;
   $$(".tab").forEach(function(b){ if(b.getAttribute("data-tab") === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("#view-today").hidden = tab !== "today";
@@ -2046,8 +2470,8 @@ $$(".tab").forEach(function(b){ b.addEventListener("click", async function(){
   state.from = null;
   // The tab always opens the Ajustes list; tapping it again from a screen goes back to the list.
   if(t === "settings") state.page = null;
-  if(t === "today" && state.tab === "today" && state.viewDate !== state.today){ state.viewDate = state.today; }
-  if(t === "history"){ const d = new Date(); if(state.tab !== "history"){ state.month = {y:d.getFullYear(), m:d.getMonth()}; } }
+  // Like Ajustes, the tab always opens its month view.
+  if(t === "history"){ state.histDay = null; const d = new Date(); if(state.tab !== "history"){ state.month = {y:d.getFullYear(), m:d.getMonth()}; } }
   switchTab(t);
 }); });
 
@@ -2055,9 +2479,7 @@ $$(".tab").forEach(function(b){ b.addEventListener("click", async function(){
 function checkRollover(){
   const t = todayStr();
   if(t === state.today) return;
-  const wasToday = state.viewDate === state.today;
   state.today = t;
-  if(wasToday) state.viewDate = t;
   state.showSunday = false;
   const a = document.activeElement;
   if(a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT")) return;
