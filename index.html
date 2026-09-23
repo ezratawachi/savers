@@ -95,8 +95,10 @@ details.card>summary::-webkit-details-marker{display:none}
 .caret{flex:0 0 auto;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .2s}
 details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin-bottom:-2px}
 .body{padding:0 14px 14px}
-.card.done .ttl,.card.done .time{opacity:.5}
+.card.done .ttl{opacity:.5}
 .card.done{background:transparent}
+.card.done>summary,.card.done>.cardrow{padding-top:6px;padding-bottom:6px}
+.card.done .ttl span,.card.done .time,.card.done .caret{display:none}
 
 /* finished morning */
 .finish{margin-top:16px;padding:22px 18px 18px;border-radius:18px;background:var(--dawn-soft);text-align:center}
@@ -125,7 +127,10 @@ details.more>summary .caret{border-color:var(--sky)}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .btn{border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--surface);border:1px solid var(--line)}
 .btn.primary{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
+.timer.is-done .tm-clock,.timer.is-done .bar,.timer.is-done [data-act="skip"]{display:none}
+.timer.is-done .btn.primary{background:var(--surface);border-color:var(--line);color:var(--ink)}
 .timer[data-run="visualizacion"] [data-r="next"]{font-size:1.02rem;line-height:1.45;color:var(--ink);min-height:2.9em;margin-top:2px}
+.timer.is-done [data-r="next"]{min-height:0}
 .howto{margin-top:10px;font-size:.92rem}
 .howto summary{color:var(--sky);font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center}
 .howto ol{margin:4px 0 6px}
@@ -983,6 +988,8 @@ function refreshChecks(){
   LETTERS.forEach(function(l){ $$('[data-letter="' + l.key + '"]').forEach(function(t){ t.classList.toggle("done", !!d.checks[l.key]); }); });
   $$("#view-today .letters").forEach(function(g){ g.setAttribute("aria-label", n + " de 6"); });
   const s = $("#p-streak"); if(s) s.textContent = streakLabel(streak());
+  updateAllRunUI();
+  renderReading(readingState());
 }
 
 function toggleLetter(key){
@@ -1088,8 +1095,8 @@ const runs = {
       say("Listo. Ejercicio marcado.");
       return {letter: "ejercicio", toast: "Ejercicio terminado y marcado"};
     },
-    view: function(r, idx, done){
-      if(!r.started) return {now: done ? "¡Listo! Buen trabajo" : "Listo para empezar", next: "Primero: marchar en el sitio"};
+    view: function(r, idx){
+      if(!r.started) return {now: "Listo para empezar", next: "Primero: marchar en el sitio"};
       const s = STEPS[idx], nx = STEPS[idx + 1];
       return {
         now: s.rest ? "Cambia de ejercicio" : s.name,
@@ -1111,9 +1118,9 @@ const runs = {
       setTimeout(function(){ say("Visualización lista."); }, 700);
       return {letter: "visualizacion", toast: "Visualización lista y marcada"};
     },
-    view: function(r, idx, done){
+    view: function(r, idx){
       const list = visSteps();
-      if(!r.started) return {now: done ? "Visualización lista" : "Cierra los ojos y escucha", next: done ? "" : "La voz te lee cada pregunta y te da un minuto."};
+      if(!r.started) return {now: "Cierra los ojos y escucha", next: "La voz te lee cada pregunta y te da un minuto."};
       const s = list[idx] || {name: "", text: ""};
       return {now: "Pregunta " + (idx + 1) + " de " + list.length, next: s.text};
     }
@@ -1237,7 +1244,7 @@ function finishRun(r){
     if(state.viewDate === ds) refreshChecks();
   }
   toast(res.toast);
-  updateRunUI(r, true);
+  updateRunUI(r);
 }
 
 function runBoxHTML(key){
@@ -1254,12 +1261,16 @@ function runBoxHTML(key){
     '</div>' +
   '</div>';
 }
-function updateRunUI(r, done){
+function doneToday(key){ const d = state.days[state.today]; return !!(d && d.checks && d.checks[key]); }
+function updateRunUI(r){
   const box = $('.timer[data-run="' + r.key + '"]'); if(!box) return;
   const total = runTotal(r);
   const el = Math.min(elapsedSecs(r), Math.max(0, total - 0.001));
   const idx = r.started ? stepAt(r, el) : 0;
-  const v = r.view(r, idx, done);
+  // Already marked and not running again: the tool steps back and offers a repeat.
+  const rest = !r.started && doneToday(r.key);
+  box.classList.toggle("is-done", rest);
+  const v = rest ? {now: "Hecho", next: "Si quieres, puedes repetirlo."} : r.view(r, idx);
   $('[data-r="now"]', box).textContent = v.now;
   $('[data-r="next"]', box).textContent = v.next;
   let clock = total;
@@ -1269,7 +1280,7 @@ function updateRunUI(r, done){
   }
   $('[data-r="clock"]', box).textContent = Math.floor(clock / 60) + ":" + pad(clock % 60);
   $('[data-r="bar"]', box).style.width = (r.started && total ? el / total * 100 : 0) + "%";
-  $('[data-act="go"]', box).textContent = r.running ? "Pausar" : (r.started ? "Seguir" : "Empezar");
+  $('[data-act="go"]', box).textContent = r.running ? "Pausar" : r.started ? "Seguir" : rest ? "Repetir" : "Empezar";
   $('[data-act="reset"]', box).hidden = !r.started;
 }
 function updateAllRunUI(){ Object.keys(runs).forEach(function(k){ updateRunUI(runs[k]); }); }
@@ -1306,10 +1317,16 @@ function syncReading(){
   if(r && readLeft(r) === 0){ finishReading(); return; }
   if(r && !readIv) readIv = setInterval(syncReading, 1000);
   if(!r){ clearInterval(readIv); readIv = null; }
+  renderReading(r);
+}
+function renderReading(r){
   const box = $(".timer[data-read]"); if(!box) return;
   const left = r ? readLeft(r) : 0;
-  $('[data-rd="now"]', box).textContent = r ? "Leyendo" : READ_MIN + " minutos";
-  $('[data-rd="next"]', box).textContent = r ? "Faltan " + Math.floor(left / 60) + ":" + pad(left % 60) + ". Se marca sola al volver." : "Se abre Libros y el Reloj te avisa al terminar.";
+  const rest = !r && doneToday("lectura");
+  box.classList.toggle("is-done", rest);
+  $('[data-rd="now"]', box).textContent = r ? "Leyendo" : rest ? "Hecho" : READ_MIN + " minutos";
+  $('[data-rd="next"]', box).textContent = r ? "Faltan " + Math.floor(left / 60) + ":" + pad(left % 60) + ". Se marca sola al volver." : rest ? "Si quieres, puedes leer otra vez." : "Se abre Libros y el Reloj te avisa al terminar.";
+  $('[data-rd="go"]', box).textContent = rest ? "Repetir" : "Empezar lectura";
   $('[data-rd="go"]', box).hidden = !!r;
   $('[data-rd="done"]', box).hidden = !r;
   $('[data-rd="cancel"]', box).hidden = !r;
