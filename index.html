@@ -62,28 +62,18 @@ button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
 .banner{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.92rem}
 .linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap}
 
-/* timeline */
-.tlbtn{display:block;width:100%;margin:12px 0 0;padding:0;border:0;background:none;text-align:left;cursor:pointer;color:inherit}
-.timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.tl{display:block;border-top:3px solid var(--line);padding-top:5px}
-.tl.on{border-color:var(--dawn)}
-.tl b{display:block;font-family:var(--display);font-size:.98rem;line-height:1.2}
-.tl span{display:block;font-size:.74rem;color:var(--muted);line-height:1.2}
-.tlmore{display:block;text-align:right;font-size:.8rem;font-weight:700;color:var(--muted);margin-top:4px}
-
 /* hero letters */
 .hero{margin:16px 0 4px}
 .letters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
-.lt{position:relative;display:block;width:100%;min-width:0;height:0;padding:0 0 calc(115% - 4px);align-self:start;border-radius:14px;border:2px solid var(--line);background:var(--surface);cursor:pointer;
-  font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,8vw,2.8rem);
-  color:var(--muted);transition:background .25s ease,color .25s ease,border-color .25s ease,transform .12s ease}
-.lt span{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center}
-.lt:active{transform:scale(.96)}
+/* the six letters only show progress; marking happens in the cards */
+.lt{display:flex;align-items:center;justify-content:center;min-width:0;height:42px;border-radius:11px;border:2px solid var(--line);background:var(--surface);
+  font-family:var(--display);font-weight:800;font-size:1.3rem;color:var(--muted);transition:background .25s ease,color .25s ease,border-color .25s ease}
 .lt.done{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
 @keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.14)}65%{transform:scale(.97)}100%{transform:scale(1)}}
 .bump{animation:bump .34s cubic-bezier(.3,.7,.4,1.4)}
-.progress{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:.9rem;color:var(--muted)}
+.progress{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:.88rem;color:var(--muted)}
 .progress strong{color:var(--ink)}
+.progress .linkbtn{padding:10px 0}
 .bar{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;margin-top:6px}
 .bar i{display:block;height:100%;background:var(--dawn);width:0;transition:width .3s ease}
 
@@ -140,7 +130,7 @@ details.more>summary .caret{border-color:var(--sky)}
 .howto summary{color:var(--sky);font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center}
 .howto ol{margin:4px 0 6px}
 /* letter toggles: a label around a hidden native switch (the real tap on it is what vibrates) */
-label.lt,label.chk,label.wdone{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+label.chk,label.wdone{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .wdone-row{display:flex;justify-content:flex-end;margin-top:10px}
 .card.done .wdone-row{display:none}
 input.tg{display:none}
@@ -693,7 +683,7 @@ function unlockSpeech(){
   } catch(e){}
 }
 function bump(key){
-  $$('[data-toggle="' + key + '"]').forEach(function(b){
+  $$('[data-toggle="' + key + '"], [data-letter="' + key + '"]').forEach(function(b){
     b.classList.remove("bump");
     void b.offsetWidth;
     b.classList.add("bump");
@@ -717,19 +707,11 @@ function streak(){
 }
 
 /* ---------- today view ---------- */
-function timelineHTML(type){
+function hasSchedule(type){
   const sc = state.settings.schedule;
-  let items = null;
-  const t = scheduleType(type);
-  if(t) items = (t.steps || []).filter(function(st){ return st.short; }).map(function(st){ return [st.time, st.short]; });
-  else if(sc && Array.isArray(type === "gym" ? sc.timelineGym : sc.timelineNormal)) items = type === "gym" ? sc.timelineGym : sc.timelineNormal;
-  if(!items || !items.length) return "";
-  return '<button class="tlbtn" data-sched="' + type + '" aria-label="Ver horario completo">' +
-    '<span class="timeline" style="grid-template-columns:repeat(' + items.length + ',minmax(0,1fr))">' + items.map(function(it){
-      return '<span class="tl' + (/savers/i.test(it[1]) ? " on" : "") + '"><b>' + esc(it[0]) + '</b><span>' + esc(it[1]) + '</span></span>';
-    }).join("") + '</span>' +
-    '<span class="tlmore" aria-hidden="true">Ver horario ›</span></button>';
+  return !!(scheduleType(type) || (sc && Array.isArray(type === "gym" ? sc.timelineGym : sc.timelineNormal)));
 }
+function streakLabel(n){ return n + (n === 1 ? " día" : " días"); }
 
 // Monthly affirmation review: shows in the Afirmaciones card from the first routine day of a new month until Listo.
 function affReviewDue(){ return state.affReviewed !== monthKey(state.today); }
@@ -900,17 +882,16 @@ function renderToday(opts){
     root.innerHTML = html; bindToday(); setStatus(statusMsg); return;
   }
 
-  let morning = timelineHTML(type === "gym" ? "gym" : "normal");
   const n = countDone(d);
-  morning +=
-    '<div class="hero"><div class="letters" role="group" aria-label="Marcar letras">' +
+  const schedType = type === "gym" ? "gym" : "normal";
+  let morning =
+    '<div class="hero"><div class="letters" role="img" aria-label="' + n + ' de 6">' +
       LETTERS.map(function(l){
-        const on = !!d.checks[l.key];
-        return letterToggleHTML("lt", l, on, l.name, '<span>' + l.L + '</span>');
+        return '<span class="lt' + (d.checks[l.key] ? " done" : "") + '" data-letter="' + l.key + '" aria-hidden="true">' + l.L + '</span>';
       }).join("") +
     '</div>' +
-    '<div class="progress"><span><strong id="p-count">' + n + ' de 6</strong> <span id="p-msg">' + progressMsg(n) + '</span></span><span>Racha: <strong id="p-streak">' + streak() + '</strong></span></div>' +
-    '<div class="bar"><i id="p-bar" style="width:' + (n/6*100) + '%"></i></div></div>';
+    '<div class="progress"><span>Racha: <strong id="p-streak">' + streakLabel(streak()) + '</strong></span>' +
+      (hasSchedule(schedType) ? '<button class="linkbtn" data-sched="' + schedType + '">Ver horario ›</button>' : '') + '</div></div>';
 
   morning += '<div class="list">' + LETTERS.map(function(l){
     const info = letterInfo(l.key, type === "gym" ? "gym" : "normal");
@@ -934,7 +915,7 @@ function renderToday(opts){
     html +=
       '<div class="finish' + fade + '"><div class="big" aria-hidden="true">✓</div>' +
         '<h2>' + (isToday ? "Mañana completa" : "Registro completo") + '</h2>' +
-        (isToday ? '<p>Racha: <strong>' + streak() + (streak() === 1 ? ' día' : ' días') + '</strong></p>' : '') +
+        (isToday ? '<p>Racha: <strong>' + streakLabel(streak()) + '</strong></p>' : '') +
         (isToday && backupOverdue() ? '<p class="remind">' + (state.lastExport ? "Hace " + backupAge() + " días sin copia" : "Todavía no exportas una copia") + ' · <button class="linkbtn" data-act="export">Exportar</button></p>' : '') +
       '</div>' +
       '<details class="more"' + (morningOpen === ds ? " open" : "") + '><summary>Ver mi mañana <span class="caret" aria-hidden="true"></span></summary>' + morning + '</details>';
@@ -959,13 +940,6 @@ function letterToggleHTML(cls, l, on, label, inner){
   const id = "tg-" + cls + "-" + l.key + "-" + (toggleSeq++);
   return '<label class="' + cls + (on ? " done" : "") + '" for="' + id + '" data-toggle="' + l.key + '" role="button" tabindex="0" aria-pressed="' + on + '" aria-label="' + label + '">' +
     inner + '<input type="checkbox" switch id="' + id + '" class="tg" tabindex="-1" aria-hidden="true"></label>';
-}
-
-function progressMsg(n){
-  if(n === 0) return "¡A empezar!";
-  if(n < 3) return "Buen arranque";
-  if(n < 6) return "Ya casi";
-  return "Mañana completa";
 }
 
 function refreshChecks(){
@@ -1006,10 +980,9 @@ function refreshChecks(){
       renderToday();
     }
   }
-  const c = $("#p-count"); if(c) c.textContent = n + " de 6";
-  const m = $("#p-msg"); if(m) m.textContent = progressMsg(n);
-  const b = $("#p-bar"); if(b) b.style.width = (n/6*100) + "%";
-  const s = $("#p-streak"); if(s) s.textContent = streak();
+  LETTERS.forEach(function(l){ $$('[data-letter="' + l.key + '"]').forEach(function(t){ t.classList.toggle("done", !!d.checks[l.key]); }); });
+  $$("#view-today .letters").forEach(function(g){ g.setAttribute("aria-label", n + " de 6"); });
+  const s = $("#p-streak"); if(s) s.textContent = streakLabel(streak());
 }
 
 function toggleLetter(key){
