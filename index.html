@@ -792,7 +792,7 @@ function ask(title, text, buttons, dismiss){
 // Making the copy and getting it off the iPhone are separate, so another way out can be added later.
 function backupJSON(){
   flushSave();
-  return JSON.stringify({app: "savers", version: 2, exportedAt: new Date().toISOString(), settings: state.settings, days: state.days}, null, 2);
+  return JSON.stringify({app: "savers", version: 2, exportedAt: new Date().toISOString(), paraLaIA: SUMMARY_NOTE, resumen: weekSummary(), settings: state.settings, days: state.days}, null, 2);
 }
 function markBackedUp(){
   state.lastExport = new Date().toISOString();
@@ -839,10 +839,15 @@ function importBackupText(text){
   const PARTS = [["name", "tu nombre"], ["affirmations", "tus afirmaciones"], ["visualization", "tu visualización"], ["schedule", "tu horario"]];
   const parts = PARTS.filter(function(p){ return Object.prototype.hasOwnProperty.call(data.settings, p[0]); });
   if(!parts.length && !n){ toast("Esa copia no trae nada para importar"); return; }
+  const changed = summaryChanges(data, parts);
   const names = parts.map(function(p){ return p[1]; });
   const list = names.length > 1 ? names.slice(0, -1).join(", ") + " y " + names[names.length - 1] : names[0];
   const msg = [parts.length ? "Se reemplaza solo " + list + "." : "Tus afirmaciones y tu horario no cambian."];
   if(n) msg.push("Se agrega" + (n === 1 ? " 1 día" : "n " + n + " días") + " de registro; si un día ya existe, se queda el más reciente.");
+  if(changed.length){
+    const shown = changed.slice(0, 3).join(", ") + (changed.length > 3 ? " y " + (changed.length - 3) + " más" : "");
+    msg.push("En el resumen cambió " + shown + ", y eso no se guarda: esas horas y minutos los calcula la app. Para moverlos, cambia la hora del bloque o los minutos de Silencio y Lectura.");
+  }
   ask("¿Importar esta copia?", msg, [{label: "Cancelar", value: "cancel"}, {label: "Importar", value: "ok", primary: true}], "cancel")
     .then(function(v){ if(v === "ok") applyImport(data, parts, incomingDays); });
 }
@@ -2518,6 +2523,69 @@ function letterRowsHTML(type, st, next, seen){
       ? '<button class="srow sub" data-mins="' + k + '" data-type="' + type + '"><b>' + LETTER_BY[k].name + '</b><small>' + esc(info) + '</small><span class="chev" aria-hidden="true"></span></button>'
       : '<div class="srow sub"><b>' + LETTER_BY[k].name + '</b><small>' + esc(info) + '</small><span class="chev blank" aria-hidden="true"></span></div>';
   }).join("") + overlapHTML(type, st, next, keys);
+}
+// The backup carries the routine weekday by weekday for whoever reads it (an AI helping to adjust it).
+// The app works it out from the blocks and the minutes; an import never takes it, only checks it.
+const SUMMARY_NOTE = "\"resumen\" es solo para leer: la app lo calcula y al importar no lo usa. La hora de cada letra es la hora de su bloque más los minutos de las letras que van antes. " +
+  "Para ajustar la rutina, cambia settings.schedule. En types.normal y types.gym, cada bloque tiene \"time\" (su hora todos los días de ese tipo), \"times\" (otra hora solo un día de la semana, como {\"jue\": \"5:10\"}) " +
+  "y \"letters\" (qué letras van en ese bloque y en qué orden: silencio, afirmaciones, visualizacion, ejercicio, lectura, escritura). " +
+  "Los minutos de Silencio y Lectura van en \"minutes\" ({\"silencio\": 10, \"lectura\": 4}) y \"minutesDays\" ({\"lectura\": {\"jue\": 10}}); los de Afirmaciones, Visualización, Ejercicio y Escritura no se pueden cambiar. " +
+  "\"week\" dice qué es cada día (0 domingo … 5 viernes): \"normal\", \"gym\" u \"off\" (sin SAVERS); el sábado es Shabbat. " +
+  "Las horas se escriben \"5:20\" (de mañana) o \"8:50 pm\". Un cambio solo para una fecha va en days[\"AAAA-MM-DD\"]: \"times\" (por id de bloque) y \"mins\".";
+function weekSummary(){
+  const out = {};
+  [0, 1, 2, 3, 4, 5, 6].forEach(function(w){
+    const type = weekType(w);
+    if(type === "shabbat" || type === "off"){ out[DAY_NAMES[w]] = {tipo: type === "off" ? TYPE_NAMES.off : "Shabbat"}; return; }
+    const t = scheduleType(type), seen = {}, letras = [];
+    GROUPS.forEach(function(g){
+      groupList(t, g[0]).forEach(function(st){
+        let at = parseTime(timeOn(st, w) || st.time);
+        (Array.isArray(st.letters) ? st.letters : []).forEach(function(k){
+          if(!LETTER_BY[k] || seen[k]) return;
+          seen[k] = true;
+          const min = letterMinutes(k, type, null, w);
+          letras.push({letra: LETTER_BY[k].name, bloque: st.title || "", hora: at == null ? "" : timeLabel(at), minutos: min});
+          if(at != null) at += min;
+        });
+      });
+    });
+    out[DAY_NAMES[w]] = {tipo: TYPE_NAMES[type], letras: letras};
+  });
+  return out;
+}
+// What a file's summary says that importing won't keep: "Afirmaciones a las 6:10 (lun, mar)". A summary that
+// still shows the routine as it was (the schedule changed, the summary didn't) or as it will be is fine.
+function summaryChanges(data, parts){
+  if(!data.resumen || typeof data.resumen !== "object") return [];
+  const incoming = normalizeSettings(data.settings), merged = clone(state.settings), keep = state.settings;
+  parts.forEach(function(p){ merged[p[0]] = incoming[p[0]]; });
+  const before = weekSummary();
+  let mine;
+  state.settings = merged;
+  try { mine = weekSummary(); } finally { state.settings = keep; }
+  const found = {}, order = [];
+  function plain(x){ return String(x == null ? "" : x).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
+  Object.keys(data.resumen).forEach(function(day){
+    const w = DAY_NAMES.map(plainDay).indexOf(plainDay(day)), theirs = data.resumen[day];
+    const ours = w >= 0 ? mine[DAY_NAMES[w]] : null;
+    if(!ours || !ours.letras || !theirs || !Array.isArray(theirs.letras)) return;
+    const was = before[DAY_NAMES[w]] && before[DAY_NAMES[w]].letras || [];
+    function same(list, x){ return list.filter(function(y){ return plain(y.letra) === plain(x.letra); })[0]; }
+    theirs.letras.forEach(function(x){
+      const m = x && typeof x === "object" ? same(ours.letras, x) : null;
+      if(!m) return;
+      const o = same(was, x) || {};
+      let what = "";
+      const h = String(x.hora || "").trim(), mn = x.minutos != null ? String(x.minutos).trim() : "";
+      if(m.hora && h && !sameTime(h, m.hora) && !sameTime(h, o.hora)) what = m.letra + " a las " + h;
+      else if(mn !== "" && Number(mn) !== m.minutos && Number(mn) !== o.minutos) what = m.letra + " en " + mn + " min";
+      if(!what) return;
+      if(!found[what]){ found[what] = []; order.push(what); }
+      found[what].push(DAY_KEYS[w]);
+    });
+  });
+  return order.map(function(what){ return what + " (" + found[what].join(", ") + ")"; });
 }
 // "4 min · jue 10 min": the minutes for all days and the weekdays that have their own.
 function minutesSummary(type, key){

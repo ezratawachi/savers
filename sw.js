@@ -1,4 +1,4 @@
-const CACHE = "savers-v30";
+const CACHE = "savers-v31";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
