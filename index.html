@@ -104,7 +104,7 @@ details.card>summary::-webkit-details-marker{display:none}
 .nocaret{flex:0 0 auto;width:16px}
 .caret{flex:0 0 auto;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .2s}
 details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin-bottom:-2px}
-.body{padding:0 14px 14px 64px}
+.body{padding:0 14px 14px}
 .card.done .ttl,.card.done .time{opacity:.5}
 .card.done{background:transparent}
 
@@ -136,15 +136,13 @@ details.more>summary .caret{border-color:var(--sky)}
 .btn{border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--surface);border:1px solid var(--line)}
 .btn.primary{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
 .timer[data-run="visualizacion"] [data-r="next"]{font-size:1.02rem;line-height:1.45;color:var(--ink);min-height:2.9em;margin-top:2px}
-.mix{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);cursor:pointer}
-.mix b{display:block;font-size:.92rem}
-.mix small{display:block;font-size:.8rem;color:var(--muted);line-height:1.3}
-.mix input{flex:0 0 auto;accent-color:var(--ok);margin:0}
 .howto{margin-top:10px;font-size:.92rem}
 .howto summary{color:var(--sky);font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center}
 .howto ol{margin:4px 0 6px}
 /* letter toggles: a label around a hidden native switch (the real tap on it is what vibrates) */
-label.lt,label.chk{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+label.lt,label.chk,label.wdone{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.wdone-row{display:flex;justify-content:flex-end;margin-top:10px}
+.card.done .wdone-row{display:none}
 input.tg{display:none}
 
 /* fields */
@@ -163,7 +161,6 @@ textarea.grow{resize:none;overflow:hidden;min-height:0;line-height:1.5}
 .save-failed .saved{display:none}
 textarea.wt{display:block;transition:background .2s ease,border-color .2s ease,padding .2s ease}
 .has>textarea.wt:not(:focus){background:transparent;border-color:transparent;padding-left:0;padding-right:0}
-.body.wide{padding-left:14px}
 
 .rest{margin-top:18px;padding:22px 18px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
 .rest h2{font-family:var(--display);font-weight:800;font-size:1.6rem;margin:0 0 6px}
@@ -217,6 +214,7 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .srow small.warn{color:var(--warn);font-weight:700}
 .srow input[type=text]{flex:0 1 60%;min-width:0;border:0;background:transparent;padding:4px 0;text-align:right;color:var(--muted)}
 .srow input[type=text]:focus{color:var(--ink);outline:0}
+.srow input[type=checkbox]{flex:0 0 auto;margin:0;accent-color:var(--ok)}
 .chev{flex:0 0 auto;width:8px;height:8px;border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 0 2px}
 .sfoot{font-size:.82rem;color:var(--muted);margin:6px 4px 0}
 .warn{color:var(--warn)}
@@ -737,6 +735,13 @@ function timelineHTML(type){
 function affReviewDue(){ return state.affReviewed !== monthKey(state.today); }
 function markAffReviewed(){ state.affReviewed = monthKey(state.today); store.set("savers:affReviewed", state.affReviewed); }
 
+// "5:15–6:00" → "45 min"
+function spanMinutes(range){
+  const m = /(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/.exec(range || "");
+  if(!m) return "";
+  const mins = (+m[3] * 60 + +m[4]) - (+m[1] * 60 + +m[2]);
+  return mins > 0 ? mins + " min" : "";
+}
 function letterInfo(key, type){
   const gym = type === "gym";
   const s = state.settings;
@@ -771,7 +776,7 @@ function letterInfo(key, type){
     }
     case "ejercicio":
       if(gym) return {
-        sub: "Gym con tu entrenador", time: sc.gymTime || "Gym", fixed: true
+        sub: "Gym con tu entrenador", time: spanMinutes(sc.gymTime) || "Gym", fixed: true
       };
       return {
         sub: "Rutina en casa", time: "8 min",
@@ -802,7 +807,7 @@ function letterInfo(key, type){
 /* ---------- writing: one component for Hoy and Historial ---------- */
 const W_FIELDS = [
   {k:"gratitude", label:"Agradezco", hint:"algo concreto de ayer y por qué"},
-  {k:"bookIdea", label:"Del libro", hint:"una idea, si leíste"},
+  {k:"bookIdea", label:"Del libro", hint:"una idea de lo que leíste hoy", gymHint:"una idea de lo que leíste ayer"},
   {k:"notes", label:"Notas", hint:"opcional"}
 ];
 const SAVED = '<span class="saved" aria-hidden="true">✓ Guardado</span>';
@@ -811,12 +816,14 @@ function wId(scope, ds, k){ return "w" + scope + "-" + ds + "-" + k; }
 function wFieldHTML(scope, ds, d, f){
   const v = d[f.k] || "";
   return '<div class="wf' + (v ? " has" : "") + '">' +
-    '<label class="f" for="' + wId(scope, ds, f.k) + '"><span>' + f.label + ' <small>' + f.hint + '</small></span>' + SAVED + '</label>' +
+    '<label class="f" for="' + wId(scope, ds, f.k) + '"><span>' + f.label + ' <small>' + (f.gymHint && dayType(ds) === "gym" ? f.gymHint : f.hint) + '</small></span>' + SAVED + '</label>' +
     '<textarea class="grow wt" rows="' + (v ? 1 : 3) + '" id="' + wId(scope, ds, f.k) + '" data-w="' + f.k + '" data-ds="' + ds + '">' + esc(v) + '</textarea>' +
   '</div>';
 }
 function writingHTML(ds, d){
-  return '<div class="body wide">' + W_FIELDS.map(function(f){ return wFieldHTML("t", ds, d, f); }).join("") + '</div>';
+  const l = LETTERS.filter(function(x){ return x.key === "escritura"; })[0];
+  return '<div class="body">' + W_FIELDS.map(function(f){ return wFieldHTML("t", ds, d, f); }).join("") +
+    '<div class="wdone-row">' + letterToggleHTML("btn primary wdone", l, false, "Listo, marcar Escritura", "Listo") + '</div></div>';
 }
 function hasWriting(d){ return !!(d && (d.gratitude || d.bookIdea || d.notes)); }
 function writingReadHTML(ds, d){
@@ -907,6 +914,7 @@ function renderToday(opts){
 
   morning += '<div class="list">' + LETTERS.map(function(l){
     const info = letterInfo(l.key, type === "gym" ? "gym" : "normal");
+    if(!isToday && l.key !== "escritura") info.fixed = true;
     const on = !!d.checks[l.key];
     const cls = 'class="card' + (on ? " done" : "") + '" data-card="' + l.key + '"';
     const row =
@@ -914,6 +922,7 @@ function renderToday(opts){
       '<span class="ttl"><b>' + l.name + '</b><span>' + info.sub + '</span></span>' +
       '<span class="time">' + esc(info.time) + '</span>';
     // Only a card with something to do inside opens (Silencio, and Ejercicio on gym days, don't).
+    // On a past day only Escritura opens: it's a record, not a morning to run again.
     if(info.fixed) return '<div ' + cls + '><div class="cardrow">' + row + '<span class="nocaret"></span></div></div>';
     const inner = l.key === "escritura" ? writingHTML(ds, d) : '<div class="body">' + info.html + '</div>';
     return '<details ' + cls + (openCards.has(l.key) && !on ? " open" : "") + '>' +
@@ -1057,13 +1066,6 @@ function bindToday(){
     $('[data-act="go"]', box).addEventListener("click", function(){ r.running ? pauseRun(r) : startRun(r); });
     $('[data-act="skip"]', box).addEventListener("click", function(){ skipStep(r); });
     $('[data-act="reset"]', box).addEventListener("click", function(){ resetRun(r); });
-  });
-  $$("[data-mix]", root).forEach(function(el){
-    el.addEventListener("change", function(){
-      store.set("savers:keepMusic", el.checked);
-      $$("[data-mix]", root).forEach(function(o){ o.checked = el.checked; });
-      if(anyRunning()) setAudioMode(runAudioMode());
-    });
   });
   const rd = $(".timer[data-read]", root);
   if(rd){
@@ -1265,11 +1267,6 @@ function finishRun(r){
   updateRunUI(r, true);
 }
 
-function mixSwitchHTML(key){
-  return '<label class="mix" for="mix-' + key + '"><span><b>Mantener mi música</b>' +
-    '<small>Si está activo, apaga el modo silencio para escuchar la voz.</small></span>' +
-    '<input type="checkbox" switch id="mix-' + key + '" data-mix' + (keepMusic() ? " checked" : "") + '></label>';
-}
 function runBoxHTML(key){
   const r = runs[key];
   return '<div class="timer" data-run="' + key + '">' +
@@ -1280,9 +1277,8 @@ function runBoxHTML(key){
     '<div class="row">' +
       '<button class="btn primary" data-act="go">Empezar</button>' +
       '<button class="btn" data-act="skip">Siguiente</button>' +
-      '<button class="btn" data-act="reset">Reiniciar</button>' +
+      '<button class="btn" data-act="reset" hidden>Reiniciar</button>' +
     '</div>' +
-    mixSwitchHTML(key) +
   '</div>';
 }
 function updateRunUI(r, done){
@@ -1301,6 +1297,7 @@ function updateRunUI(r, done){
   $('[data-r="clock"]', box).textContent = Math.floor(clock / 60) + ":" + pad(clock % 60);
   $('[data-r="bar"]', box).style.width = (r.started && total ? el / total * 100 : 0) + "%";
   $('[data-act="go"]', box).textContent = r.running ? "Pausar" : (r.started ? "Seguir" : "Empezar");
+  $('[data-act="reset"]', box).hidden = !r.started;
 }
 function updateAllRunUI(){ Object.keys(runs).forEach(function(k){ updateRunUI(runs[k]); }); }
 
@@ -1571,6 +1568,10 @@ function settingsListHTML(){
       rowHTML("aff", affs ? countLabel(affs, "frase", "frases") : "Vacío") +
       rowHTML("vis", vis ? countLabel(vis, "pregunta", "preguntas") : "Vacío") +
     '</div>' +
+    '<div class="slist">' +
+      '<label class="srow" for="s-music"><b>Mantener mi música</b><input type="checkbox" switch id="s-music"' + (keepMusic() ? " checked" : "") + '></label>' +
+    '</div>' +
+    '<p class="sfoot">En los temporizadores tu música sigue sonando, pero la voz solo se oye si el iPhone no está en silencio. Apagado, la voz pausa tu música y suena siempre.</p>' +
     '<div class="slist">' + rowHTML("backup", lastBackupLabel(), backupOverdue()) + '</div>' +
     '<p class="sfoot">Tus registros viven solo en este iPhone.</p>';
 }
@@ -1714,6 +1715,11 @@ function backToToday(){
   });
   root.addEventListener("change", function(ev){
     const el = ev.target;
+    if(el.id === "s-music"){
+      store.set("savers:keepMusic", el.checked);
+      if(anyRunning()) setAudioMode(runAudioMode());
+      return;
+    }
     if(el.id !== "s-name") return;
     el.value = el.value.trim();
     state.settings.name = el.value;
