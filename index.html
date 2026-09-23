@@ -24,6 +24,7 @@
   --bg:#F3F2EE; --surface:#FFFFFF; --surface-2:#ECEAE4; --ink:#1B2538; --muted:#5E6677;
   --line:#E0DDD6; --edge:#E3E1DB; --shadow:0 1px 2px rgba(16,21,31,.06);
   --dawn:#E27D60; --dawn-ink:#1B2538; --dawn-soft:#F9E4DC; --dawn-line:transparent; --sky:#3B5A8C; --ok:#2F7D5B; --warn:#B42318;
+  --press:rgba(16,21,31,.05); --ease:cubic-bezier(.22,1,.36,1);
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body:"Atkinson Hyperlegible", "Helvetica Neue", Arial, system-ui, sans-serif;
   color-scheme: light;
@@ -32,14 +33,14 @@
   :root:not([data-theme="light"]){
     --bg:#10151F; --surface:#1B2538; --surface-2:#263149; --ink:#E6E9F0; --muted:#9AA3B5;
     --line:#3A4660; --edge:rgba(255,255,255,.08); --shadow:none;
-    --dawn:#E27D60; --dawn-ink:#10151F; --dawn-soft:#1B2538; --dawn-line:rgba(226,125,96,.5); --sky:#9DB4DB; --ok:#5DC093; --warn:#FF8A7A;
+    --dawn:#E27D60; --dawn-ink:#10151F; --dawn-soft:#1B2538; --dawn-line:rgba(226,125,96,.5); --sky:#9DB4DB; --ok:#5DC093; --warn:#FF8A7A; --press:rgba(255,255,255,.06);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#10151F; --surface:#1B2538; --surface-2:#263149; --ink:#E6E9F0; --muted:#9AA3B5;
   --line:#3A4660; --edge:rgba(255,255,255,.08); --shadow:none;
-  --dawn:#E27D60; --dawn-ink:#10151F; --dawn-soft:#1B2538; --dawn-line:rgba(226,125,96,.5); --sky:#9DB4DB; --ok:#5DC093; --warn:#FF8A7A;
+  --dawn:#E27D60; --dawn-ink:#10151F; --dawn-soft:#1B2538; --dawn-line:rgba(226,125,96,.5); --sky:#9DB4DB; --ok:#5DC093; --warn:#FF8A7A; --press:rgba(255,255,255,.06);
   color-scheme: dark;
 }
 *{box-sizing:border-box}
@@ -67,14 +68,11 @@ button.chip span{font-weight:400;margin-left:2px}
 .linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap}
 
 /* hero letters */
-.hero{margin:16px 0 4px}
-.letters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
-/* the six letters only show progress; marking happens in the cards */
-.lt{display:flex;align-items:center;justify-content:center;min-width:0;height:42px;border-radius:11px;border:2px solid var(--line);background:var(--surface);
-  font-family:var(--display);font-weight:800;font-size:1.3rem;color:var(--muted);transition:background .25s ease,color .25s ease,border-color .25s ease}
-.lt.done{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
-@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.14)}65%{transform:scale(.97)}100%{transform:scale(1)}}
-.bump{animation:bump .34s cubic-bezier(.3,.7,.4,1.4)}
+.hero{margin:14px 0 4px}
+/* the six letters only show progress, so they read as a word, not as buttons; marking happens in the cards */
+.letters{display:flex;gap:5px}
+.lt{font-family:var(--display);font-weight:800;font-size:1.5rem;line-height:1.1;letter-spacing:-0.01em;color:var(--muted);opacity:.45;transition:color .15s ease-out,opacity .15s ease-out}
+.lt.done{color:var(--dawn);opacity:1}
 .progress{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:.88rem;color:var(--muted)}
 .progress strong{color:var(--ink)}
 .progress .linkbtn{padding:10px 0}
@@ -83,34 +81,41 @@ button.chip span{font-weight:400;margin-left:2px}
 
 /* cards */
 .list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
-.card{background:var(--surface);border-radius:16px;border:1px solid var(--edge);box-shadow:var(--shadow)}
+.card{background:var(--surface);border-radius:16px;border:1px solid var(--edge);box-shadow:var(--shadow);transition:background-color .3s ease,border-color .3s ease,box-shadow .3s ease}
 .card>summary,.card>.cardrow{list-style:none;display:flex;align-items:center;gap:12px;padding:10px 12px}
-.card>summary{cursor:pointer}
+.card>summary{cursor:pointer;border-radius:15px;transition:background-color .15s ease-out}
+/* pressing the row (not its circle) highlights it, like an iOS list row */
+.card>summary:active:not(:has(label.chk:active)){background:var(--press);transition-duration:0s}
 details.card>summary::-webkit-details-marker{display:none}
 .chk{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:transparent;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--muted);padding:0}
+  display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--muted);padding:0;
+  transition:transform .25s var(--ease),background-color .15s ease-out,border-color .15s ease-out,color .15s ease-out}
+/* feedback on touch-down; it fills on release with no bounce, together with the pop and the haptic */
+label.chk:active{transform:scale(.94);transition:transform .08s ease-out}
 .chk.done{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
-.ttl{flex:1;min-width:0}
+.ttl{flex:1;min-width:0;transition:opacity .3s ease}
 .ttl b{display:block;font-size:1rem}
 .ttl span{display:block;font-size:.84rem;color:var(--muted)}
 .time{font-size:.84rem;font-weight:700;color:var(--muted);white-space:nowrap}
 /* a row with nothing inside keeps the caret's width so every time lines up */
 .nocaret{flex:0 0 auto;width:16px}
-.caret{flex:0 0 auto;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .2s}
-details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin-bottom:-2px}
+.caret{flex:0 0 auto;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .32s var(--ease),margin .32s var(--ease)}
+details[open]:not(.closing)>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin-bottom:-2px}
 .body{padding:0 14px 14px}
 .bhead{margin:10px 4px 0;font-size:.84rem;color:var(--muted)}
 .list .bhead:first-child{margin-top:0}
 .bhead b{font-family:var(--display);color:var(--ink)}
-.card.now{border-color:var(--sky);box-shadow:0 0 0 1px var(--sky)}
+.card.now{border-color:var(--sky)}
 .ttl .now-tag{display:none;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--sky);color:var(--bg);font-size:.72rem;font-weight:700;line-height:1.5;vertical-align:2px}
 .card.now .ttl .now-tag{display:inline-block}
 .card.done .ttl{opacity:.5}
-.card.done{background:transparent;box-shadow:none}
+/* done: a plain row, the filled circle says it all; reopened (Escritura, a repeat) it gets its box back */
+.card.done{background:transparent;box-shadow:none;border-color:transparent}
+.card.done[open]:not(.closing){background:var(--surface);border-color:var(--edge)}
 .card.done>summary,.card.done>.cardrow{padding-top:6px;padding-bottom:6px}
 .card.done .ttl span,.card.done .time,.card.done .caret{display:none}
 /* a finished stretch of the day folded into one row */
-.card.fold{background:transparent;box-shadow:none}
+.card.fold{background:transparent;box-shadow:none;border-color:transparent}
 .card.fold>summary{padding-top:6px;padding-bottom:6px}
 .card.fold .chk{cursor:inherit}
 .fold .ttl small{font-size:.92rem;font-weight:400;color:var(--muted)}
@@ -122,8 +127,7 @@ details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin
 .finish h2{font-family:var(--display);font-weight:800;font-size:1.6rem;margin:0}
 .finish p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
 .finish p strong{color:var(--ink)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.fade-in{animation:fadeUp .45s ease both}
+.finish-wrap{overflow:hidden}
 .body p{margin:0 0 8px}
 .body ol,.body ul{margin:0 0 8px;padding-left:20px}
 .body li{margin-bottom:6px}
@@ -137,7 +141,8 @@ details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin
 .tm-next{font-size:.85rem;color:var(--muted);min-height:1.2em}
 .tm-clock{font-family:var(--display);font-weight:800;font-size:2.8rem;line-height:1;margin:8px 0 6px;font-variant-numeric:tabular-nums}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.btn{border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--surface);border:1px solid var(--line)}
+.btn{border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--surface);border:1px solid var(--line);transition:transform .25s var(--ease)}
+.btn:active{transform:scale(.97);transition-duration:.08s}
 .btn.primary{background:var(--dawn);border-color:var(--dawn);color:var(--dawn-ink)}
 .timer.is-done .tm-clock,.timer.is-done .bar,.timer.is-done [data-act="skip"]{display:none}
 .timer.is-done .btn.primary{background:var(--surface);border-color:var(--line);color:var(--ink)}
@@ -291,13 +296,13 @@ th{font-weight:700;color:var(--muted)}
 /* tabs */
 .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--edge);padding:6px calc(8px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));z-index:5}
 .tabs div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.tab{border:0;background:transparent;padding:11px 4px;border-radius:12px;font-weight:700;color:var(--muted);cursor:pointer}
-.tab[aria-current="page"]{background:var(--surface-2);color:var(--ink)}
+.tab{border:0;background:transparent;padding:11px 4px;border-radius:12px;font-weight:400;color:var(--muted);cursor:pointer}
+.tab[aria-current="page"]{color:var(--ink);font-weight:700}
 .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:6}
 .toast.show{opacity:1}
 [hidden]{display:none!important}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}.bump,.fade-in{animation:none}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
@@ -736,14 +741,107 @@ function unlockSpeech(){
     unlockSpeech.done = true;
   } catch(e){}
 }
-function bump(key){
-  $$('[data-toggle="' + key + '"], [data-letter="' + key + '"]').forEach(function(b){
-    b.classList.remove("bump");
-    void b.offsetWidth;
-    b.classList.add("bump");
+/* ---------- motion ---------- */
+// One curve and one length for every height change: close to a critically damped spring, no bounce.
+const DUR = 320;
+const EASE = "cubic-bezier(.22,1,.36,1)";
+function reduceMotion(){ return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+// Height animations start from the live on-screen height, so a second tap reverses mid-way instead of jumping.
+function liveHeight(el){ return el.getBoundingClientRect().height; }
+function stopHeight(el){ if(el._h){ el._h.cancel(); el._h = null; el.style.overflow = ""; } }
+function animateHeight(el, from, to, then){
+  stopHeight(el);
+  el.style.overflow = "hidden";
+  quietScroll(DUR + 100);
+  const a = el.animate([{height: from + "px"}, {height: to + "px"}], {duration: DUR, easing: EASE, fill: "forwards"});
+  el._h = a;
+  a.onfinish = function(){
+    if(el._h !== a) return;
+    if(then) then();
+    el._h = null; el.style.overflow = "";
+    a.cancel();
+  };
+}
+function closedHeight(det){ return $(":scope > summary", det).getBoundingClientRect().height + det.offsetHeight - det.clientHeight; }
+// Opens or closes a <details> with its height. A closing one stays open until it has shrunk.
+function setOpen(det, want, opts){
+  opts = opts || {};
+  const from = opts.from != null ? opts.from : liveHeight(det);
+  if(!det._h && opts.from == null && det.open === want){ if(opts.after) opts.after(); return; }
+  stopHeight(det);
+  det._want = want;
+  det.classList.toggle("closing", !want);
+  if(reduceMotion() || !det.isConnected){
+    det.open = want; det.classList.remove("closing");
+    if(opts.after) opts.after();
+    return;
+  }
+  det.open = true;
+  if(want) fitFields(det);
+  const to = want ? liveHeight(det) : closedHeight(det);
+  animateHeight(det, from, to, function(){
+    if(!want) det.open = false;
+    det.classList.remove("closing");
+    if(opts.after) opts.after();
   });
 }
-document.addEventListener("animationend", function(e){ if(e.target.classList) e.target.classList.remove("bump"); });
+function wantsOpen(det){ return det._h ? det._want : det.open; }
+
+// A marked card settles into a plain row: its height shrinks and the circle and title glide to their new place.
+function settleCard(card){
+  // Open, opening or already closing: all of them end as a closed row.
+  const open = card.tagName === "DETAILS" && card.open && !card.contains(document.activeElement);
+  const from = liveHeight(card);
+  const row = card.firstElementChild;
+  const parts = [$(".chk", row), $(".ttl", row)].filter(Boolean);
+  const tops = parts.map(function(p){ return p.getBoundingClientRect().top; });
+  stopHeight(card);
+  card.classList.add("done");
+  if(open) openCards.delete(card.getAttribute("data-card"));
+  if(reduceMotion()){ if(open){ card.open = false; card.classList.remove("closing"); } return; }
+  parts.forEach(function(p, i){
+    const dy = tops[i] - p.getBoundingClientRect().top;
+    if(Math.abs(dy) > 0.5) p.animate([{transform: "translateY(" + dy + "px)"}, {transform: "none"}], {duration: DUR, easing: EASE});
+  });
+  if(open){ setOpen(card, false, {from: from}); return; }
+  const to = liveHeight(card);
+  if(Math.abs(to - from) > 0.5) animateHeight(card, from, to);
+}
+// Unmarked mid-way: whatever it was doing reverses from where it is.
+function unsettleCard(card){
+  const from = liveHeight(card);
+  const reopen = card.tagName === "DETAILS" && card._h && card._want === false;
+  stopHeight(card);
+  card.classList.remove("done");
+  if(reopen){ setOpen(card, true, {from: from}); return; }
+  const to = liveHeight(card);
+  if(!reduceMotion() && Math.abs(to - from) > 0.5) animateHeight(card, from, to);
+}
+
+/* ---------- scrolling by itself, never against the finger ---------- */
+let touching = false, userScrollAt = 0, quietUntil = 0;
+// A touchstart listener is also what lets :active show on iOS.
+document.addEventListener("touchstart", function(){ touching = true; }, {passive: true});
+document.addEventListener("touchend", function(){ touching = false; }, {passive: true});
+document.addEventListener("touchcancel", function(){ touching = false; }, {passive: true});
+// Scrolls caused by the app (its own scrolls, the page shortening under an animation) don't count as the user's.
+window.addEventListener("scroll", function(){ if(performance.now() > quietUntil) userScrollAt = performance.now(); }, {passive: true});
+function quietScroll(ms){ quietUntil = Math.max(quietUntil, performance.now() + ms); }
+function userBusy(){ return touching || performance.now() - userScrollAt < 500; }
+// Brings el into view only if it's out of it, and not while the user is touching or scrolling.
+function reveal(el){
+  if(!el || !el.isConnected || userBusy()) return;
+  const r = el.getBoundingClientRect();
+  const top = parseFloat(getComputedStyle($(".wrap")).paddingTop) || 12;
+  const bottom = window.innerHeight - $(".tabs").offsetHeight - 12;
+  let dy = 0;
+  if(r.top < top) dy = r.top - top;
+  else if(r.bottom > bottom) dy = Math.min(r.bottom - bottom, r.top - top);
+  if(Math.abs(dy) < 1) return;
+  quietScroll(900);
+  window.scrollBy({top: dy, behavior: reduceMotion() ? "auto" : "smooth"});
+}
 
 /* ---------- streak ---------- */
 function streak(){
@@ -883,20 +981,27 @@ function finishState(ds, d){
   return later.length && morningDone ? "morning" : "";
 }
 const FINISH_RANK = {"": 0, morning: 1, day: 2};
-// After a letter is marked, "Ahora" moves on and the next card opens (if it has something inside).
+// After a letter is marked, "Ahora" moves on: a beat after the marked card settles, the next one
+// opens (if it has something inside) and comes into view if it's out of it.
+let nowT = null;
 function updateNow(){
   const ds = state.viewDate;
   if(ds !== state.today) return;
   const d = state.days[ds] || blankDay(ds);
   const now = nextKey(dayBlocks(ds, schedTypeOf(ds)), d);
+  let next = null;
   $$("#view-today .card[data-card]").forEach(function(card){
-    const is = card.getAttribute("data-card") === now;
-    if(is && !card.classList.contains("now")){
-      if(card.tagName === "DETAILS" && !card.open) card.open = true;
-      card.scrollIntoView({block: "nearest", behavior: "smooth"});
-    }
-    card.classList.toggle("now", is);
+    if(card.getAttribute("data-card") !== now) card.classList.remove("now");
+    else if(!card.classList.contains("now")) next = card;
   });
+  clearTimeout(nowT);
+  if(!next) return;
+  nowT = setTimeout(function(){
+    if(!next.isConnected) return;
+    next.classList.add("now");
+    if(next.tagName === "DETAILS" && !next.classList.contains("done")) setOpen(next, true, {after: function(){ reveal(next); }});
+    else reveal(next);
+  }, reduceMotion() ? 0 : 150);
 }
 
 /* ---------- writing: one component for Hoy and Historial ---------- */
@@ -999,6 +1104,7 @@ function renderToday(opts){
   const n = countDone(d);
   const schedType = schedTypeOf(ds);
   const fin = finishState(ds, d);
+  const settle = !!(opts && opts.settle);
   let morning =
     '<div class="hero"><div class="letters" role="img" aria-label="' + n + ' de 6">' +
       LETTERS.map(function(l){
@@ -1025,7 +1131,8 @@ function renderToday(opts){
   if(folded.length){
     const count = folded.reduce(function(a, b){ return a + b.keys.length; }, 0);
     const label = fin === "day" && blocks.some(function(b){ return b.later; }) ? "Todo el día" : "Mañana";
-    foldHTML = '<details class="card fold' + (opts && opts.fade ? " fade-in" : "") + '"' + (foldOpenFor === ds ? " open" : "") + '>' +
+    // Settling, it's drawn open at the height the cards had, then shrinks into its row (settleFinish).
+    foldHTML = '<details class="card fold"' + (foldOpenFor === ds || settle ? " open" : "") + '>' +
       '<summary><span class="chk done" aria-hidden="true"><span class="chk-t">✓</span></span>' +
         '<span class="ttl"><b>' + label + ' <small>· ' + count + ' hechas</small></b></span>' +
         '<span class="caret" aria-hidden="true"></span></summary>' +
@@ -1051,19 +1158,18 @@ function renderToday(opts){
   }
 
   if(fin){
-    const fade = opts && opts.fade ? " fade-in" : "";
     const left = fin === "morning" ? dayBlocks(ds, schedType).filter(function(b){ return b.later; }) : [];
     const pending = left.map(function(b){
       const names = b.keys.filter(function(k){ return !d.checks[k]; }).map(function(k){ return LETTER_BY[k].name; });
       return names.length ? names.join(" y ") + (b.head && b.head[1] ? " a las " + b.head[1] : "") : "";
     }).filter(Boolean).join(", ");
     html +=
-      '<div class="finish' + fade + '" data-fin="' + fin + '"><div class="big" aria-hidden="true">✓</div>' +
+      '<div class="finish-wrap"' + (settle ? ' style="height:0"' : '') + '><div class="finish" data-fin="' + fin + '"><div class="big" aria-hidden="true">✓</div>' +
         '<h2>' + (fin === "morning" ? "Mañana lista" : isToday ? "Día completo" : "Registro completo") + '</h2>' +
         (fin === "morning" ? '<p>Falta <strong>' + esc(pending) + '</strong></p>'
           : isToday ? '<p>Racha: <strong>' + streakLabel(streak()) + '</strong></p>' : '') +
         (isToday && backupOverdue() ? '<p class="remind">' + (state.lastExport ? "Hace " + backupAge() + " días sin copia" : "Todavía no exportas una copia") + ' · <button class="linkbtn" data-act="export">Exportar</button></p>' : '') +
-      '</div>';
+      '</div></div>';
   }
   html += morning;
 
@@ -1076,7 +1182,41 @@ function renderToday(opts){
 }
 let finishT = null;
 
-function closeCard(card){ card.open = false; openCards.delete(card.getAttribute("data-card")); }
+// Reaching a finish folds what's behind it in place: the cards shrink into the "Mañana · N hechas" row
+// right where they were, the page shortens under the view, and then the finish card grows in on top.
+function settleFinish(){
+  const root = $("#view-today");
+  const list = $(".hero + .list", root);
+  if(!list || reduceMotion()){ renderToday(); reveal($(".finish-wrap", root)); return; }
+  const ds = state.viewDate, d = state.days[ds] || blankDay(ds), fin = finishState(ds, d);
+  const keys = [];
+  dayBlocks(ds, schedTypeOf(ds)).forEach(function(b){ if(fin === "day" || !b.later) keys.push.apply(keys, b.keys); });
+  const top = list.getBoundingClientRect().top;
+  let bottom = top;
+  Array.from(list.children).forEach(function(el){
+    if(el.classList.contains("fold") || keys.indexOf(el.getAttribute("data-card")) >= 0) bottom = Math.max(bottom, el.getBoundingClientRect().bottom);
+  });
+  renderToday({settle: true});
+  const fold = $("details.fold", root), wrap = $(".finish-wrap", root);
+  if(!fold || !wrap) return;
+  quietScroll(DUR * 3);
+  const dy = $(".hero + .list", root).getBoundingClientRect().top - top;
+  if(Math.abs(dy) > 0.5) window.scrollBy(0, dy);
+  const sum = $(":scope > summary", fold), inner = $(":scope > .list", fold);
+  // The cards start where they were (under the row that is fading in) and fade as they fold.
+  const fade = inner.animate([{opacity: 1, transform: "translateY(" + (-sum.offsetHeight) + "px)"}, {opacity: 0, transform: "none"}], {duration: DUR * 0.7, easing: "ease-out", fill: "forwards"});
+  sum.animate([{opacity: 0}, {opacity: 1}], {duration: DUR, easing: "ease-out"});
+  setOpen(fold, false, {from: bottom - top, after: function(){
+    fade.cancel();
+    if(!wrap.isConnected) return;
+    wrap.style.height = "";
+    animateHeight(wrap, 0, liveHeight(wrap));
+    wrap.firstElementChild.animate([{opacity: 0, transform: "translateY(8px)"}, {opacity: 1, transform: "none"}], {duration: DUR + 150, easing: "ease-out"});
+    reveal(wrap);
+  }});
+}
+
+function closeCard(card){ openCards.delete(card.getAttribute("data-card")); setOpen(card, false); }
 
 let toggleSeq = 0;
 function letterToggleHTML(cls, l, on, label, inner){
@@ -1098,11 +1238,9 @@ function refreshChecks(){
   });
   $$("#view-today .card[data-card]").forEach(function(card){
     const on = !!d.checks[card.getAttribute("data-card")];
-    if(on && !card.classList.contains("done")){
-      card.classList.add("done");
-      // Writing that's still being typed closes when the field is left.
-      if(card.open && !card.contains(document.activeElement)) closeCard(card);
-    } else if(!on) card.classList.remove("done");
+    // Writing that's still being typed stays open and closes when the field is left.
+    if(on && !card.classList.contains("done")) settleCard(card);
+    else if(!on && card.classList.contains("done")) unsettleCard(card);
   });
   const n = countDone(d);
   if(state.tab === "today"){
@@ -1111,14 +1249,13 @@ function refreshChecks(){
     const want = finishState(ds, d);
     clearTimeout(finishT);
     if(FINISH_RANK[want] > FINISH_RANK[shown]){
-      // Let the last letter light up and the arpeggio play first.
+      // Let the last circle fill and the arpeggio start first.
       finishT = setTimeout(function(){
         if(state.tab !== "today" || state.viewDate !== ds || finishState(ds, state.days[ds] || blankDay(ds)) !== want) return;
         const a = document.activeElement;
         if(a && a.classList && a.classList.contains("wt")) return;
-        renderToday({fade: true});
-        window.scrollTo({top: 0, behavior: "smooth"});
-      }, 1000);
+        settleFinish();
+      }, 400);
     } else if(want !== shown){
       renderToday();
     }
@@ -1140,14 +1277,8 @@ function toggleLetter(key){
   saveDay(ds, 150);
   if(key === "lectura" && d.checks[key] && readingState()) clearReading();
   if(!d.checks[key]) return;
-  bump(key);
-  const fin = finishState(ds, d);
-  if(fin){
-    completeSound();
-    toast(fin === "day" ? "¡Día completo!" : "¡Mañana lista!");
-  } else {
-    popSound();
-  }
+  // The finish card says it; no toast on top of it.
+  if(finishState(ds, d)) completeSound(); else popSound();
 }
 
 function switchDayType(){
@@ -1170,6 +1301,9 @@ function bindToday(){
     b.addEventListener("keydown", function(e){
       if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleLetter(key); }
     });
+  });
+  $$("details.card", root).forEach(function(det){
+    $(":scope > summary", det).addEventListener("click", function(e){ e.preventDefault(); setOpen(det, !wantsOpen(det)); });
   });
   $$("details.card[data-card]", root).forEach(function(det){
     det.addEventListener("toggle", function(){
@@ -1462,8 +1596,8 @@ function finishReading(){
   d.checks.lectura = true;
   saveDay(r.day, 0);
   if(state.viewDate === r.day) refreshChecks();
-  if(countDone(d) === 6){ completeSound(); toast("¡Día completo!"); }
-  else { popSound(); toast("Lectura marcada"); }
+  if(countDone(d) === 6) completeSound(); else popSound();
+  toast("Lectura marcada");
 }
 function syncReading(){
   const r = readingState();
