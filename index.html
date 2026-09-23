@@ -97,6 +97,12 @@ details.card>summary::-webkit-details-marker{display:none}
 .caret{flex:0 0 auto;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .2s}
 details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin-bottom:-2px}
 .body{padding:0 14px 14px}
+.bhead{margin:10px 4px 0;font-size:.84rem;color:var(--muted)}
+.list .bhead:first-child{margin-top:0}
+.bhead b{font-family:var(--display);color:var(--ink)}
+.card.now{border-color:var(--sky);box-shadow:0 0 0 1px var(--sky)}
+.ttl .now-tag{display:none;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--sky);color:var(--bg);font-size:.72rem;font-weight:700;line-height:1.5;vertical-align:2px}
+.card.now .ttl .now-tag{display:inline-block}
 .card.done .ttl{opacity:.5}
 .card.done{background:transparent}
 .card.done>summary,.card.done>.cardrow{padding-top:6px;padding-bottom:6px}
@@ -405,7 +411,10 @@ function weekDayType(ds){
 function laterTime(type, key, ds){
   const t = scheduleType(type);
   const item = t && Array.isArray(t.later) ? t.later.filter(function(x){ return x && Array.isArray(x.letters) && x.letters.indexOf(key) >= 0 && x.times; })[0] : null;
-  if(!item) return "";
+  return timeOn(item, ds);
+}
+function timeOn(item, ds){
+  if(!item || !item.times || typeof item.times !== "object") return "";
   const w = plainDay(DAY_KEYS[parse(ds).getDay()]);
   const k = Object.keys(item.times).filter(function(x){ return plainDay(x) === w; })[0];
   return k ? String(item.times[k]) : "";
@@ -771,14 +780,14 @@ function letterInfo(key, type){
   const sc = s.schedule || {};
   switch(key){
     case "silencio": return {
-      sub: gym ? "Daily Calm · después del gym" : "Daily Calm", time: "10 min", fixed: true
+      sub: "Daily Calm", time: "10 min", fixed: true
     };
     case "afirmaciones": {
       const list = filled(s.affirmations);
       const mins = Math.max(1, Math.ceil(list.length * SECS_PER_AFFIRMATION / 60));
       const review = list.length && state.viewDate === state.today && affReviewDue();
       return {
-        sub: review ? "Toca revisarlas" : gym ? "Con tu café, antes del gym" : "En voz alta", time: mins + " min",
+        sub: review ? "Toca revisarlas" : "En voz alta", time: mins + " min",
         html: list.length
           ? '<div class="affs">' + list.map(function(a){ return '<p>' + esc(a.text) + '</p>'; }).join("") + '</div>' +
             (review
@@ -815,7 +824,7 @@ function letterInfo(key, type){
       if(gym){
         const at = laterTime("gym", "lectura", state.viewDate);
         return {
-          sub: at ? "Más tarde · " + at : "Más tarde", time: READ_MIN + " min",
+          sub: "Tu libro", time: READ_MIN + " min",
           html: '<p>Hoy lees más tarde' + (at ? ", a las " + esc(at) : sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Empieza desde aquí y se marca sola.</p>' + readingHTML() + shortcutHelpHTML()
         };
       }
@@ -828,6 +837,51 @@ function letterInfo(key, type){
       html: ""
     };
   }
+}
+
+/* ---------- the guide: the day's blocks and what's next ---------- */
+const LETTER_BY = {};
+LETTERS.forEach(function(l){ LETTER_BY[l.key] = l; });
+// The schedule's blocks that hold letters, in order, with "Más tarde" last. Letters the schedule
+// doesn't place go in a block with no heading before "Más tarde" (all six when there's no schedule).
+function dayBlocks(ds, type){
+  const t = scheduleType(type), seen = {}, morning = [], later = [];
+  function add(list, head, letters){
+    const keys = (Array.isArray(letters) ? letters : []).filter(function(k){
+      if(!LETTER_BY[k] || seen[k]) return false;
+      seen[k] = true;
+      return true;
+    });
+    if(keys.length) list.push({head: head, keys: keys, later: list === later});
+  }
+  if(t){
+    (Array.isArray(t.steps) ? t.steps : []).forEach(function(st){ if(st) add(morning, [st.time, st.short || st.title], st.letters); });
+    (Array.isArray(t.later) ? t.later : []).forEach(function(x){ if(x) add(later, ["Más tarde", timeOn(x, ds)], x.letters); });
+  }
+  add(morning, null, LETTERS.map(function(l){ return l.key; }));
+  return morning.concat(later);
+}
+// What's next is the first unmarked letter in the day's order: progress decides, never the clock.
+function nextKey(blocks, d){
+  for(let i = 0; i < blocks.length; i++){
+    for(let j = 0; j < blocks[i].keys.length; j++){ if(!d.checks[blocks[i].keys[j]]) return blocks[i].keys[j]; }
+  }
+  return null;
+}
+// After a letter is marked, "Ahora" moves on and the next card opens (if it has something inside).
+function updateNow(){
+  const ds = state.viewDate;
+  if(ds !== state.today) return;
+  const d = state.days[ds] || blankDay(ds);
+  const now = nextKey(dayBlocks(ds, dayType(ds) === "gym" ? "gym" : "normal"), d);
+  $$("#view-today .card").forEach(function(card){
+    const is = card.getAttribute("data-card") === now;
+    if(is && !card.classList.contains("now")){
+      if(card.tagName === "DETAILS" && !card.open) card.open = true;
+      card.scrollIntoView({block: "nearest", behavior: "smooth"});
+    }
+    card.classList.toggle("now", is);
+  });
 }
 
 /* ---------- writing: one component for Hoy and Historial ---------- */
@@ -937,22 +991,29 @@ function renderToday(opts){
     '<div class="progress"><span>Racha: <strong id="p-streak">' + streakLabel(streak()) + '</strong></span>' +
       (hasSchedule(schedType) ? '<button class="linkbtn" data-sched="' + schedType + '">Ver horario ›</button>' : '') + '</div></div>';
 
-  morning += '<div class="list">' + LETTERS.map(function(l){
-    const info = letterInfo(l.key, type === "gym" ? "gym" : "normal");
+  const blocks = dayBlocks(ds, schedType);
+  const now = isToday ? nextKey(blocks, d) : null;
+  morning += '<div class="list">' + blocks.map(function(b){
+    return (b.head ? '<p class="bhead">' + b.head.filter(Boolean).map(function(x, i){ return i ? esc(x) : '<b>' + esc(x) + '</b>'; }).join(" · ") + '</p>' : '') +
+      b.keys.map(function(k){ return cardHTML(LETTER_BY[k], k === now); }).join("");
+  }).join("") + '</div>';
+
+  function cardHTML(l, isNow){
+    const info = letterInfo(l.key, schedType);
     if(!isToday && l.key !== "escritura") info.fixed = true;
     const on = !!d.checks[l.key];
-    const cls = 'class="card' + (on ? " done" : "") + '" data-card="' + l.key + '"';
+    const cls = 'class="card' + (on ? " done" : "") + (isNow ? " now" : "") + '" data-card="' + l.key + '"';
     const row =
       letterToggleHTML("chk", l, on, "Marcar " + l.name, '<span class="chk-t">' + (on ? "✓" : l.L) + '</span>') +
-      '<span class="ttl"><b>' + l.name + '</b><span>' + info.sub + '</span></span>' +
+      '<span class="ttl"><b>' + l.name + '<span class="now-tag">Ahora</span></b><span>' + info.sub + '</span></span>' +
       '<span class="time">' + esc(info.time) + '</span>';
     // Only a card with something to do inside opens (Silencio, and Ejercicio on gym days, don't).
     // On a past day only Escritura opens: it's a record, not a morning to run again.
     if(info.fixed) return '<div ' + cls + '><div class="cardrow">' + row + '<span class="nocaret"></span></div></div>';
     const inner = l.key === "escritura" ? writingHTML(ds, d) : '<div class="body">' + info.html + '</div>';
-    return '<details ' + cls + (openCards.has(l.key) && !on ? " open" : "") + '>' +
+    return '<details ' + cls + ((isNow || openCards.has(l.key)) && !on ? " open" : "") + '>' +
       '<summary>' + row + '<span class="caret" aria-hidden="true"></span></summary>' + inner + '</details>';
-  }).join("") + '</div>';
+  }
 
   if(n === 6){
     const fade = opts && opts.fade ? " fade-in" : "";
@@ -1027,6 +1088,7 @@ function refreshChecks(){
   LETTERS.forEach(function(l){ $$('[data-letter="' + l.key + '"]').forEach(function(t){ t.classList.toggle("done", !!d.checks[l.key]); }); });
   $$("#view-today .letters").forEach(function(g){ g.setAttribute("aria-label", n + " de 6"); });
   const s = $("#p-streak"); if(s) s.textContent = streakLabel(streak());
+  updateNow();
   updateAllRunUI();
   renderReading(readingState());
 }
@@ -1075,7 +1137,8 @@ function bindToday(){
   $$("details.card", root).forEach(function(det){
     det.addEventListener("toggle", function(){
       const k = det.getAttribute("data-card");
-      if(det.open) openCards.add(k); else openCards.delete(k);
+      // The "Ahora" card opens by itself; only cards opened by hand are remembered.
+      if(det.open){ if(!det.classList.contains("now")) openCards.add(k); } else openCards.delete(k);
     });
   });
   const dt = $("#day-type", root);
