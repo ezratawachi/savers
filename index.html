@@ -210,6 +210,7 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:24px 
 .cell.off span{background:transparent;color:var(--muted);font-weight:400}
 .cell.future{opacity:.4;cursor:default}
 .cell.today span{box-shadow:inset 0 0 0 2px var(--sky)}
+.cell.planned span::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--sky)}
 .cell.blank{visibility:hidden}
 .legend{font-size:.8rem;color:var(--muted);margin-top:8px}
 .entries{display:flex;flex-direction:column;gap:8px}
@@ -239,6 +240,11 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .srow input[type=text]{flex:0 1 60%;min-width:0;border:0;background:transparent;padding:4px 0;text-align:right;color:var(--muted)}
 .srow input[type=text]:focus{color:var(--ink);outline:0}
 .srow input[type=checkbox]{flex:0 0 auto;margin:0;accent-color:var(--ok)}
+.srow select{flex:0 1 auto;min-width:0;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.95rem;text-align:right;text-align-last:right;padding:4px 0;-webkit-appearance:none;appearance:none;cursor:pointer}
+.srow select:focus{color:var(--ink);outline:0}
+.chev.down{transform:rotate(135deg);margin:-4px 4px 0 2px}
+.slabel{font-size:.8rem;font-weight:700;color:var(--muted);margin:22px 4px -8px}
+.slabel.sm{margin-top:16px}
 .chev{flex:0 0 auto;width:8px;height:8px;border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 0 2px}
 .sfoot{font-size:.82rem;color:var(--muted);margin:6px 4px 0}
 .warn{color:var(--warn)}
@@ -256,15 +262,18 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .glabel{display:block;font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.01em;margin-bottom:2px}
 .gitem p{margin:0;font-size:1.02rem;line-height:1.6}
 .tablewrap{overflow-x:auto}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--surface-2);border-radius:12px;padding:3px;margin:2px 0 16px}
+.seg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2px;background:var(--surface-2);border-radius:12px;padding:3px;margin:2px 0 16px}
 .seg button{border:0;background:transparent;border-radius:9px;padding:7px 6px;min-height:48px;cursor:pointer;color:var(--muted);line-height:1.2;transition:background .2s ease,color .2s ease}
 .seg button b{display:block;font-size:.95rem}
 .seg button small{display:block;font-size:.74rem;font-weight:400}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.seg.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* inside a white sheet the pressed segment needs to stand apart from it */
+.sheet .seg button[aria-pressed="true"],.gblock .seg button[aria-pressed="true"]{background:var(--bg)}
 .tgroup{font-size:.78rem;font-weight:700;color:var(--muted);margin:0 0 6px}
 .tlist{list-style:none;margin:0;padding:0}
 .tlist + .tgroup,.tlist + .tlist{margin-top:16px}
-.tstep{display:grid;grid-template-columns:74px 14px minmax(0,1fr);column-gap:10px;align-items:start}
+.tstep{display:grid;grid-template-columns:90px 14px minmax(0,1fr);column-gap:10px;align-items:start}
 .tstep .tt{font-family:var(--display);font-weight:700;font-size:1rem;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.5}
 .tstep .rail{position:relative;align-self:stretch}
 .tstep .rail::before{content:"";position:absolute;left:6px;top:15px;bottom:-4px;width:2px;background:var(--line)}
@@ -276,6 +285,19 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .tstep .tx span{display:block;color:var(--muted);font-size:.86rem;line-height:1.35;margin-top:1px}
 .tlist.muted .tt,.tlist.muted .tx{color:var(--muted)}
 .tlist.muted .tx{font-weight:400}
+/* an hour you can change: the app's own text in a pill, with the iPhone's time wheel invisible on top */
+.tpick{position:relative;display:inline-block;border-radius:8px;transition:opacity .2s ease}
+.tpick input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:16px}
+.tpick:active{opacity:.5;transition-duration:0s}
+.tpick:has(input:focus-visible){outline:3px solid var(--sky);outline-offset:2px}
+.tt .tpick{padding:0 7px;margin-right:-7px;background:var(--surface-2)}
+.tstep.edited .tt{color:var(--sky)}
+.dnote{margin:16px 0 0}
+.dayed{margin-top:14px}
+.dayed .seg{margin-top:0}
+.bigtime{display:block;margin:0 0 10px;padding:10px;border-radius:14px;background:var(--surface-2);font-family:var(--display);font-weight:800;font-size:2.2rem;line-height:1.2;text-align:center;font-variant-numeric:tabular-nums}
+.sheet:not(.tall) .shead{padding:0 0 10px}
+.sheet:not(.tall) .note{margin:0 0 4px}
 table{border-collapse:collapse;width:100%;font-size:.88rem}
 th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-weight:700;color:var(--muted)}
@@ -416,43 +438,99 @@ function parseDays(str){
   const keys = DAY_KEYS.map(plainDay);
   return String(str || "").split(/[,\s]+/).map(function(x){ return keys.indexOf(plainDay(x)); }).filter(function(i){ return i >= 0; });
 }
-// The schedule's "days" say which weekdays are normal or gym; any weekday it leaves out keeps the usual week.
-let weekCache = {sc: undefined, map: null};
-function weekMap(){
-  const sc = state.settings.schedule;
-  if(weekCache.sc === sc) return weekCache.map;
-  const map = {};
-  ["normal", "gym"].forEach(function(k){ const t = scheduleType(k); if(t) parseDays(t.days).forEach(function(w){ map[w] = k; }); });
-  weekCache = {sc: sc, map: Object.keys(map).length ? map : null};
-  return weekCache.map;
+// What each weekday is: "normal" and "gym" are SAVERS days with their schedule, "off" has no SAVERS.
+// Saturday is always Shabbat. Edited in Ajustes › Horario; lives in the schedule as {0: "off", 1: "normal", ...}.
+const DAY_TYPES = ["normal", "gym", "off"];
+const DEFAULT_WEEK = {0: "off", 1: "normal", 2: "normal", 3: "gym", 4: "normal", 5: "gym"};
+const TYPE_NAMES = {normal: "Normal", gym: "Gym", off: "Sin SAVERS"};
+const CHIP_NAMES = {normal: "Día normal", gym: "Día de gym", off: "Sin SAVERS"};
+function weekType(w){
+  if(w === 6) return "shabbat";
+  const sc = state.settings.schedule, t = sc && sc.week ? sc.week[w] : null;
+  return DAY_TYPES.indexOf(t) >= 0 ? t : DEFAULT_WEEK[w];
 }
-// A routine day can be switched between gym and normal for that day only (the gym got cancelled, it moved).
+function weekDayType(ds){ return weekType(parse(ds).getDay()); }
+// A date can be something else for that day only (the gym got cancelled, a holiday, a Sunday with SAVERS).
 function dayType(ds){
   const t = weekDayType(ds), d = state.days[ds];
-  return (t === "normal" || t === "gym") && d && (d.type === "normal" || d.type === "gym") ? d.type : t;
+  return t !== "shabbat" && d && DAY_TYPES.indexOf(d.type) >= 0 ? d.type : t;
 }
-function weekDayType(ds){
-  const w = parse(ds).getDay();
-  const map = weekMap();
-  if(map && map[w]) return map[w];
-  if(w===1 || w===2 || w===4) return "normal";
-  if(w===3 || w===5) return "gym";
-  if(w===0) return "domingo";
-  return "shabbat";
+function daysOfType(type){ return [0, 1, 2, 3, 4, 5].filter(function(w){ return weekType(w) === type; }); }
+// An hour, most specific first: this date, this weekday ({"times": {"mié": "8:50 pm"}}), every day.
+function stepTime(st, ds){
+  if(!st) return "";
+  const d = ds && state.days[ds];
+  if(d && d.times && st.id && d.times[st.id]) return String(d.times[st.id]);
+  return (ds ? timeOn(st, parse(ds).getDay()) : "") || String(st.time || "");
 }
-// When a letter that's "Más tarde" happens on this weekday: {"times": {"mié": "8:50 pm", ...}}
+// When a letter that's "Más tarde" happens on this day.
 function laterTime(type, key, ds){
   const t = scheduleType(type);
-  const item = t && Array.isArray(t.later) ? t.later.filter(function(x){ return x && Array.isArray(x.letters) && x.letters.indexOf(key) >= 0 && x.times; })[0] : null;
-  return timeOn(item, ds);
+  const item = t && Array.isArray(t.later) ? t.later.filter(function(x){ return x && Array.isArray(x.letters) && x.letters.indexOf(key) >= 0; })[0] : null;
+  return stepTime(item, ds);
 }
-function timeOn(item, ds){
+function timeOn(item, w){
   if(!item || !item.times || typeof item.times !== "object") return "";
-  const w = plainDay(DAY_KEYS[parse(ds).getDay()]);
-  const k = Object.keys(item.times).filter(function(x){ return plainDay(x) === w; })[0];
+  const k = dayKeyIn(item.times, w);
   return k ? String(item.times[k]) : "";
 }
+function dayKeyIn(times, w){ const p = plainDay(DAY_KEYS[w]); return Object.keys(times).filter(function(x){ return plainDay(x) === p; })[0]; }
 function isScheduled(ds){ const t = dayType(ds); return t==="normal" || t==="gym"; }
+
+// "5:20" (morning, as the schedule writes it), "10:10 pm" ⇄ minutes ⇄ "05:20" for <input type="time">.
+function parseTime(s){
+  const m = /^\s*(\d{1,2}):(\d{2})\s*([ap])?\.?\s*m?\.?\s*$/i.exec(String(s || ""));
+  if(!m) return null;
+  let h = +m[1] % 24;
+  const ap = (m[3] || "").toLowerCase();
+  if(ap === "p" && h < 12) h += 12;
+  if(ap === "a" && h === 12) h = 0;
+  return h * 60 + +m[2];
+}
+function timeLabel(min){
+  const h = Math.floor(min / 60) % 24, mm = pad(min % 60);
+  return h < 12 ? (h === 0 ? "12:" + mm + " am" : h + ":" + mm) : (h === 12 ? 12 : h - 12) + ":" + mm + " pm";
+}
+function toInput(s){ const m = parseTime(s); return m == null ? "" : pad(Math.floor(m / 60)) + ":" + pad(m % 60); }
+function fromInput(v){ const m = parseTime(v); return m == null ? "" : timeLabel(m); }
+function sameTime(a, b){ const x = parseTime(a), y = parseTime(b); return x != null && x === y; }
+
+// Older schedules said "days": "lun, mar, jue" in each type and had no ids; this brings them to the week map,
+// gives every step an id (a date's hours are kept by it) and a time for all days (the weekday ones differ from it).
+function migrateSchedule(sc){
+  if(!sc || typeof sc !== "object") return null;
+  const types = sc.types && typeof sc.types === "object" ? sc.types : null;
+  const week = {};
+  Object.keys(DEFAULT_WEEK).forEach(function(w){ week[w] = DEFAULT_WEEK[w]; });
+  if(sc.week && typeof sc.week === "object"){
+    Object.keys(week).forEach(function(w){ if(DAY_TYPES.indexOf(sc.week[w]) >= 0) week[w] = sc.week[w]; });
+  } else if(types){
+    ["normal", "gym"].forEach(function(k){ if(types[k]) parseDays(types[k].days).forEach(function(w){ if(w !== 6) week[w] = k; }); });
+  }
+  sc.week = week;
+  if(!types) return sc;
+  const used = {};
+  ["normal", "gym"].forEach(function(k){
+    const t = types[k];
+    if(!t || typeof t !== "object") return;
+    delete t.days;
+    ["night", "steps", "later"].forEach(function(g){
+      if(!Array.isArray(t[g])) return;
+      t[g].forEach(function(st, i){
+        if(!st || typeof st !== "object") return;
+        if(!st.id || used[st.id]) st.id = k + "-" + g + "-" + i;
+        used[st.id] = true;
+        if(st.times && typeof st.times === "object"){
+          const keys = Object.keys(st.times);
+          if(!st.time && keys.length) st.time = String(st.times[keys[0]]);
+          keys.forEach(function(x){ if(sameTime(st.times[x], st.time)) delete st.times[x]; });
+          if(!Object.keys(st.times).length) delete st.times;
+        }
+      });
+    });
+  });
+  return sc;
+}
 function blankDay(ds){ return {date:ds, checks:{}, gratitude:"", bookIdea:"", notes:"", extra:false}; }
 // The "gran día" lines (and the checkboxes before them) were dropped with everything written in them.
 function dropOldFields(d){
@@ -478,12 +556,12 @@ const state = {
   days: {},
   settings: clone(DEFAULT_SETTINGS),
   month: (function(){ const d = new Date(); return {y:d.getFullYear(), m:d.getMonth()}; })(),
-  showSunday: false,
+  showOff: false,    // today is a day without SAVERS and "Hacer mis SAVERS hoy" was tapped
   lastExport: null,
   since: null,
   affReviewed: null, // "YYYY-MM" of the last monthly affirmation review
-  schedTab: null,    // Normal | Gym selector in the Horario sheet
-  page: null,        // Ajustes screen: null = list, "aff" | "vis" | "backup"
+  schedTab: null,    // Normal | Gym selector in Ajustes › Horario
+  page: null,        // Ajustes screen: null = list, "aff" | "vis" | "sched" | "backup"
   from: null,        // "today" when a screen was opened from Hoy: Listo/Cancelar go back there
   edit: null,        // draft while an Ajustes screen is in edit mode
   editSnapshot: ""
@@ -510,7 +588,7 @@ function normalizeSettings(s){
       note: typeof s.visualization.note === "string" && s.visualization.note !== OLD_VIS_NOTE ? s.visualization.note : DEFAULT_VIS.note
     };
   }
-  if(s.schedule && typeof s.schedule === "object") out.schedule = s.schedule;
+  if(s.schedule && typeof s.schedule === "object") out.schedule = migrateSchedule(clone(s.schedule));
   return out;
 }
 
@@ -1133,8 +1211,8 @@ function dayBlocks(ds, type){
     if(keys.length) list.push({head: head, keys: keys, later: list === later});
   }
   if(t){
-    (Array.isArray(t.steps) ? t.steps : []).forEach(function(st){ if(st) add(morning, [st.time, st.short || st.title], st.letters); });
-    (Array.isArray(t.later) ? t.later : []).forEach(function(x){ if(x) add(later, ["Más tarde", timeOn(x, ds)], x.letters); });
+    (Array.isArray(t.steps) ? t.steps : []).forEach(function(st){ if(st) add(morning, [stepTime(st, ds), st.short || st.title], st.letters); });
+    (Array.isArray(t.later) ? t.later : []).forEach(function(x){ if(x) add(later, ["Más tarde", stepTime(x, ds)], x.letters); });
   }
   add(morning, null, LETTERS.map(function(l){ return l.key; }));
   return morning.concat(later);
@@ -1246,10 +1324,19 @@ function renderDay(root, ds, record, opts){
   dayView = {root: root, ds: ds, record: record};
   const type = dayType(ds);
   const d = state.days[ds] || blankDay(ds);
-  const chip = type === "gym" ? '<button class="chip gym" id="day-type" aria-label="Día de gym. Cambiar a día normal">Día de gym <span aria-hidden="true">⇄</span></button>'
-    : type === "normal" ? '<button class="chip" id="day-type" aria-label="Día normal. Cambiar a día de gym">Día normal <span aria-hidden="true">⇄</span></button>'
-    : type === "domingo" ? '<span class="chip">Domingo</span>' : '<span class="chip">Shabbat</span>';
-  const showRoutine = type === "normal" || type === "gym" || (type === "domingo" && (d.extra || (!record && state.showSunday) || hasContent(d)));
+  const future = ds > state.today;
+  const chip = type === "shabbat" ? '<span class="chip">Shabbat</span>'
+    : '<button class="chip" id="day-type" aria-label="' + CHIP_NAMES[type] + '. Cambiar este día">' + CHIP_NAMES[type] + ' <span aria-hidden="true">›</span></button>';
+  const showRoutine = type === "normal" || type === "gym" || (type === "off" && (d.extra || (!record && state.showOff) || hasContent(d)));
+
+  // A day that hasn't come yet: nothing to mark, only what it will be and its hours.
+  if(record && future && type !== "shabbat"){
+    root.innerHTML = '<div class="dhead"><h1 class="date">' + esc(cap(longDate(ds).replace(",", ""))) + '</h1></div>' +
+      '<div class="gblock dayed" data-dayed="' + ds + '">' + dayEditorHTML(ds) + '</div>';
+    bindDayEditor($("[data-dayed]", root), ds, null);
+    setStatus(statusMsg);
+    return;
+  }
 
   let html;
   if(record){
@@ -1273,9 +1360,9 @@ function renderDay(root, ds, record, opts){
   }
   if(!showRoutine){
     html += record
-      ? '<div class="rest"><h2>Sin registro</h2><p>El domingo está fuera del plan. Si ese día hiciste tus SAVERS, puedes registrarlos.</p>' +
-        '<button class="btn primary" id="sun-go">Hacer mis SAVERS este día</button></div>'
-      : '<div class="rest"><h2>Domingo</h2><p>Por ahora el domingo está fuera del plan. Si quieres, puedes hacer tus SAVERS igual y quedan registrados.</p>' +
+      ? '<div class="rest"><h2>Sin SAVERS</h2><p>Ese día no tocaba SAVERS. Si igual los hiciste, puedes registrarlos.</p>' +
+        '<button class="btn primary" id="sun-go">Registrar mis SAVERS</button></div>'
+      : '<div class="rest"><h2>Sin SAVERS</h2><p>Hoy no toca SAVERS. Si quieres, puedes hacerlos igual y quedan registrados.</p>' +
         '<button class="btn primary" id="sun-go">Hacer mis SAVERS hoy</button></div>';
     root.innerHTML = html; bindDay(root, record); setStatus(statusMsg); return;
   }
@@ -1292,7 +1379,7 @@ function renderDay(root, ds, record, opts){
     '</div>' +
     // With the day complete, the finish card already shows the streak.
     '<div class="progress">' + (fin === "day" ? '<span></span>' : '<span>Racha: <strong id="p-streak">' + streakLabel(streak()) + '</strong></span>') +
-      (hasSchedule(schedType) ? '<button class="linkbtn" data-sched="' + schedType + '">Ver horario ›</button>' : '') + '</div></div>';
+      (hasSchedule(schedType) ? '<button class="linkbtn" data-sched>Ver horario ›</button>' : '') + '</div></div>';
 
   const blocks = dayBlocks(ds, schedType);
   const now = record ? null : nextKey(blocks, d);
@@ -1450,7 +1537,7 @@ function refreshChecks(){
 function toggleLetter(key, ds){
   ds = ds || dayView.ds;
   const d = getDay(ds, true);
-  if(dayType(ds) === "domingo") d.extra = true;
+  if(dayType(ds) === "off") d.extra = true;
   d.checks[key] = !d.checks[key];
   if(ds === dayView.ds) refreshChecks();
   saveDay(ds, 150);
@@ -1458,16 +1545,6 @@ function toggleLetter(key, ds){
   if(!d.checks[key]) return;
   // The finish card says it; no toast on top of it.
   if(!dayView.record && finishState(ds, d)) completeSound(); else popSound();
-}
-
-function switchDayType(){
-  const ds = dayView.ds, d = getDay(ds, true);
-  const next = dayType(ds) === "gym" ? "normal" : "gym";
-  // Back to what the week says: nothing to remember.
-  if(next === weekDayType(ds)) delete d.type; else d.type = next;
-  saveDay(ds, 0);
-  rerenderDay();
-  toast((ds === state.today ? "Hoy es " : "Queda como ") + (next === "gym" ? "día de gym" : "día normal"));
 }
 
 function bindDay(root, record){
@@ -1493,17 +1570,16 @@ function bindDay(root, record){
   });
   const fold = $("details.fold", root);
   if(fold) fold.addEventListener("toggle", function(){ foldOpenFor = fold.open ? state.today : ""; });
-  const dt = $("#day-type", root);
-  if(dt) dt.addEventListener("click", switchDayType);
   const gi = $("#go-import", root);
   if(gi) gi.addEventListener("click", function(){ $("#import-file").click(); });
-  $$("[data-sched]", root).forEach(function(b){ b.addEventListener("click", function(){ openSchedule(b.getAttribute("data-sched")); }); });
+  // The chip and "Ver horario" open the same sheet: what this day is, and its hours.
+  $$("#day-type, [data-sched]", root).forEach(function(b){ b.addEventListener("click", function(){ openDaySheet(ds); }); });
   $$("[data-open]", root).forEach(function(b){ b.addEventListener("click", function(){ openSettingsFromToday(b.getAttribute("data-open")); }); });
   const ex = $('.finish [data-act="export"]', root);
   if(ex) ex.addEventListener("click", exportBackup);
   const sg = $("#sun-go", root);
   if(sg) sg.addEventListener("click", function(){
-    if(!record) state.showSunday = true;
+    if(!record) state.showOff = true;
     const d = getDay(ds, true); d.extra = true; saveDay(ds, 150);
     if(record) renderDay(root, ds, true); else renderToday();
   });
@@ -1983,7 +2059,9 @@ window.addEventListener("scroll", updateEdge, {passive: true});
 
 /* ---------- historial ---------- */
 function monthName(y, m){ return cap(new Date(y, m, 1).toLocaleDateString("es", {month: "long", year: "numeric"})); }
-function isCurrentMonth(y, m){ const t = parse(state.today); return y === t.getFullYear() && m === t.getMonth(); }
+// Days to come can be prepared (a holiday, a moved gym) up to a year ahead.
+const MONTHS_AHEAD = 12;
+function isLastMonth(y, m){ const t = parse(state.today), l = shiftMonth(t.getFullYear(), t.getMonth(), MONTHS_AHEAD); return y === l.y && m === l.m; }
 function shiftMonth(y, m, n){ const d = new Date(y, m + n, 1); return {y: d.getFullYear(), m: d.getMonth()}; }
 function monthPaneHTML(y, m){
   const first = new Date(y, m, 1);
@@ -1994,7 +2072,7 @@ function monthPaneHTML(y, m){
     if(isScheduled(ds) && ds <= state.today){ scheduled++; if(isComplete(ds)) complete++; }
   }
   let html = '<div class="calpane"><div class="monthhead"><h3>' + esc(monthName(y, m)) + '</h3>' +
-    '<p class="mcount">' + (scheduled ? complete + " de " + scheduled + (scheduled === 1 ? " mañana completa" : " mañanas completas") : "Sin mañanas todavía") + '</p></div>' +
+    '<p class="mcount">' + (scheduled ? complete + " de " + scheduled + (scheduled === 1 ? " mañana completa" : " mañanas completas") : fmt(first) > state.today ? "Por venir" : "Sin mañanas todavía") + '</p></div>' +
     '<div class="cal">' + ["D","L","M","M","J","V","S"].map(function(x){ return '<div class="dow">' + x + '</div>'; }).join("");
   for(let b = 0; b < first.getDay(); b++) html += '<div class="cell blank"></div>';
   for(let i = 1; i <= daysIn; i++){
@@ -2004,13 +2082,16 @@ function monthPaneHTML(y, m){
     const cls = ["cell"];
     const future = ds > state.today;
     const t = dayType(ds);
-    const off = t === "shabbat" || (t === "domingo" && !hasContent(d));
+    const off = t === "shabbat" || (t === "off" && !hasContent(d));
+    // A day to come that was changed for itself (a holiday, a moved gym) gets a dot.
+    const planned = future && t !== "shabbat" && !!(d && (d.type || d.times));
     if(off) cls.push("off");
     if(future && !off) cls.push("future");
+    if(planned) cls.push("planned");
     if(n === 6) cls.push("full");
     if(ds === state.today) cls.push("today");
-    const label = longDate(ds) + (off ? "" : ", " + n + " de 6");
-    html += '<button class="' + cls.join(" ") + '" style="--p:' + (n/6) + '" data-day="' + ds + '"' + (future || t === "shabbat" ? " disabled" : "") + ' aria-label="' + esc(label) + '"><span>' + i + '</span></button>';
+    const label = longDate(ds) + (future ? (planned ? ", cambiado" : "") : off ? "" : ", " + n + " de 6");
+    html += '<button class="' + cls.join(" ") + '" style="--p:' + (n/6) + '" data-day="' + ds + '"' + (t === "shabbat" ? " disabled" : "") + ' aria-label="' + esc(label) + '"><span>' + i + '</span></button>';
   }
   return html + '</div></div>';
 }
@@ -2022,7 +2103,9 @@ function entriesHTML(y, m){
     const ds = fmt(new Date(y, m, i));
     if(hasContent(state.days[ds])) entries.push(ds);
   }
-  if(!entries.length) return '<div class="empty">Todavía no hay registros este mes. Marca tu primera letra en Hoy.</div>';
+  if(!entries.length) return '<div class="empty">' + (fmt(new Date(y, m, 1)) > state.today
+    ? "Este mes todavía no llega. Toca un día para preparar su horario."
+    : "Todavía no hay registros este mes. Marca tu primera letra en Hoy.") + '</div>';
   return '<div class="entries">' + entries.map(function(ds){
     const d = state.days[ds];
     return '<div class="entry" role="button" tabindex="0" data-open-day="' + ds + '" aria-label="' + esc(longDate(ds)) + ', ' + countDone(d) + ' de 6">' +
@@ -2036,7 +2119,7 @@ function entriesHTML(y, m){
 function calStripHTML(){
   const y = state.month.y, m = state.month.m, prev = shiftMonth(y, m, -1), next = shiftMonth(y, m, 1);
   return monthPaneHTML(prev.y, prev.m) + monthPaneHTML(y, m) +
-    (isCurrentMonth(y, m) ? '<div class="calpane" aria-hidden="true"></div>' : monthPaneHTML(next.y, next.m));
+    (isLastMonth(y, m) ? '<div class="calpane" aria-hidden="true"></div>' : monthPaneHTML(next.y, next.m));
 }
 function renderHistory(){
   const root = $("#view-history");
@@ -2052,7 +2135,7 @@ function renderHistory(){
       '<button class="navbtn next" data-month="1" aria-label="Mes siguiente">›</button>' +
       '<div class="calstrip">' + calStripHTML() + '</div>' +
     '</div>' +
-    '<p class="legend">El anillo se llena con cada letra. Toca un día para ver o completar su registro.</p>' +
+    '<p class="legend">El anillo se llena con cada letra. Toca un día para ver su registro o preparar uno que viene.</p>' +
     '<h3 class="sub">Registros del mes</h3><div class="hentries">' + entriesHTML(state.month.y, state.month.m) + '</div>';
   setStatus(statusMsg);
   layoutPager();
@@ -2077,9 +2160,9 @@ function layoutPager(){
   const cur = $(".calstrip", wrap).children[1];
   wrap.style.height = cur.offsetHeight + "px";
   const next = $(".navbtn.next", wrap);
-  next.disabled = isCurrentMonth(state.month.y, state.month.m);
+  next.disabled = isLastMonth(state.month.y, state.month.m);
 }
-function hasNextMonth(){ return !isCurrentMonth(state.month.y, state.month.m); }
+function hasNextMonth(){ return !isLastMonth(state.month.y, state.month.m); }
 // Lands on the month the strip moved to: the new middle pane is the one already in view.
 function commitMonth(dir){
   const wrap = $("#view-history .calwrap");
@@ -2122,7 +2205,7 @@ window.addEventListener("pointermove", function(e){
     document.documentElement.classList.add("dragging");
   }
   let x = g.sx + e.clientX - g.x0;
-  // Past this month there's nothing: it gives, and comes back.
+  // Past the last month there's nothing: it gives, and comes back.
   if(x < 0 && !hasNextMonth()) x = -rubberband(-x, pager.page);
   pager.spring.x = x;
   pagerPaint(x);
@@ -2166,46 +2249,240 @@ function scheduleType(type){
   return sc && sc.types && sc.types[type] && typeof sc.types[type] === "object" ? sc.types[type] : null;
 }
 function defaultScheduleTab(){ return dayType(state.today) === "gym" ? "gym" : "normal"; }
-function stepsHTML(list, cls){
-  return '<ol class="tlist' + (cls ? " " + cls : "") + '">' + list.map(function(st){
-    const key = /savers/i.test(st.short || st.title || "");
-    return '<li class="tstep' + (key && !cls ? " key" : "") + '"><span class="tt">' + esc(st.time) + '</span><span class="rail" aria-hidden="true"></span>' +
-      '<span class="tx">' + esc(st.title) + (st.detail ? '<span>' + esc(st.detail) + '</span>' : '') + '</span></li>';
-  }).join("") + '</ol>';
+// A schedule's hours come in three groups, each shown under its heading.
+const GROUPS = [["night", "La noche anterior"], ["steps", ""], ["later", "Más tarde"]];
+function groupList(t, g){ return t && Array.isArray(t[g]) ? t[g].filter(function(st){ return st && typeof st === "object"; }) : []; }
+function findStep(type, id){
+  const t = scheduleType(type);
+  let found = null;
+  GROUPS.forEach(function(g){ groupList(t, g[0]).forEach(function(st){ if(st.id === id) found = st; }); });
+  return found;
 }
-function laterRows(later){
-  const rows = [];
-  later.forEach(function(x){
-    if(!x || !x.times){ rows.push(x); return; }
-    Object.keys(x.times).forEach(function(k){
-      const w = DAY_KEYS.map(plainDay).indexOf(plainDay(k));
-      rows.push({time: x.times[k], title: x.title, detail: w >= 0 ? DAY_NAMES[w] : k});
-    });
+function stepIds(type){
+  const t = scheduleType(type), ids = [];
+  GROUPS.forEach(function(g){ groupList(t, g[0]).forEach(function(st){ ids.push(st.id); }); });
+  return ids;
+}
+// "los jueves", "los domingos"
+function weekdayPlural(w){ return "los " + DAY_NAMES[w] + (/s$/.test(DAY_NAMES[w]) ? "" : "s"); }
+function joinDays(ws){ return ws.map(function(w){ return DAY_KEYS[w]; }).join(", "); }
+
+function timePickHTML(cls, time, attrs){
+  return '<span class="tpick' + (cls ? " " + cls : "") + '"><span class="tpv">' + esc(time || "—") + '</span><input type="time" value="' + toInput(time) + '" ' + attrs + '></span>';
+}
+// The day's hours as a timeline. On today and days to come every hour is a native time picker;
+// an hour changed for this date shows in blue.
+function dayTimelineHTML(ds, editable){
+  const type = dayType(ds), t = scheduleType(type), d = state.days[ds];
+  if(!t){
+    const sc = state.settings.schedule;
+    if(!sc || !sc.table || !Array.isArray(sc.table.rows)) return '<p class="note">Tu horario se carga al importar tu copia.</p>';
+    const head = Array.isArray(sc.table.headers) ? sc.table.headers : [];
+    return '<div class="tablewrap"><table>' +
+      (head.length ? '<tr>' + head.map(function(h){ return '<th>' + esc(h) + '</th>'; }).join("") + '</tr>' : '') +
+      sc.table.rows.map(function(r){ return '<tr>' + (Array.isArray(r) ? r : []).map(function(c){ return '<td>' + esc(c) + '</td>'; }).join("") + '</tr>'; }).join("") +
+    '</table></div>';
+  }
+  return GROUPS.map(function(g){
+    const list = groupList(t, g[0]);
+    if(!list.length) return "";
+    return (g[1] ? '<p class="tgroup">' + g[1] + '</p>' : '') +
+      '<ol class="tlist' + (g[0] === "night" ? " muted" : "") + '">' + list.map(function(st){
+        const time = stepTime(st, ds), edited = !!(d && d.times && d.times[st.id]);
+        const key = g[0] === "steps" && /savers/i.test(st.short || st.title || "");
+        return '<li class="tstep' + (key ? " key" : "") + (edited ? " edited" : "") + '">' +
+          '<span class="tt">' + (editable
+            ? timePickHTML("", time, 'data-dstep="' + esc(st.id) + '" aria-label="Hora de ' + esc(st.title) + (edited ? ", cambiada para este día" : "") + '"')
+            : esc(time)) + '</span>' +
+          '<span class="rail" aria-hidden="true"></span>' +
+          '<span class="tx">' + esc(st.title) + (st.detail ? '<span>' + esc(st.detail) + '</span>' : '') + '</span></li>';
+      }).join("") + '</ol>';
+  }).join("");
+}
+function dateEdited(ds){
+  const d = state.days[ds];
+  if(!d || !d.times) return false;
+  return stepIds(dayType(ds)).some(function(id){ return !!d.times[id]; });
+}
+// One date: what it is (its weekday's type, or another one just this day) and, from today on, its hours.
+function dayEditorHTML(ds){
+  const type = dayType(ds), w = parse(ds).getDay(), editable = ds >= state.today;
+  let html = '<div class="seg three" role="group" aria-label="Este día es">' + DAY_TYPES.map(function(k){
+    return '<button data-dtype="' + k + '" aria-pressed="' + (k === type) + '"><b>' + TYPE_NAMES[k] + '</b>' +
+      (k === weekType(w) ? '<small>' + weekdayPlural(w) + '</small>' : '') + '</button>';
+  }).join("") + '</div>';
+  if(type === "off") return html + '<p class="note">Este día no hay SAVERS y no cuenta para tu racha.</p>';
+  html += dayTimelineHTML(ds, editable);
+  if(editable && scheduleType(type)){
+    html += '<p class="note dnote">Las horas que cambies aquí son solo para este día.</p>' +
+      '<button class="linkbtn" data-act="dreset"' + (dateEdited(ds) ? '' : ' hidden') + '>Volver a las horas de siempre</button>';
+  }
+  return html;
+}
+function setDateType(ds, type){
+  const d = getDay(ds, true);
+  // Back to what the week says: nothing to remember.
+  if(type === weekDayType(ds)) delete d.type; else d.type = type;
+  saveDay(ds, 0);
+}
+// Only what was touched is kept, so later changes to the usual hours still reach this date.
+function setDateTime(ds, st, value){
+  const d = getDay(ds, true), v = fromInput(value);
+  const usual = timeOn(st, parse(ds).getDay()) || st.time;
+  d.times = d.times || {};
+  if(!v || sameTime(v, usual)) delete d.times[st.id]; else d.times[st.id] = v;
+  if(!Object.keys(d.times).length) delete d.times;
+  saveDay(ds, 0);
+}
+function bindDayEditor(el, ds, onChange){
+  el.addEventListener("click", function(e){
+    const b = e.target.closest("[data-dtype]");
+    const reset = e.target.closest('[data-act="dreset"]');
+    if(!b && !reset) return;
+    if(b){
+      if(b.getAttribute("aria-pressed") === "true") return;
+      setDateType(ds, b.getAttribute("data-dtype"));
+    } else {
+      const d = state.days[ds];
+      if(d){ delete d.times; saveDay(ds, 0); }
+    }
+    el.innerHTML = dayEditorHTML(ds);
+    const on = b ? $('[data-dtype="' + b.getAttribute("data-dtype") + '"]', el) : $(".seg button", el);
+    if(on) on.focus({preventScroll: true});
+    if(onChange) onChange();
   });
-  return rows;
+  // The picker stays where it is (no re-render under it); only its row and the reset link update.
+  el.addEventListener("change", function(e){
+    const inp = e.target.closest && e.target.closest("[data-dstep]");
+    if(!inp) return;
+    const st = findStep(dayType(ds), inp.getAttribute("data-dstep"));
+    if(!st) return;
+    setDateTime(ds, st, inp.value);
+    const d = state.days[ds], edited = !!(d && d.times && d.times[st.id]);
+    inp.value = toInput(stepTime(st, ds));
+    $(".tpv", inp.parentNode).textContent = stepTime(st, ds);
+    inp.closest(".tstep").classList.toggle("edited", edited);
+    inp.setAttribute("aria-label", "Hora de " + st.title + (edited ? ", cambiada para este día" : ""));
+    const r = $('[data-act="dreset"]', el); if(r) r.hidden = !dateEdited(ds);
+    if(onChange) onChange();
+  });
 }
-function scheduleHTML(){
-  const sc = state.settings.schedule;
-  if(sc && sc.types && (sc.types.normal || sc.types.gym)){
-    const tab = scheduleType(state.schedTab) ? state.schedTab : (scheduleType(defaultScheduleTab()) ? defaultScheduleTab() : (sc.types.normal ? "normal" : "gym"));
-    const t = scheduleType(tab);
-    const seg = ["normal", "gym"].filter(scheduleType).map(function(k){
-      const x = scheduleType(k);
-      return '<button data-act="sched" data-type="' + k + '" aria-pressed="' + (k === tab) + '"><b>' + esc(x.label || (k === "gym" ? "Gym" : "Normal")) + '</b>' + (x.days ? '<small>' + esc(x.days) + '</small>' : '') + '</button>';
-    }).join("");
-    return '<div class="seg" role="group" aria-label="Tipo de día">' + seg + '</div>' +
-      (Array.isArray(t.night) && t.night.length ? '<p class="tgroup">La noche anterior</p>' + stepsHTML(t.night, "muted") : '') +
-      (Array.isArray(t.steps) && t.steps.length ? stepsHTML(t.steps) : '') +
-      (Array.isArray(t.later) && t.later.length ? '<p class="tgroup">Más tarde</p>' + stepsHTML(laterRows(t.later)) : '');
+// The chip and "Ver horario" open this: the day it is and its hours. What's behind updates on the way out.
+function openDaySheet(ds){
+  let dirty = false;
+  const s = openSheet(
+    '<div class="shead"><h3 id="day-t">' + esc(ds === state.today ? "Hoy" : shortTitle(ds)) + '</h3><button class="tbtn" data-close>Listo</button></div>' +
+    '<div class="sbody">' + dayEditorHTML(ds) + '</div>',
+    {tall: true, labelledby: "day-t", onClose: function(){ if(dirty && dayView.ds === ds) rerenderDay(); }});
+  bindDayEditor($(".sbody", s.sheet), ds, function(){ dirty = true; });
+  s.sheet.addEventListener("click", function(e){ if(e.target.closest("[data-close]")) s.close(); });
+  $("[data-close]", s.sheet).focus({preventScroll: true});
+}
+
+// Ajustes › Horario: what each weekday is, and the usual hours of Normal and Gym.
+function ensureSchedule(){
+  if(!state.settings.schedule) state.settings.schedule = migrateSchedule({});
+  return state.settings.schedule;
+}
+// "5:20 · jue 5:10": the hour for all days and the weekdays that have their own.
+function stepSummary(st, type){
+  const own = daysOfType(type).filter(function(w){ return !!timeOn(st, w); });
+  return [st.time || "—"].concat(own.map(function(w){ return DAY_KEYS[w] + " " + timeOn(st, w); })).join(" · ");
+}
+function schedPageHTML(){
+  let html = '<p class="slabel">Días</p><div class="slist">' + [0, 1, 2, 3, 4, 5].map(function(w){
+    return '<label class="srow" for="wk-' + w + '"><b>' + cap(DAY_NAMES[w]) + '</b>' +
+      '<select id="wk-' + w + '" data-wday="' + w + '">' + DAY_TYPES.map(function(k){
+        return '<option value="' + k + '"' + (weekType(w) === k ? " selected" : "") + '>' + TYPE_NAMES[k] + '</option>';
+      }).join("") + '</select><span class="chev down" aria-hidden="true"></span></label>';
+  }).join("") + '<div class="srow"><b>Sábado</b><small>Shabbat</small></div></div>' +
+    '<p class="sfoot">Para un solo día, como un feriado o un gym cancelado, tócalo en Hoy o en Historial.</p>';
+  const tab = scheduleType(state.schedTab) ? state.schedTab : scheduleType(defaultScheduleTab()) ? defaultScheduleTab() : scheduleType("normal") ? "normal" : "gym";
+  const t = scheduleType(tab);
+  html += '<p class="slabel">Horas</p>';
+  if(!t) return html + '<div class="gblock"><p class="note">Tus horas se cargan al importar tu copia.</p></div>';
+  html += '<div class="seg" role="group" aria-label="Horario">' + ["normal", "gym"].filter(scheduleType).map(function(k){
+    const ws = daysOfType(k);
+    return '<button data-act="sched" data-type="' + k + '" aria-pressed="' + (k === tab) + '"><b>' + TYPE_NAMES[k] + '</b><small>' + (ws.length ? joinDays(ws) : "ningún día") + '</small></button>';
+  }).join("") + '</div>';
+  GROUPS.forEach(function(g){
+    const list = groupList(t, g[0]);
+    if(!list.length) return;
+    html += (g[1] ? '<p class="slabel sm">' + g[1] + '</p>' : '') + '<div class="slist">' + list.map(function(st){
+      return '<button class="srow" data-step="' + esc(st.id) + '" data-type="' + tab + '"><b>' + esc(st.title) + '</b><small>' + esc(stepSummary(st, tab)) + '</small><span class="chev" aria-hidden="true"></span></button>';
+    }).join("") + '</div>';
+  });
+  return html + '<p class="sfoot">Toca una hora para cambiarla en todos los días de ' + TYPE_NAMES[tab] + ' o solo en uno.</p>';
+}
+// One hour: for all the days of its schedule, or for one weekday only.
+function openStepSheet(type, id){
+  const st = findStep(type, id);
+  if(!st) return;
+  const days = daysOfType(type);
+  let sel = "all";
+  function valueFor(){ return sel === "all" ? st.time : (timeOn(st, sel) || st.time); }
+  function segHTML(){
+    if(days.length < 2) return "";
+    return '<div class="seg" role="group" aria-label="Días" style="grid-template-columns:repeat(' + (days.length + 1) + ',minmax(0,1fr))">' +
+      ["all"].concat(days).map(function(w){
+        return '<button data-w="' + w + '" aria-pressed="' + (String(w) === String(sel)) + '"><b>' + (w === "all" ? "Todos" : DAY_KEYS[w]) + '</b></button>';
+      }).join("") + '</div>';
   }
-  if(!sc || !sc.table || !Array.isArray(sc.table.rows)){
-    return '<p class="note">Tu horario se carga al importar tu copia.</p>';
+  function footHTML(){
+    const own = days.filter(function(w){ return !!timeOn(st, w); });
+    if(sel === "all"){
+      return '<p class="note">' + (own.length
+        ? cap(own.map(weekdayPlural).join(" y ")) + " tienen otra hora. Si la cambias aquí, todos quedan iguales."
+        : days.length ? "Para " + joinDays(days) + "." : "Ningún día usa este horario ahora.") + '</p>';
+    }
+    return '<p class="note">Solo ' + weekdayPlural(sel) + '.</p>' +
+      (timeOn(st, sel) ? '<button class="linkbtn" data-act="same">Usar la misma hora que los demás</button>' : '');
   }
-  const head = Array.isArray(sc.table.headers) ? sc.table.headers : [];
-  return '<div class="tablewrap"><table>' +
-    (head.length ? '<tr>' + head.map(function(h){ return '<th>' + esc(h) + '</th>'; }).join("") + '</tr>' : '') +
-    sc.table.rows.map(function(r){ return '<tr>' + (Array.isArray(r) ? r : []).map(function(c){ return '<td>' + esc(c) + '</td>'; }).join("") + '</tr>'; }).join("") +
-  '</table></div>';
+  const s = openSheet(
+    '<div class="shead"><h3 id="step-t">' + esc(st.title) + '</h3><button class="tbtn" data-close>Listo</button></div>' +
+    '<div data-seg>' + segHTML() + '</div>' +
+    timePickHTML("bigtime", valueFor(), 'id="step-time" aria-label="Hora de ' + esc(st.title) + '"') +
+    '<div data-foot>' + footHTML() + '</div>',
+    {labelledby: "step-t", onClose: function(){ rerenderSettingsKeepScroll(); }});
+  const inp = $("#step-time", s.sheet);
+  function refresh(){
+    inp.value = toInput(valueFor());
+    $(".tpv", s.sheet).textContent = valueFor() || "—";
+    $("[data-seg]", s.sheet).innerHTML = segHTML();
+    $("[data-foot]", s.sheet).innerHTML = footHTML();
+  }
+  s.sheet.addEventListener("click", function(e){
+    if(e.target.closest("[data-close]")) return s.close();
+    const b = e.target.closest("[data-w]");
+    if(b){
+      const v = b.getAttribute("data-w");
+      sel = v === "all" ? "all" : Number(v);
+      refresh();
+      const on = $('[data-w="' + v + '"]', s.sheet); if(on) on.focus({preventScroll: true});
+      return;
+    }
+    if(e.target.closest('[data-act="same"]')){
+      setWeekdayTime(st, sel, "");
+      refresh();
+    }
+  });
+  inp.addEventListener("change", function(){
+    const v = fromInput(inp.value);
+    if(!v) return refresh();
+    if(sel === "all"){ st.time = v; delete st.times; flushSave(); }
+    else setWeekdayTime(st, sel, v);
+    refresh();
+  });
+  $("[data-close]", s.sheet).focus({preventScroll: true});
+}
+// A weekday's own hour; the same as the rest (or none) means it just follows them.
+function setWeekdayTime(st, w, v){
+  st.times = st.times || {};
+  const k = dayKeyIn(st.times, w);
+  if(k) delete st.times[k];
+  if(v && !sameTime(v, st.time)) st.times[DAY_KEYS[w]] = v;
+  if(!Object.keys(st.times).length) delete st.times;
+  flushSave();
 }
 
 function readItemsHTML(items, emptyText){
@@ -2233,28 +2510,8 @@ function editItemsHTML(listKey, items, noun, textPlaceholder){
   }).join("");
 }
 
-// Horario: tapping the strip in Hoy opens the whole schedule for that kind of day.
-function openSchedule(type){
-  state.schedTab = type;
-  const s = openSheet(
-    '<div class="shead"><h3 id="sched-t">Horario</h3><button class="tbtn" data-close>Listo</button></div>' +
-    '<div class="sbody">' + scheduleHTML() + '</div>',
-    {tall: true, labelledby: "sched-t"});
-  s.sheet.addEventListener("click", function(e){
-    const seg = e.target.closest('[data-act="sched"]');
-    if(seg){
-      state.schedTab = seg.getAttribute("data-type");
-      $(".sbody", s.sheet).innerHTML = scheduleHTML();
-      const on = $('[data-type="' + state.schedTab + '"]', s.sheet); if(on) on.focus({preventScroll: true});
-      return;
-    }
-    if(e.target.closest("[data-close]")) s.close();
-  });
-  $("[data-close]", s.sheet).focus({preventScroll: true});
-}
-
 /* ---------- ajustes ---------- */
-const PAGES = {aff: "Afirmaciones", vis: "Visualización", backup: "Copia de seguridad"};
+const PAGES = {sched: "Horario", aff: "Afirmaciones", vis: "Visualización", backup: "Copia de seguridad"};
 function countLabel(n, one, many){ return n + " " + (n === 1 ? one : many); }
 function lastBackupLabel(){
   if(!state.lastExport) return "Nunca";
@@ -2273,6 +2530,7 @@ function settingsListHTML(){
       '<label class="srow" for="s-name"><b>Tu nombre</b><input type="text" id="s-name" autocomplete="given-name" value="' + esc(s.name) + '" placeholder="Para el saludo"></label>' +
     '</div>' +
     '<div class="slist">' +
+      rowHTML("sched", countLabel(daysOfType("normal").length + daysOfType("gym").length, "día", "días")) +
       rowHTML("aff", affs ? countLabel(affs, "frase", "frases") : "Vacío") +
       rowHTML("vis", vis ? countLabel(vis, "pregunta", "preguntas") : "Vacío") +
     '</div>' +
@@ -2288,7 +2546,9 @@ function settingsPageHTML(){
   const top = e
     ? '<div class="gtop nav"><button class="tbtn left" data-act="cancel">Cancelar</button><h2>' + PAGES[p] + '</h2><button class="tbtn right" data-act="done">Listo</button></div>'
     : '<div class="gtop nav"><button class="tbtn left back" data-act="back">' + (state.from === "today" ? "Hoy" : "Ajustes") + '</button><h2>' + PAGES[p] + '</h2>' +
-      (p === "backup" ? '' : '<button class="tbtn right" data-act="edit">Editar</button>') + '</div>';
+      (p === "backup" || p === "sched" ? '' : '<button class="tbtn right" data-act="edit">Editar</button>') + '</div>';
+  // Horario changes as you go, like iOS Settings: no Editar.
+  if(p === "sched") return top + schedPageHTML();
   if(p === "aff") return top + '<div class="gblock">' + (e
     ? editItemsHTML("aff", e.affirmations, "afirmación", "Escribe tu afirmación") +
       '<button class="addbtn" data-act="add" data-list="aff">＋ Agregar afirmación</button>'
@@ -2307,7 +2567,6 @@ function settingsPageHTML(){
     '<p class="note">Tus registros viven solo en este iPhone. Exporta una copia de vez en cuando y guárdala en Archivos o iCloud.</p>' +
     '<p><b>Última copia:</b> <span' + (backupOverdue() ? ' class="warn"' : '') + '>' + esc(last) + '</span></p>' +
     '<div class="row"><button class="btn primary" data-act="export">Exportar copia</button><button class="btn" data-act="import">Importar copia</button></div>' +
-    '<p class="note" style="margin:12px 0 0">Importar también sirve para cargar solo tu horario: se reemplaza únicamente lo que trae el archivo.</p>' +
   '</div>';
 }
 function renderSettings(){
@@ -2386,9 +2645,12 @@ function backToToday(){
   root.addEventListener("click", function(ev){
     const go = ev.target.closest("[data-go]");
     if(go) return openPage(go.getAttribute("data-go"));
+    const step = ev.target.closest("[data-step]");
+    if(step) return openStepSheet(step.getAttribute("data-type"), step.getAttribute("data-step"));
     const b = ev.target.closest("[data-act]");
     if(!b || b.disabled) return;
     const act = b.getAttribute("data-act");
+    if(act === "sched"){ state.schedTab = b.getAttribute("data-type"); rerenderSettingsKeepScroll('[data-act="sched"][data-type="' + state.schedTab + '"]'); return; }
     if(act === "back") return state.from === "today" ? backToToday() : openPage(null);
     if(act === "edit"){ beginEdit(); renderSettings(); window.scrollTo(0, 0); return fadeIn($("#view-settings .gblock")); }
     if(act === "cancel") return endEdit(false);
@@ -2429,6 +2691,12 @@ function backToToday(){
     if(el.id === "s-music"){
       store.set("savers:keepMusic", el.checked);
       if(anyRunning()) setAudioMode(runAudioMode());
+      return;
+    }
+    if(el.hasAttribute("data-wday")){
+      ensureSchedule().week[el.getAttribute("data-wday")] = el.value;
+      flushSave();
+      rerenderSettingsKeepScroll("#" + el.id);
       return;
     }
     if(el.id !== "s-name") return;
@@ -2480,7 +2748,7 @@ function checkRollover(){
   const t = todayStr();
   if(t === state.today) return;
   state.today = t;
-  state.showSunday = false;
+  state.showOff = false;
   const a = document.activeElement;
   if(a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT")) return;
   if(anyRunning() || state.tab === "settings") return;
