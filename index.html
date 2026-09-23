@@ -109,6 +109,12 @@ details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin
 .card.done{background:transparent;box-shadow:none}
 .card.done>summary,.card.done>.cardrow{padding-top:6px;padding-bottom:6px}
 .card.done .ttl span,.card.done .time,.card.done .caret{display:none}
+/* a finished stretch of the day folded into one row */
+.card.fold{background:transparent;box-shadow:none}
+.card.fold>summary{padding-top:6px;padding-bottom:6px}
+.card.fold .chk{cursor:inherit}
+.fold .ttl small{font-size:.92rem;font-weight:400;color:var(--muted)}
+.fold>.list{margin:2px 0 0;padding:0 8px 10px}
 
 /* finished morning */
 .finish{margin-top:16px;padding:22px 18px 18px;border-radius:18px;background:var(--dawn-soft);border:1px solid var(--dawn-line);text-align:center}
@@ -883,7 +889,7 @@ function updateNow(){
   if(ds !== state.today) return;
   const d = state.days[ds] || blankDay(ds);
   const now = nextKey(dayBlocks(ds, schedTypeOf(ds)), d);
-  $$("#view-today .card").forEach(function(card){
+  $$("#view-today .card[data-card]").forEach(function(card){
     const is = card.getAttribute("data-card") === now;
     if(is && !card.classList.contains("now")){
       if(card.tagName === "DETAILS" && !card.open) card.open = true;
@@ -951,6 +957,7 @@ document.addEventListener("focusout", function(e){
 });
 
 const openCards = new Set();   // every card starts closed; this remembers the ones opened this session
+let foldOpenFor = "";          // the day whose folded row was left open, same idea
 
 function renderToday(opts){
   const root = $("#view-today");
@@ -1004,10 +1011,27 @@ function renderToday(opts){
 
   const blocks = dayBlocks(ds, schedType);
   const now = isToday ? nextKey(blocks, d) : null;
-  morning += '<div class="list">' + blocks.map(function(b){
-    return (b.head ? '<p class="bhead">' + b.head.filter(Boolean).map(function(x, i){ return i ? esc(x) : '<b>' + esc(x) + '</b>'; }).join(" · ") + '</p>' : '') +
-      b.keys.map(function(k){ return cardHTML(LETTER_BY[k], k === now); }).join("");
-  }).join("") + '</div>';
+  function blocksHTML(list){
+    return list.map(function(b){
+      return (b.head ? '<p class="bhead">' + b.head.filter(Boolean).map(function(x, i){ return i ? esc(x) : '<b>' + esc(x) + '</b>'; }).join(" · ") + '</p>' : '') +
+        b.keys.map(function(k){ return cardHTML(LETTER_BY[k], k === now); }).join("");
+    }).join("");
+  }
+  // Once today reaches a finish, what's behind it folds into one row: the morning for "Mañana lista",
+  // everything for "Día completo". Past days keep the whole list, it's what you came to see.
+  const folded = isToday && fin ? blocks.filter(function(b){ return fin === "day" || !b.later; }) : [];
+  const rest = blocks.filter(function(b){ return folded.indexOf(b) < 0; });
+  let foldHTML = "";
+  if(folded.length){
+    const count = folded.reduce(function(a, b){ return a + b.keys.length; }, 0);
+    const label = fin === "day" && blocks.some(function(b){ return b.later; }) ? "Todo el día" : "Mañana";
+    foldHTML = '<details class="card fold' + (opts && opts.fade ? " fade-in" : "") + '"' + (foldOpenFor === ds ? " open" : "") + '>' +
+      '<summary><span class="chk done" aria-hidden="true"><span class="chk-t">✓</span></span>' +
+        '<span class="ttl"><b>' + label + ' <small>· ' + count + ' hechas</small></b></span>' +
+        '<span class="caret" aria-hidden="true"></span></summary>' +
+      '<div class="list">' + blocksHTML(folded) + '</div></details>';
+  }
+  morning += '<div class="list">' + foldHTML + blocksHTML(rest) + '</div>';
 
   function cardHTML(l, isNow){
     const info = letterInfo(l.key, schedType);
@@ -1072,7 +1096,7 @@ function refreshChecks(){
       const t = $(".chk-t", b); if(t) t.textContent = on ? "✓" : l.L;
     });
   });
-  $$("#view-today .card").forEach(function(card){
+  $$("#view-today .card[data-card]").forEach(function(card){
     const on = !!d.checks[card.getAttribute("data-card")];
     if(on && !card.classList.contains("done")){
       card.classList.add("done");
@@ -1147,13 +1171,15 @@ function bindToday(){
       if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleLetter(key); }
     });
   });
-  $$("details.card", root).forEach(function(det){
+  $$("details.card[data-card]", root).forEach(function(det){
     det.addEventListener("toggle", function(){
       const k = det.getAttribute("data-card");
       // The "Ahora" card opens by itself; only cards opened by hand are remembered.
       if(det.open){ if(!det.classList.contains("now")) openCards.add(k); } else openCards.delete(k);
     });
   });
+  const fold = $("details.fold", root);
+  if(fold) fold.addEventListener("toggle", function(){ foldOpenFor = fold.open ? state.viewDate : ""; });
   const dt = $("#day-type", root);
   if(dt) dt.addEventListener("click", switchDayType);
   const gt = $("#go-today", root);
