@@ -367,12 +367,41 @@ function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 function longDate(ds){ return cap(parse(ds).toLocaleDateString("es", {weekday:"long", day:"numeric", month:"long"})); }
 function headDate(ds){ return cap(parse(ds).toLocaleDateString("es", {weekday:"long", day:"numeric", month:"short"})).replace(",", "").replace(/\.$/, ""); }
 function shortDate(ds){ return parse(ds).toLocaleDateString("es", {weekday:"short", day:"numeric", month:"short"}); }
+const DAY_KEYS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const DAY_NAMES = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+function plainDay(x){ return String(x).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").slice(0, 3); }
+// "lun, mar, jue" → [1, 2, 4]
+function parseDays(str){
+  const keys = DAY_KEYS.map(plainDay);
+  return String(str || "").split(/[,\s]+/).map(function(x){ return keys.indexOf(plainDay(x)); }).filter(function(i){ return i >= 0; });
+}
+// The schedule's "days" say which weekdays are normal or gym; any weekday it leaves out keeps the usual week.
+let weekCache = {sc: undefined, map: null};
+function weekMap(){
+  const sc = state.settings.schedule;
+  if(weekCache.sc === sc) return weekCache.map;
+  const map = {};
+  ["normal", "gym"].forEach(function(k){ const t = scheduleType(k); if(t) parseDays(t.days).forEach(function(w){ map[w] = k; }); });
+  weekCache = {sc: sc, map: Object.keys(map).length ? map : null};
+  return weekCache.map;
+}
 function dayType(ds){
   const w = parse(ds).getDay();
+  const map = weekMap();
+  if(map && map[w]) return map[w];
   if(w===1 || w===2 || w===4) return "normal";
   if(w===3 || w===5) return "gym";
   if(w===0) return "domingo";
   return "shabbat";
+}
+// When a letter that's "Más tarde" happens on this weekday: {"times": {"mié": "8:50 pm", ...}}
+function laterTime(type, key, ds){
+  const t = scheduleType(type);
+  const item = t && Array.isArray(t.later) ? t.later.filter(function(x){ return x && Array.isArray(x.letters) && x.letters.indexOf(key) >= 0 && x.times; })[0] : null;
+  if(!item) return "";
+  const w = plainDay(DAY_KEYS[parse(ds).getDay()]);
+  const k = Object.keys(item.times).filter(function(x){ return plainDay(x) === w; })[0];
+  return k ? String(item.times[k]) : "";
 }
 function isScheduled(ds){ const t = dayType(ds); return t==="normal" || t==="gym"; }
 function blankDay(ds){ return {date:ds, checks:{}, gratitude:"", bookIdea:"", notes:"", extra:false}; }
@@ -776,10 +805,13 @@ function letterInfo(key, type){
           '<p class="note">Para si hay hormigueo o dolor que baja por la pierna.</p>'
       };
     case "lectura":
-      if(gym) return {
-        sub: "Más tarde", time: READ_MIN + " min",
-        html: '<p>Hoy lees más tarde' + (sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Empieza desde aquí y se marca sola.</p>' + readingHTML() + shortcutHelpHTML()
-      };
+      if(gym){
+        const at = laterTime("gym", "lectura", state.viewDate);
+        return {
+          sub: at ? "Más tarde · " + at : "Más tarde", time: READ_MIN + " min",
+          html: '<p>Hoy lees más tarde' + (at ? ", a las " + esc(at) : sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Empieza desde aquí y se marca sola.</p>' + readingHTML() + shortcutHelpHTML()
+        };
+      }
       return {
         sub: "Con tu café", time: READ_MIN + " min",
         html: readingHTML() + '<p>' + READ_MIN + ' minutos con tu café. La meta es el tiempo, no las páginas.</p>' + shortcutHelpHTML()
@@ -1455,6 +1487,17 @@ function stepsHTML(list, cls){
       '<span class="tx">' + esc(st.title) + (st.detail ? '<span>' + esc(st.detail) + '</span>' : '') + '</span></li>';
   }).join("") + '</ol>';
 }
+function laterRows(later){
+  const rows = [];
+  later.forEach(function(x){
+    if(!x || !x.times){ rows.push(x); return; }
+    Object.keys(x.times).forEach(function(k){
+      const w = DAY_KEYS.map(plainDay).indexOf(plainDay(k));
+      rows.push({time: x.times[k], title: x.title, detail: w >= 0 ? DAY_NAMES[w] : k});
+    });
+  });
+  return rows;
+}
 function scheduleHTML(){
   const sc = state.settings.schedule;
   if(sc && sc.types && (sc.types.normal || sc.types.gym)){
@@ -1467,7 +1510,7 @@ function scheduleHTML(){
     return '<div class="seg" role="group" aria-label="Tipo de día">' + seg + '</div>' +
       (Array.isArray(t.night) && t.night.length ? '<p class="tgroup">La noche anterior</p>' + stepsHTML(t.night, "muted") : '') +
       (Array.isArray(t.steps) && t.steps.length ? stepsHTML(t.steps) : '') +
-      (Array.isArray(t.later) && t.later.length ? '<p class="tgroup">Más tarde</p>' + stepsHTML(t.later) : '');
+      (Array.isArray(t.later) && t.later.length ? '<p class="tgroup">Más tarde</p>' + stepsHTML(laterRows(t.later)) : '');
   }
   if(!sc || !sc.table || !Array.isArray(sc.table.rows)){
     return '<p class="note">Tu horario se carga al importar tu copia.</p>';
