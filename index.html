@@ -12,30 +12,31 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SAVERS">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#EDF0F5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#10151F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFAE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#00113A" media="(prefers-color-scheme: dark)">
 <meta name="format-detection" content="telephone=no">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#EDF0F5; --surface:#FFFFFF; --surface-2:#E2E7EF; --ink:#1A2233; --muted:#586277;
-  --line:#D2D9E4; --dawn:#E39B2D; --dawn-ink:#2E1C00; --dawn-soft:#FBE8C9; --sky:#3F5F96; --ok:#2F7D5B; --warn:#A8471F;
+  /* "Naranja real" (Color Hunt FFFAE6 FF9F66 FF5F00 002379): orange = done, navy = now and links. */
+  --bg:#FFFAE6; --surface:#FFFDF6; --surface-2:#F2EEDD; --ink:#0A1C4D; --muted:#5B6178;
+  --line:#E6E0CB; --dawn:#FF5F00; --dawn-ink:#1F0B00; --dawn-soft:#FFE0CC; --dawn-soft-ink:#0A1C4D; --sky:#002379; --ok:#2F7D5B; --warn:#B42318;
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body:"Atkinson Hyperlegible", "Helvetica Neue", Arial, system-ui, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#10151F; --surface:#182031; --surface-2:#232D43; --ink:#E7EBF3; --muted:#9BA6BB;
-    --line:#2D3952; --dawn:#F0B24E; --dawn-ink:#231400; --dawn-soft:#3B2F1B; --sky:#94B3EA; --ok:#5DC093; --warn:#F08A5D;
+    --bg:#00113A; --surface:#0A1F55; --surface-2:#132A66; --ink:#FFFAE6; --muted:#A9B0C8;
+    --line:#223B7A; --dawn:#FF6A14; --dawn-ink:#1F0B00; --dawn-soft:#1C3478; --dawn-soft-ink:#FF8A4C; --sky:#FF9F66; --ok:#5DC093; --warn:#FF8A7A;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#10151F; --surface:#182031; --surface-2:#232D43; --ink:#E7EBF3; --muted:#9BA6BB;
-  --line:#2D3952; --dawn:#F0B24E; --dawn-ink:#231400; --dawn-soft:#3B2F1B; --sky:#94B3EA; --ok:#5DC093; --warn:#F08A5D;
+  --bg:#00113A; --surface:#0A1F55; --surface-2:#132A66; --ink:#FFFAE6; --muted:#A9B0C8;
+  --line:#223B7A; --dawn:#FF6A14; --dawn-ink:#1F0B00; --dawn-soft:#1C3478; --dawn-soft-ink:#FF8A4C; --sky:#FF9F66; --ok:#5DC093; --warn:#FF8A7A;
   color-scheme: dark;
 }
 *{box-sizing:border-box}
@@ -56,7 +57,7 @@ button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
 .date{font-family:var(--display);font-weight:800;font-size:1.4rem;line-height:1.15;margin:0;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .status{font-size:.8rem;color:var(--warn)}
 .chip{flex:0 0 auto;display:inline-block;padding:3px 10px;border-radius:999px;background:var(--surface-2);font-size:.8rem;font-weight:700;white-space:nowrap}
-.chip.gym{background:var(--dawn-soft)}
+.chip.gym{background:var(--dawn-soft);color:var(--dawn-soft-ink)}
 
 .banner{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.92rem}
 .linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap}
@@ -286,7 +287,7 @@ th{font-weight:700;color:var(--muted)}
 .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px calc(8px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));z-index:5}
 .tabs div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .tab{border:0;background:transparent;padding:11px 4px;border-radius:12px;font-weight:700;color:var(--muted);cursor:pointer}
-.tab[aria-current="page"]{background:var(--dawn-soft);color:var(--ink)}
+.tab[aria-current="page"]{background:var(--dawn-soft);color:var(--dawn-soft-ink)}
 .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:6}
 .toast.show{opacity:1}
 [hidden]{display:none!important}
