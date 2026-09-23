@@ -58,6 +58,8 @@ button{touch-action:manipulation;-webkit-appearance:none;appearance:none}
 .status{font-size:.8rem;color:var(--warn)}
 .chip{flex:0 0 auto;display:inline-block;padding:3px 10px;border-radius:999px;background:var(--surface-2);font-size:.8rem;font-weight:700;white-space:nowrap}
 .chip.gym{background:var(--dawn-soft);color:var(--dawn-soft-ink)}
+button.chip{border:0;cursor:pointer;color:inherit;padding:6px 12px}
+button.chip span{font-weight:400;margin-left:2px}
 
 .banner{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.92rem}
 .linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap}
@@ -385,7 +387,12 @@ function weekMap(){
   weekCache = {sc: sc, map: Object.keys(map).length ? map : null};
   return weekCache.map;
 }
+// A routine day can be switched between gym and normal for that day only (the gym got cancelled, it moved).
 function dayType(ds){
+  const t = weekDayType(ds), d = state.days[ds];
+  return (t === "normal" || t === "gym") && d && (d.type === "normal" || d.type === "gym") ? d.type : t;
+}
+function weekDayType(ds){
   const w = parse(ds).getDay();
   const map = weekMap();
   if(map && map[w]) return map[w];
@@ -891,8 +898,8 @@ function renderToday(opts){
   const h = new Date().getHours();
   const name = state.settings.name ? ", " + state.settings.name : "";
   const hello = (h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches") + name;
-  const chip = type === "gym" ? '<span class="chip gym">Día de gym</span>'
-    : type === "normal" ? '<span class="chip">Día normal</span>'
+  const chip = type === "gym" ? '<button class="chip gym" id="day-type" aria-label="Día de gym. Cambiar a día normal">Día de gym <span aria-hidden="true">⇄</span></button>'
+    : type === "normal" ? '<button class="chip" id="day-type" aria-label="Día normal. Cambiar a día de gym">Día normal <span aria-hidden="true">⇄</span></button>'
     : type === "domingo" ? '<span class="chip">Domingo</span>' : '<span class="chip">Shabbat</span>';
 
   let html =
@@ -1042,6 +1049,16 @@ function toggleLetter(key){
   }
 }
 
+function switchDayType(){
+  const ds = state.viewDate, d = getDay(ds, true);
+  const next = dayType(ds) === "gym" ? "normal" : "gym";
+  // Back to what the week says: nothing to remember.
+  if(next === weekDayType(ds)) delete d.type; else d.type = next;
+  saveDay(ds, 0);
+  renderToday();
+  toast((ds === state.today ? "Hoy es " : "Queda como ") + (next === "gym" ? "día de gym" : "día normal"));
+}
+
 function bindToday(){
   const root = $("#view-today");
   $$("[data-toggle]", root).forEach(function(b){
@@ -1061,6 +1078,8 @@ function bindToday(){
       if(det.open) openCards.add(k); else openCards.delete(k);
     });
   });
+  const dt = $("#day-type", root);
+  if(dt) dt.addEventListener("click", switchDayType);
   const gt = $("#go-today", root);
   if(gt) gt.addEventListener("click", function(){ state.viewDate = state.today; renderToday(); window.scrollTo(0,0); });
   const gi = $("#go-import", root);
