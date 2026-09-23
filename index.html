@@ -242,6 +242,12 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .srow input[type=checkbox]{flex:0 0 auto;margin:0;accent-color:var(--ok)}
 .srow select{flex:0 1 auto;min-width:0;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.95rem;text-align:right;text-align-last:right;padding:4px 0;-webkit-appearance:none;appearance:none;cursor:pointer}
 .srow select:focus{color:var(--ink);outline:0}
+.chev.blank{visibility:hidden}
+/* a block's letters, under its hour */
+.srow.sub{min-height:44px;padding:8px 14px 8px 30px}
+.srow.sub b{font-weight:400;font-size:.95rem}
+.swarn{margin:0;padding:0 14px 10px 30px;font-size:.82rem;line-height:1.35;color:var(--warn)}
+.swarn + .srow{border-top:1px solid var(--line)}
 .chev.down{transform:rotate(135deg);margin:-4px 4px 0 2px}
 .slabel{font-size:.8rem;font-weight:700;color:var(--muted);margin:22px 4px -8px}
 .slabel.sm{margin-top:16px}
@@ -276,7 +282,7 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .tlist{list-style:none;margin:0;padding:0}
 .tlist + .tgroup,.tlist + .tlist{margin-top:16px}
 .tstep{display:grid;grid-template-columns:90px 14px minmax(0,1fr);column-gap:10px;align-items:start}
-.tstep .tt{font-family:var(--display);font-weight:700;font-size:1rem;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.5}
+.tstep .tt,.mrow .tt{font-family:var(--display);font-weight:700;font-size:1rem;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.5}
 .tstep .rail{position:relative;align-self:stretch}
 .tstep .rail::before{content:"";position:absolute;left:6px;top:15px;bottom:-4px;width:2px;background:var(--line)}
 .tstep:last-child .rail::before{display:none}
@@ -289,11 +295,14 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .tlist.muted .tx{font-weight:400}
 /* an hour you can change: the app's own text in a pill, with the iPhone's time wheel invisible on top */
 .tpick{position:relative;display:inline-block;border-radius:8px;transition:opacity .2s ease}
-.tpick input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:16px}
+.tpick input,.tpick select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:16px}
 .tpick:active{opacity:.5;transition-duration:0s}
-.tpick:has(input:focus-visible){outline:3px solid var(--sky);outline-offset:2px}
+.tpick:has(input:focus-visible),.tpick:has(select:focus-visible){outline:3px solid var(--sky);outline-offset:2px}
 .tt .tpick{padding:0 7px;margin-right:-7px;background:var(--surface-2)}
-.tstep.edited .tt{color:var(--sky)}
+.tstep.edited .tt,.mrow.edited .tt{color:var(--sky)}
+/* a date's minutes line up with the hours' names above them, without the rail */
+.mgroup{margin-top:18px}
+.mrow{display:grid;grid-template-columns:90px minmax(0,1fr);column-gap:34px;align-items:center;line-height:1.5;padding:3px 0}
 .dnote{margin:16px 0 0}
 .dayed{margin-top:14px}
 .dayed .seg{margin-top:0}
@@ -398,6 +407,9 @@ const DEFAULT_SETTINGS = {
   schedule: null
 };
 const SECS_PER_AFFIRMATION = 25;
+// Silencio and Lectura last what you set; the other letters' minutes come from what's in them.
+const USUAL_MINUTES = {silencio: 10, lectura: 4};
+const MINUTE_CHOICES = (function(){ const a = []; for(let i = 1; i <= 60; i++) a.push(i); return a.concat([75, 90, 105, 120]); })();
 const BACKUP_REMIND_DAYS = 14;
 const CIRCUIT = [
   ["Bird dog", "En cuatro apoyos, estira un brazo y la pierna contraria. Sostén 2–3 segundos y cambia. La pierna no sube más alto que la cadera."],
@@ -478,6 +490,19 @@ function timeOn(item, w){
 }
 function dayKeyIn(times, w){ const p = plainDay(DAY_KEYS[w]); return Object.keys(times).filter(function(x){ return plainDay(x) === p; })[0]; }
 function isScheduled(ds){ const t = dayType(ds); return t==="normal" || t==="gym"; }
+// Silencio's and Lectura's minutes, most specific first like the hours: this date ({"mins": {"lectura": 30}}),
+// this weekday of the schedule ({"minutesDays": {"lectura": {"jue": 10}}}), all its days ({"minutes": {"lectura": 4}}).
+function okMinutes(v){ const n = Number(v); return n >= 1 && n <= 240 && Math.round(n) === n ? n : 0; }
+function usualMinutes(type, key, w){
+  const t = scheduleType(type);
+  const own = t && t.minutesDays && t.minutesDays[key];
+  const k = own && w != null ? dayKeyIn(own, w) : null;
+  return (k && okMinutes(own[k])) || okMinutes(t && t.minutes && t.minutes[key]) || USUAL_MINUTES[key];
+}
+function minutesOn(type, key, ds){
+  const d = ds && state.days[ds];
+  return okMinutes(d && d.mins && d.mins[key]) || usualMinutes(type, key, ds ? parse(ds).getDay() : null);
+}
 
 // "5:20" (morning, as the schedule writes it), "10:10 pm" ⇄ minutes ⇄ "05:20" for <input type="time">.
 function parseTime(s){
@@ -1132,17 +1157,28 @@ function spanMinutes(range){
   const mins = (+m[3] * 60 + +m[4]) - (+m[1] * 60 + +m[2]);
   return mins > 0 ? mins + " min" : "";
 }
+// How long a letter takes, in minutes: what you set for Silencio and Lectura (for this date, or for a
+// weekday w when there's no date), and for the rest what's in them. 0 when it isn't known.
+function letterMinutes(key, type, ds, w){
+  const s = state.settings;
+  if(USUAL_MINUTES[key]) return ds ? minutesOn(type, key, ds) : usualMinutes(type, key, w);
+  if(key === "afirmaciones") return Math.max(1, Math.ceil(filled(s.affirmations).length * SECS_PER_AFFIRMATION / 60));
+  if(key === "visualizacion") return Math.max(1, filled(s.visualization.items).length);
+  if(key === "ejercicio") return type === "gym" ? parseInt(spanMinutes((s.schedule || {}).gymTime), 10) || 0 : 8;
+  if(key === "escritura") return 2;
+  return 0;
+}
 function letterInfo(key, type){
   const gym = type === "gym";
   const s = state.settings;
   const sc = s.schedule || {};
+  const mins = letterMinutes(key, type, dayView.ds);
   switch(key){
     case "silencio": return {
-      sub: "Daily Calm", time: "10 min", fixed: true
+      sub: "Daily Calm", time: mins + " min", fixed: true
     };
     case "afirmaciones": {
       const list = filled(s.affirmations);
-      const mins = Math.max(1, Math.ceil(list.length * SECS_PER_AFFIRMATION / 60));
       const review = list.length && !dayView.record && affReviewDue();
       return {
         sub: review ? "Toca revisarlas" : "En voz alta", time: mins + " min",
@@ -1158,7 +1194,7 @@ function letterInfo(key, type){
       const vis = s.visualization;
       const list = filled(vis.items);
       return {
-        sub: "Ojos cerrados, guiada", time: Math.max(1, list.length) + " min",
+        sub: "Ojos cerrados, guiada", time: mins + " min",
         html: !list.length ? '<p>Todavía no tienes preguntas.</p><button class="btn" data-open="vis">Agregar preguntas</button>' :
           runBoxHTML("visualizacion") + '<ol>' + list.map(function(v){ return '<li>' + (v.label.trim() ? '<b>' + esc(v.label) + ':</b> ' : '') + esc(v.text) + '</li>'; }).join("") + '</ol>' +
           (vis.note.trim() ? '<p class="note">' + esc(vis.note) + '</p>' : '')
@@ -1182,16 +1218,16 @@ function letterInfo(key, type){
       if(gym){
         const at = laterTime("gym", "lectura", dayView.ds);
         return {
-          sub: "Tu libro", time: READ_MIN + " min",
-          html: '<p>Hoy lees más tarde' + (at ? ", a las " + esc(at) : sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Empieza desde aquí y se marca sola.</p>' + readingHTML() + shortcutHelpHTML()
+          sub: "Tu libro", time: mins + " min",
+          html: '<p>Hoy lees más tarde' + (at ? ", a las " + esc(at) : sc.gymReading ? ": " + esc(sc.gymReading) : "") + '. Empieza desde aquí y se marca sola.</p>' + readingHTML(mins)
         };
       }
       return {
-        sub: "Con tu café", time: READ_MIN + " min",
-        html: readingHTML() + '<p>' + READ_MIN + ' minutos con tu café. La meta es el tiempo, no las páginas.</p>' + shortcutHelpHTML()
+        sub: "Con tu café", time: mins + " min",
+        html: readingHTML(mins) + '<p>' + mins + ' minutos con tu café. La meta es el tiempo, no las páginas.</p>'
       };
     case "escritura": return {
-      sub: "Agradecer y anotar", time: "2 min",
+      sub: "Agradecer y anotar", time: mins + " min",
       html: ""
     };
   }
@@ -1832,19 +1868,22 @@ function updateRunUI(r){
 function updateAllRunUI(){ Object.keys(runs).forEach(function(k){ updateRunUI(runs[k]); }); }
 
 /* ---------- lectura: the Reloj timer comes from an iOS shortcut ---------- */
-const READ_MIN = 4;
+// The shortcut gets today's minutes as its input and hands them to its timer, so it never needs changing.
 const READ_SHORTCUT = "Lectura SAVERS";
 let readIv = null;
 function readingState(){
   const r = store.get("savers:reading");
   return r && r.day === todayStr() && Number(r.start) ? r : null;
 }
+function readMinutes(){ const ds = todayStr(); return minutesOn(schedTypeOf(ds), "lectura", ds); }
 function clearReading(){ try { localStorage.removeItem("savers:reading"); } catch(e){} syncReading(); }
-function readLeft(r){ return Math.max(0, Math.ceil(READ_MIN * 60 - (Date.now() - Number(r.start)) / 1000)); }
+// A reading keeps the minutes it started with, even if they change while it runs.
+function readLeft(r){ return Math.max(0, Math.ceil((okMinutes(r.min) || USUAL_MINUTES.lectura) * 60 - (Date.now() - Number(r.start)) / 1000)); }
 function startReading(){
-  store.set("savers:reading", {day: todayStr(), start: Date.now()});
+  const min = readMinutes();
+  store.set("savers:reading", {day: todayStr(), start: Date.now(), min: min});
   syncReading();
-  location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent(READ_SHORTCUT);
+  location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent(READ_SHORTCUT) + "&input=text&text=" + min;
 }
 function finishReading(){
   const r = store.get("savers:reading");
@@ -1870,31 +1909,34 @@ function renderReading(r){
   const left = r ? readLeft(r) : 0;
   const rest = !r && doneToday("lectura");
   box.classList.toggle("is-done", rest);
-  $('[data-rd="now"]', box).textContent = r ? "Leyendo" : rest ? "Hecho" : READ_MIN + " minutos";
+  $('[data-rd="now"]', box).textContent = r ? "Leyendo" : rest ? "Hecho" : readMinutes() + " minutos";
   $('[data-rd="next"]', box).textContent = r ? "Faltan " + Math.floor(left / 60) + ":" + pad(left % 60) + ". Se marca sola al volver." : rest ? "Si quieres, puedes leer otra vez." : "Se abre Libros y el Reloj te avisa al terminar.";
   $('[data-rd="go"]', box).textContent = rest ? "Repetir" : "Empezar lectura";
   $('[data-rd="go"]', box).hidden = !!r;
   $('[data-rd="done"]', box).hidden = !r;
   $('[data-rd="cancel"]', box).hidden = !r;
+  // The app can't see the shortcut; if it didn't run, you're back here with the reading going.
+  $('[data-rd="help"]', box).hidden = !r;
 }
-function readingHTML(){
+function readingHTML(mins){
   return '<div class="timer" data-read>' +
-      '<div class="tm-now" data-rd="now">' + READ_MIN + ' minutos</div>' +
+      '<div class="tm-now" data-rd="now">' + mins + ' minutos</div>' +
       '<div class="tm-next" data-rd="next">Se abre Libros y el Reloj te avisa al terminar.</div>' +
       '<div class="row">' +
         '<button class="btn primary" data-rd="go">Empezar lectura</button>' +
         '<button class="btn primary" data-rd="done" hidden>Ya terminé</button>' +
         '<button class="btn" data-rd="cancel" hidden>Cancelar</button>' +
       '</div>' +
+      '<details class="howto" data-rd="help" hidden><summary>¿No se abrió el Reloj?</summary>' + shortcutStepsHTML() + '</details>' +
     '</div>';
 }
-function shortcutHelpHTML(){
-  return '<details class="howto"><summary>Cómo crear el atajo (una sola vez)</summary><ol>' +
+function shortcutStepsHTML(){
+  return '<ol>' +
     '<li>Abre la app <b>Atajos</b> y toca <b>+</b>.</li>' +
-    '<li>Agrega la acción <b>Iniciar temporizador</b> y ponle <b>' + READ_MIN + ' minutos</b>.</li>' +
+    '<li>Agrega la acción <b>Iniciar temporizador</b>. Toca el número y elige <b>Entrada del atajo</b>, en minutos.</li>' +
     '<li>Agrega la acción <b>Abrir app</b> y elige <b>Libros</b>.</li>' +
     '<li>Toca el nombre arriba y llámalo exactamente <b>' + READ_SHORTCUT + '</b>.</li>' +
-    '</ol><p class="note">Si iOS pregunta "¿Abrir en Atajos?", toca Abrir.</p></details>';
+    '</ol><p class="note">Así el Reloj usa los minutos de la app. Si tu atajo tiene un número fijo, cámbialo por Entrada del atajo. Si iOS pregunta "¿Abrir en Atajos?", toca Abrir.</p>';
 }
 
 /* ---------- history ---------- */
@@ -2086,7 +2128,7 @@ function monthPaneHTML(y, m){
     const t = dayType(ds);
     const off = t === "shabbat" || (t === "off" && !hasContent(d));
     // A day to come that was changed for itself (a holiday, a moved gym) gets a dot.
-    const planned = future && t !== "shabbat" && !!(d && (d.type || d.times));
+    const planned = future && t !== "shabbat" && !!(d && (d.type || d.times || d.mins));
     if(off) cls.push("off");
     if(future && !off) cls.push("future");
     if(planned) cls.push("planned");
@@ -2272,6 +2314,12 @@ function joinDays(ws){ return ws.map(function(w){ return DAY_KEYS[w]; }).join(",
 function timePickHTML(cls, time, attrs){
   return '<span class="tpick' + (cls ? " " + cls : "") + '"><span class="tpv">' + esc(time || "—") + '</span><input type="time" value="' + toInput(time) + '" ' + attrs + '></span>';
 }
+// Minutes the same way: the app's "10 min" in a pill, with the iPhone's wheel of a <select> on top.
+function minutesPickHTML(cls, min, attrs){
+  const opts = MINUTE_CHOICES.indexOf(min) >= 0 ? MINUTE_CHOICES : MINUTE_CHOICES.concat([min]).sort(function(a, b){ return a - b; });
+  return '<span class="tpick' + (cls ? " " + cls : "") + '"><span class="tpv">' + min + ' min</span><select ' + attrs + '>' +
+    opts.map(function(o){ return '<option value="' + o + '"' + (o === min ? " selected" : "") + '>' + o + ' min</option>'; }).join("") + '</select></span>';
+}
 // The day's hours as a timeline. On today and days to come every hour is a native time picker;
 // an hour changed for this date shows in blue.
 function dayTimelineHTML(ds, editable){
@@ -2303,8 +2351,20 @@ function dayTimelineHTML(ds, editable){
 }
 function dateEdited(ds){
   const d = state.days[ds];
+  if(d && d.mins && Object.keys(USUAL_MINUTES).some(function(k){ return okMinutes(d.mins[k]); })) return true;
   if(!d || !d.times) return false;
   return stepIds(dayType(ds)).some(function(id){ return !!d.times[id]; });
+}
+// This date's minutes of Silencio and Lectura, under its hours; changed ones show in blue.
+function dayMinutesHTML(ds, editable){
+  const type = dayType(ds), d = state.days[ds];
+  return '<p class="tgroup mgroup">Minutos</p><ul class="tlist">' + Object.keys(USUAL_MINUTES).map(function(k){
+    const min = minutesOn(type, k, ds), edited = !!(d && d.mins && okMinutes(d.mins[k]));
+    return '<li class="mrow' + (edited ? " edited" : "") + '"><span class="tt">' + (editable
+        ? minutesPickHTML("", min, 'data-dmin="' + k + '" aria-label="Minutos de ' + LETTER_BY[k].name + (edited ? ", cambiados para este día" : "") + '"')
+        : min + " min") + '</span>' +
+      '<span class="tx">' + LETTER_BY[k].name + '</span></li>';
+  }).join("") + '</ul>';
 }
 // One date: what it is (its weekday's type, or another one just this day) and, from today on, its hours.
 function dayEditorHTML(ds){
@@ -2315,9 +2375,10 @@ function dayEditorHTML(ds){
   }).join("") + '</div>';
   if(type === "off") return html + '<p class="note">Este día no hay SAVERS y no cuenta para tu racha.</p>';
   html += dayTimelineHTML(ds, editable);
+  if(scheduleType(type)) html += dayMinutesHTML(ds, editable);
   if(editable && scheduleType(type)){
-    html += '<p class="note dnote">Las horas que cambies aquí son solo para este día.</p>' +
-      '<button class="linkbtn" data-act="dreset"' + (dateEdited(ds) ? '' : ' hidden') + '>Volver a las horas de siempre</button>';
+    html += '<p class="note dnote">Lo que cambies aquí es solo para este día.</p>' +
+      '<button class="linkbtn" data-act="dreset"' + (dateEdited(ds) ? '' : ' hidden') + '>Volver a lo de siempre</button>';
   }
   return html;
 }
@@ -2336,6 +2397,13 @@ function setDateTime(ds, st, value){
   if(!Object.keys(d.times).length) delete d.times;
   saveDay(ds, 0);
 }
+function setDateMinutes(ds, key, value){
+  const d = getDay(ds, true), v = okMinutes(value);
+  d.mins = d.mins || {};
+  if(!v || v === usualMinutes(dayType(ds), key, parse(ds).getDay())) delete d.mins[key]; else d.mins[key] = v;
+  if(!Object.keys(d.mins).length) delete d.mins;
+  saveDay(ds, 0);
+}
 function bindDayEditor(el, ds, onChange){
   el.addEventListener("click", function(e){
     const b = e.target.closest("[data-dtype]");
@@ -2346,7 +2414,7 @@ function bindDayEditor(el, ds, onChange){
       setDateType(ds, b.getAttribute("data-dtype"));
     } else {
       const d = state.days[ds];
-      if(d){ delete d.times; saveDay(ds, 0); }
+      if(d){ delete d.times; delete d.mins; saveDay(ds, 0); }
     }
     el.innerHTML = dayEditorHTML(ds);
     const on = b ? $('[data-dtype="' + b.getAttribute("data-dtype") + '"]', el) : $(".seg button", el);
@@ -2355,6 +2423,19 @@ function bindDayEditor(el, ds, onChange){
   });
   // The picker stays where it is (no re-render under it); only its row and the reset link update.
   el.addEventListener("change", function(e){
+    const mp = e.target.closest && e.target.closest("[data-dmin]");
+    if(mp){
+      const k = mp.getAttribute("data-dmin");
+      setDateMinutes(ds, k, mp.value);
+      const d = state.days[ds], edited = !!(d && d.mins && d.mins[k]), min = minutesOn(dayType(ds), k, ds);
+      mp.value = String(min);
+      $(".tpv", mp.parentNode).textContent = min + " min";
+      mp.closest(".mrow").classList.toggle("edited", edited);
+      mp.setAttribute("aria-label", "Minutos de " + LETTER_BY[k].name + (edited ? ", cambiados para este día" : ""));
+      const r = $('[data-act="dreset"]', el); if(r) r.hidden = !dateEdited(ds);
+      if(onChange) onChange();
+      return;
+    }
     const inp = e.target.closest && e.target.closest("[data-dstep]");
     if(!inp) return;
     const st = findStep(dayType(ds), inp.getAttribute("data-dstep"));
@@ -2407,14 +2488,61 @@ function schedPageHTML(){
     const ws = daysOfType(k);
     return '<button data-act="sched" data-type="' + k + '" aria-pressed="' + (k === tab) + '"><b>' + TYPE_NAMES[k] + '</b><small>' + (ws.length ? joinDays(ws) : "ningún día") + '</small></button>';
   }).join("") + '</div>';
+  const seen = {};
   GROUPS.forEach(function(g){
     const list = groupList(t, g[0]);
     if(!list.length) return;
-    html += (g[1] ? '<p class="slabel sm">' + g[1] + '</p>' : '') + '<div class="slist">' + list.map(function(st){
-      return '<button class="srow" data-step="' + esc(st.id) + '" data-type="' + tab + '"><b>' + esc(st.title) + '</b><small>' + esc(stepSummary(st, tab)) + '</small><span class="chev" aria-hidden="true"></span></button>';
+    html += (g[1] ? '<p class="slabel sm">' + g[1] + '</p>' : '') + '<div class="slist">' + list.map(function(st, i){
+      return '<button class="srow" data-step="' + esc(st.id) + '" data-type="' + tab + '"><b>' + esc(st.title) + '</b><small>' + esc(stepSummary(st, tab)) + '</small><span class="chev" aria-hidden="true"></span></button>' +
+        letterRowsHTML(tab, st, list[i + 1], seen);
     }).join("") + '</div>';
   });
-  return html + '<p class="sfoot">Toca una hora para cambiarla en todos los días de ' + TYPE_NAMES[tab] + ' o solo en uno.</p>';
+  return html + '<p class="sfoot">Toca una hora para cambiarla en todos los días de ' + TYPE_NAMES[tab] + ' o solo en uno. Los minutos de Silencio y Lectura, igual.</p>';
+}
+// A block's letters under its hour, each at the hour it starts: the block's hour plus the minutes of the
+// letters before it. Silencio and Lectura open their minutes; the rest come from what's in them.
+function letterRowsHTML(type, st, next, seen){
+  const keys = (Array.isArray(st.letters) ? st.letters : []).filter(function(k){
+    if(!LETTER_BY[k] || seen[k]) return false;
+    seen[k] = true;
+    return true;
+  });
+  if(!keys.length) return "";
+  // A block that is just its letter ("Más tarde · Lectura") already shows the hour above it.
+  let at = keys.length === 1 && LETTER_BY[keys[0]].name === st.title ? null : parseTime(st.time);
+  return keys.map(function(k){
+    const min = letterMinutes(k, type, null, null);
+    const info = [at == null ? "" : timeLabel(at), USUAL_MINUTES[k] ? minutesSummary(type, k) : min ? min + " min" : ""].filter(Boolean).join(" · ");
+    if(at != null) at += min;
+    return USUAL_MINUTES[k]
+      ? '<button class="srow sub" data-mins="' + k + '" data-type="' + type + '"><b>' + LETTER_BY[k].name + '</b><small>' + esc(info) + '</small><span class="chev" aria-hidden="true"></span></button>'
+      : '<div class="srow sub"><b>' + LETTER_BY[k].name + '</b><small>' + esc(info) + '</small><span class="chev blank" aria-hidden="true"></span></div>';
+  }).join("") + overlapHTML(type, st, next, keys);
+}
+// "4 min · jue 10 min": the minutes for all days and the weekdays that have their own.
+function minutesSummary(type, key){
+  const all = usualMinutes(type, key, null);
+  const own = daysOfType(type).filter(function(w){ return usualMinutes(type, key, w) !== all; });
+  return [all + " min"].concat(own.map(function(w){ return DAY_KEYS[w] + " " + usualMinutes(type, key, w) + " min"; })).join(" · ");
+}
+// When a block's letters run past the next hour, it says so; the next hour stays where you put it.
+function overlapHTML(type, st, next, keys){
+  if(!next) return "";
+  const days = daysOfType(type), found = {}, order = [];
+  (days.length ? days : [null]).forEach(function(w){
+    const start = parseTime(w == null ? st.time : timeOn(st, w) || st.time);
+    const nextAt = parseTime(w == null ? next.time : timeOn(next, w) || next.time);
+    if(start == null || nextAt == null || nextAt <= start) return;
+    const end = start + keys.reduce(function(a, k){ return a + letterMinutes(k, type, null, w); }, 0);
+    if(end <= nextAt) return;
+    const msg = LETTER_BY[keys[keys.length - 1]].name + " termina " + timeLabel(end) + ", pasa las " + timeLabel(nextAt) + " de " + (next.short || next.title);
+    if(!found[msg]){ found[msg] = []; order.push(msg); }
+    found[msg].push(w);
+  });
+  return order.map(function(msg){
+    const ws = found[msg], every = !days.length || ws.length === days.length;
+    return '<p class="swarn">' + esc((every ? "" : cap(ws.map(weekdayPlural).join(" y ")) + ": ") + msg) + '</p>';
+  }).join("");
 }
 // One hour: for all the days of its schedule, or for one weekday only.
 function openStepSheet(type, id){
@@ -2484,6 +2612,86 @@ function setWeekdayTime(st, w, v){
   if(k) delete st.times[k];
   if(v && !sameTime(v, st.time)) st.times[DAY_KEYS[w]] = v;
   if(!Object.keys(st.times).length) delete st.times;
+  flushSave();
+}
+// Silencio's or Lectura's minutes: for all the days of a schedule, or for one weekday only (like an hour).
+function openMinutesSheet(type, key){
+  const t = scheduleType(type), l = LETTER_BY[key];
+  if(!t || !USUAL_MINUTES[key]) return;
+  const days = daysOfType(type);
+  let sel = "all";
+  function ownOn(w){ const m = t.minutesDays && t.minutesDays[key], k = m ? dayKeyIn(m, w) : null; return k ? okMinutes(m[k]) : 0; }
+  function valueFor(){ return usualMinutes(type, key, sel === "all" ? null : sel); }
+  function segHTML(){
+    if(days.length < 2) return "";
+    return '<div class="seg" role="group" aria-label="Días" style="grid-template-columns:repeat(' + (days.length + 1) + ',minmax(0,1fr))">' +
+      ["all"].concat(days).map(function(w){
+        return '<button data-w="' + w + '" aria-pressed="' + (String(w) === String(sel)) + '"><b>' + (w === "all" ? "Todos" : DAY_KEYS[w]) + '</b></button>';
+      }).join("") + '</div>';
+  }
+  function footHTML(){
+    const own = days.filter(ownOn);
+    if(sel === "all"){
+      return '<p class="note">' + (own.length
+        ? cap(own.map(weekdayPlural).join(" y ")) + " tienen otros minutos. Si los cambias aquí, todos quedan iguales."
+        : days.length ? "Para " + joinDays(days) + "." : "Ningún día usa este horario ahora.") + '</p>';
+    }
+    return '<p class="note">Solo ' + weekdayPlural(sel) + '.</p>' +
+      (ownOn(sel) ? '<button class="linkbtn" data-act="same">Usar los mismos minutos que los demás</button>' : '');
+  }
+  function pickHTML(){ return minutesPickHTML("bigtime", valueFor(), 'id="min-pick" aria-label="Minutos de ' + l.name + '"'); }
+  const s = openSheet(
+    '<div class="shead"><h3 id="min-t">' + l.name + '</h3><button class="tbtn" data-close>Listo</button></div>' +
+    '<div data-seg>' + segHTML() + '</div>' +
+    '<div data-pick>' + pickHTML() + '</div>' +
+    '<div data-foot>' + footHTML() + '</div>' +
+    (key === "lectura" ? '<details class="howto"><summary>Cómo crear el atajo de lectura</summary>' + shortcutStepsHTML() + '</details>' : ''),
+    {labelledby: "min-t", onClose: function(){ rerenderSettingsKeepScroll(); }});
+  function refresh(){
+    $("[data-seg]", s.sheet).innerHTML = segHTML();
+    $("[data-pick]", s.sheet).innerHTML = pickHTML();
+    $("[data-foot]", s.sheet).innerHTML = footHTML();
+  }
+  s.sheet.addEventListener("click", function(e){
+    if(e.target.closest("[data-close]")) return s.close();
+    const b = e.target.closest("[data-w]");
+    if(b){
+      const v = b.getAttribute("data-w");
+      sel = v === "all" ? "all" : Number(v);
+      refresh();
+      const on = $('[data-w="' + v + '"]', s.sheet); if(on) on.focus({preventScroll: true});
+      return;
+    }
+    if(e.target.closest('[data-act="same"]')){
+      setWeekdayMinutes(t, key, sel, 0);
+      refresh();
+    }
+  });
+  s.sheet.addEventListener("change", function(e){
+    if(e.target.id !== "min-pick") return;
+    const v = okMinutes(e.target.value);
+    if(!v) return refresh();
+    if(sel === "all"){
+      t.minutes = t.minutes || {};
+      t.minutes[key] = v;
+      if(t.minutesDays){ delete t.minutesDays[key]; if(!Object.keys(t.minutesDays).length) delete t.minutesDays; }
+      flushSave();
+    } else setWeekdayMinutes(t, key, sel, v);
+    refresh();
+    const p = $("#min-pick", s.sheet); if(p) p.focus({preventScroll: true});
+  });
+  $("[data-close]", s.sheet).focus({preventScroll: true});
+}
+// A weekday's own minutes; the same as the rest (or none) means it just follows them.
+function setWeekdayMinutes(t, key, w, v){
+  t.minutesDays = t.minutesDays || {};
+  const m = t.minutesDays[key] = t.minutesDays[key] || {};
+  const k = dayKeyIn(m, w);
+  if(k) delete m[k];
+  const all = okMinutes(t.minutes && t.minutes[key]) || USUAL_MINUTES[key];
+  if(v && v !== all) m[DAY_KEYS[w]] = v;
+  if(!Object.keys(m).length) delete t.minutesDays[key];
+  if(!Object.keys(t.minutesDays).length) delete t.minutesDays;
   flushSave();
 }
 
@@ -2649,6 +2857,8 @@ function backToToday(){
     if(go) return openPage(go.getAttribute("data-go"));
     const step = ev.target.closest("[data-step]");
     if(step) return openStepSheet(step.getAttribute("data-type"), step.getAttribute("data-step"));
+    const mins = ev.target.closest("[data-mins]");
+    if(mins) return openMinutesSheet(mins.getAttribute("data-type"), mins.getAttribute("data-mins"));
     const b = ev.target.closest("[data-act]");
     if(!b || b.disabled) return;
     const act = b.getAttribute("data-act");
