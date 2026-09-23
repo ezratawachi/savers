@@ -114,10 +114,6 @@ details[open]>summary .caret,.entry.open .caret{transform:rotate(-135deg);margin
 .finish h2{font-family:var(--display);font-weight:800;font-size:1.6rem;margin:0}
 .finish p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
 .finish p strong{color:var(--ink)}
-details.more{margin-top:12px}
-details.more>summary{list-style:none;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;color:var(--sky);font-weight:700;cursor:pointer}
-details.more>summary::-webkit-details-marker{display:none}
-details.more>summary .caret{border-color:var(--sky)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeUp .45s ease both}
 .body p{margin:0 0 8px}
@@ -868,12 +864,23 @@ function nextKey(blocks, d){
   }
   return null;
 }
+function schedTypeOf(ds){ return dayType(ds) === "gym" ? "gym" : "normal"; }
+// "day" once all six are marked; "morning" when today's morning blocks are done and "Más tarde" is still to go.
+function finishState(ds, d){
+  if(countDone(d) === 6) return "day";
+  if(ds !== state.today) return "";
+  const blocks = dayBlocks(ds, schedTypeOf(ds));
+  const later = blocks.filter(function(b){ return b.later; });
+  const morningDone = blocks.every(function(b){ return b.later || b.keys.every(function(k){ return d.checks[k]; }); });
+  return later.length && morningDone ? "morning" : "";
+}
+const FINISH_RANK = {"": 0, morning: 1, day: 2};
 // After a letter is marked, "Ahora" moves on and the next card opens (if it has something inside).
 function updateNow(){
   const ds = state.viewDate;
   if(ds !== state.today) return;
   const d = state.days[ds] || blankDay(ds);
-  const now = nextKey(dayBlocks(ds, dayType(ds) === "gym" ? "gym" : "normal"), d);
+  const now = nextKey(dayBlocks(ds, schedTypeOf(ds)), d);
   $$("#view-today .card").forEach(function(card){
     const is = card.getAttribute("data-card") === now;
     if(is && !card.classList.contains("now")){
@@ -981,14 +988,16 @@ function renderToday(opts){
   }
 
   const n = countDone(d);
-  const schedType = type === "gym" ? "gym" : "normal";
+  const schedType = schedTypeOf(ds);
+  const fin = finishState(ds, d);
   let morning =
     '<div class="hero"><div class="letters" role="img" aria-label="' + n + ' de 6">' +
       LETTERS.map(function(l){
         return '<span class="lt' + (d.checks[l.key] ? " done" : "") + '" data-letter="' + l.key + '" aria-hidden="true">' + l.L + '</span>';
       }).join("") +
     '</div>' +
-    '<div class="progress"><span>Racha: <strong id="p-streak">' + streakLabel(streak()) + '</strong></span>' +
+    // With the day complete, the finish card already shows the streak.
+    '<div class="progress">' + (fin === "day" && isToday ? '<span></span>' : '<span>Racha: <strong id="p-streak">' + streakLabel(streak()) + '</strong></span>') +
       (hasSchedule(schedType) ? '<button class="linkbtn" data-sched="' + schedType + '">Ver horario ›</button>' : '') + '</div></div>';
 
   const blocks = dayBlocks(ds, schedType);
@@ -1015,18 +1024,22 @@ function renderToday(opts){
       '<summary>' + row + '<span class="caret" aria-hidden="true"></span></summary>' + inner + '</details>';
   }
 
-  if(n === 6){
+  if(fin){
     const fade = opts && opts.fade ? " fade-in" : "";
+    const left = fin === "morning" ? dayBlocks(ds, schedType).filter(function(b){ return b.later; }) : [];
+    const pending = left.map(function(b){
+      const names = b.keys.filter(function(k){ return !d.checks[k]; }).map(function(k){ return LETTER_BY[k].name; });
+      return names.length ? names.join(" y ") + (b.head && b.head[1] ? " a las " + b.head[1] : "") : "";
+    }).filter(Boolean).join(", ");
     html +=
-      '<div class="finish' + fade + '"><div class="big" aria-hidden="true">✓</div>' +
-        '<h2>' + (isToday ? "Mañana completa" : "Registro completo") + '</h2>' +
-        (isToday ? '<p>Racha: <strong>' + streakLabel(streak()) + '</strong></p>' : '') +
+      '<div class="finish' + fade + '" data-fin="' + fin + '"><div class="big" aria-hidden="true">✓</div>' +
+        '<h2>' + (fin === "morning" ? "Mañana lista" : isToday ? "Día completo" : "Registro completo") + '</h2>' +
+        (fin === "morning" ? '<p>Falta <strong>' + esc(pending) + '</strong></p>'
+          : isToday ? '<p>Racha: <strong>' + streakLabel(streak()) + '</strong></p>' : '') +
         (isToday && backupOverdue() ? '<p class="remind">' + (state.lastExport ? "Hace " + backupAge() + " días sin copia" : "Todavía no exportas una copia") + ' · <button class="linkbtn" data-act="export">Exportar</button></p>' : '') +
-      '</div>' +
-      '<details class="more"' + (morningOpen === ds ? " open" : "") + '><summary>Ver mi mañana <span class="caret" aria-hidden="true"></span></summary>' + morning + '</details>';
-  } else {
-    html += morning;
+      '</div>';
   }
+  html += morning;
 
   root.innerHTML = html;
   bindToday();
@@ -1035,7 +1048,6 @@ function renderToday(opts){
   setStatus(statusMsg);
   fitFields(root);
 }
-let morningOpen = null;   // date whose "Ver mi mañana" is unfolded
 let finishT = null;
 
 function closeCard(card){ card.open = false; openCards.delete(card.getAttribute("data-card")); }
@@ -1068,20 +1080,20 @@ function refreshChecks(){
   });
   const n = countDone(d);
   if(state.tab === "today"){
-    const showingFinish = !!$("#view-today .finish");
+    const shownEl = $("#view-today .finish");
+    const shown = shownEl ? shownEl.getAttribute("data-fin") : "";
+    const want = finishState(ds, d);
     clearTimeout(finishT);
-    if(n === 6 && !showingFinish){
+    if(FINISH_RANK[want] > FINISH_RANK[shown]){
       // Let the last letter light up and the arpeggio play first.
       finishT = setTimeout(function(){
-        if(state.tab !== "today" || state.viewDate !== ds || countDone(state.days[ds]) !== 6) return;
+        if(state.tab !== "today" || state.viewDate !== ds || finishState(ds, state.days[ds] || blankDay(ds)) !== want) return;
         const a = document.activeElement;
         if(a && a.classList && a.classList.contains("wt")) return;
-        morningOpen = null;
         renderToday({fade: true});
         window.scrollTo({top: 0, behavior: "smooth"});
       }, 1000);
-    } else if(n < 6 && showingFinish){
-      morningOpen = null;
+    } else if(want !== shown){
       renderToday();
     }
   }
@@ -1103,9 +1115,10 @@ function toggleLetter(key){
   if(key === "lectura" && d.checks[key] && readingState()) clearReading();
   if(!d.checks[key]) return;
   bump(key);
-  if(countDone(d) === 6){
+  const fin = finishState(ds, d);
+  if(fin){
     completeSound();
-    toast("¡Mañana completa!");
+    toast(fin === "day" ? "¡Día completo!" : "¡Mañana lista!");
   } else {
     popSound();
   }
@@ -1132,8 +1145,6 @@ function bindToday(){
       if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleLetter(key); }
     });
   });
-  const more = $("details.more", root);
-  if(more) more.addEventListener("toggle", function(){ morningOpen = more.open ? state.viewDate : null; });
   $$("details.card", root).forEach(function(det){
     det.addEventListener("toggle", function(){
       const k = det.getAttribute("data-card");
@@ -1423,7 +1434,7 @@ function finishReading(){
   d.checks.lectura = true;
   saveDay(r.day, 0);
   if(state.viewDate === r.day) refreshChecks();
-  if(countDone(d) === 6){ completeSound(); toast("¡Mañana completa!"); }
+  if(countDone(d) === 6){ completeSound(); toast("¡Día completo!"); }
   else { popSound(); toast("Lectura marcada"); }
 }
 function syncReading(){
