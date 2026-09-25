@@ -1006,7 +1006,7 @@ const TONES = {
 const ASK_GAP = 21000;
 const clips = new Map();   // clipKey -> {raw: wav bytes, buf: decoded AudioBuffer or null, url, voice}; only the voice that speaks
 const voiceStatus = {total: 0, ready: 0, nextReady: 0, error: "", daily: false};
-let voiceSrc = null, preparing = null, prepareAgain = false, minuteHold = 0, minuteMisses = 0, lastAsk = 0;
+let voiceSrc = null, preparing = null, prepareAgain = false, minuteHold = 0, minuteMisses = 0, lastAsk = 0, resetT = null;
 
 function ttsKey(){ return store.get("savers:geminiKey") || ""; }
 function knownVoice(v){ return VOICES.some(function(x){ return x.id === v; }) ? v : ""; }
@@ -1127,7 +1127,10 @@ async function ensureClip(cache, text, tone, voice, opts){
 function noteVoiceError(err){
   if(err && err.status === 429){
     minuteMisses++;
-    if(err.daily || minuteMisses >= 3){ store.set("savers:voiceHold", nextQuotaReset()); voiceStatus.daily = true; }
+    if(err.daily || minuteMisses >= 3){
+      store.set("savers:voiceHold", nextQuotaReset()); voiceStatus.daily = true;
+      clearTimeout(resetT); resetT = setTimeout(prepareVoice, dailyHold() - Date.now() + 1000);
+    }
     else { const wait = Math.max(err.retry || 0, 60000); minuteHold = Date.now() + wait; setTimeout(prepareVoice, wait + 1000); }
     voiceStatus.error = "";
   } else voiceStatus.error = ttsError(err);
@@ -1163,6 +1166,9 @@ async function makeClips(){
   let ask = navigator.onLine && Date.now() >= Math.max(dailyHold(), minuteHold);
   s.total = list.length; s.ready = 0; s.nextReady = 0; s.daily = Date.now() < dailyHold();
   if(ask) s.error = "";
+  // Opening the app after the reset picks up what's missing; this covers the app staying open through it.
+  clearTimeout(resetT);
+  if(s.daily) resetT = setTimeout(prepareVoice, dailyHold() - Date.now() + 1000);
   async function pass(v, load, field){
     for(const p of list){
       try { if(await ensureClip(cache, p[0], p[1], v, {ask: ask, load: load, pace: true})) s[field]++; }
