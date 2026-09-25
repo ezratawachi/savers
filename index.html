@@ -251,6 +251,9 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .slist{background:var(--surface);border:1px solid var(--edge);box-shadow:var(--shadow);border-radius:16px;overflow:hidden;margin-top:14px}
 .srow{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:10px 14px;margin:0;border:0;background:none;text-align:left;cursor:pointer;color:var(--ink)}
 .srow + .srow{border-top:1px solid var(--line)}
+.srow.asks{position:relative}
+.srow.asks input{pointer-events:none}
+.srow .cover{position:absolute;inset:0;width:100%;margin:0;padding:0;border:0;background:transparent;border-radius:inherit;cursor:pointer}
 .srow b{flex:1 0 auto;font-weight:700}
 .srow small{min-width:0;font-size:.88rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srow small.warn{color:var(--warn);font-weight:700}
@@ -2614,10 +2617,12 @@ function unb64u(str){
   const s = atob(str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4));
   return Uint8Array.from(s, function(c){ return c.charCodeAt(0); });
 }
-// iOS only shows its question while the finger's tap is still going on, so the question starts on the
-// switch's click itself, before anything else runs (the change that follows can come too late).
-let permAsk = null;
+// iOS only shows its question during a real tap on a plain button: a tap on the native switch doesn't
+// count, and it answers "denied" without asking. So until iOS has been asked, a clear button covers the
+// switch, and the question starts on its click before anything else runs.
+let permAsk = null, permTap = "";
 function askPermission(){
+  permTap = navigator.userActivation ? (navigator.userActivation.isActive ? "sí" : "no") : "?";
   if(Notification.permission === "default") permAsk = Promise.resolve(Notification.requestPermission());
 }
 // The answer to the question the click asked, or a new question if there was no click (a keyboard).
@@ -2645,9 +2650,8 @@ function pushNote(body){
 }
 // iOS can renew the push address; each open hands the current one to the worker.
 function refreshPush(){ if(anyNoteOn()) pushSubscribe(false).catch(function(){}); }
-function toggleNote(el){
-  const id = el.getAttribute("data-note");
-  if(!el.checked){
+function turnNote(id, on){
+  if(!on){
     setNote(id, false);
     if(id === "lectura"){ const r = readingState(); if(r && r.notify){ r.notify = false; store.set("savers:reading", r); pushPost("/cancel", {id: id}).catch(function(){}); } }
     noteStatus.msg = "";
@@ -2662,7 +2666,7 @@ function toggleNote(el){
   }).catch(function(e){
     const m = String(e && e.message || e);
     // Denied while iOS still says "not asked yet" means it never showed the question.
-    noteStatus.msg = m === "denied" && Notification.permission === "default" ? "El iPhone no mostró la pregunta. Vuelve a tocar el interruptor."
+    noteStatus.msg = m === "denied" && Notification.permission === "default" ? "El iPhone no mostró la pregunta (toque: " + permTap + "). Vuelve a tocar el interruptor."
       : m === "denied" ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS."
       : m === "default" ? "No se activaron. Vuelve a intentarlo."
       : "No se pudo conectar. Revisa tu internet y vuelve a intentarlo.";
@@ -2680,8 +2684,13 @@ function avisosPageHTML(){
   if(!pushCan()) return '<p class="sfoot" style="margin-top:14px">Para recibir avisos, abre SAVERS desde su ícono en la pantalla de inicio.</p>';
   const blocked = Notification.permission === "denied";
   return '<div class="slist" style="margin-top:14px">' + NOTES.map(function(n){
+      const on = noteOn(n.id) || noteStatus.busy === n.id;
+      if(Notification.permission === "default" && !noteStatus.busy){
+        return '<div class="srow asks"><b>' + n.name + '</b><input type="checkbox" switch tabindex="-1" aria-hidden="true">' +
+          '<button class="cover" data-act="note-ask" data-id="' + n.id + '" role="switch" aria-checked="false" aria-label="' + n.name + '"></button></div>';
+      }
       return '<label class="srow" for="n-' + n.id + '"><b>' + n.name + '</b><input type="checkbox" switch id="n-' + n.id + '" data-note="' + n.id + '"' +
-        (noteOn(n.id) || noteStatus.busy === n.id ? " checked" : "") + (blocked || noteStatus.busy ? " disabled" : "") + '></label>';
+        (on ? " checked" : "") + (blocked || noteStatus.busy ? " disabled" : "") + '></label>';
     }).join("") + '</div>' +
     '<p class="sfoot">' + NOTES.map(function(n){ return n.about; }).join(" ") + '</p>' +
     '<p class="sfoot warn" role="status">' + esc(blocked ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS." : noteStatus.msg) + '</p>' +
@@ -3710,8 +3719,6 @@ function backToToday(){
 (function bindSettings(){
   const root = $("#view-settings");
   root.addEventListener("click", function(ev){
-    const note = ev.target.closest("input[data-note]");
-    if(note && note.checked && pushCan()) askPermission();
     const go = ev.target.closest("[data-go]");
     if(go) return openPage(go.getAttribute("data-go"));
     const step = ev.target.closest("[data-step]");
@@ -3738,6 +3745,7 @@ function backToToday(){
     if(act === "cloud-in") return cloudSignIn();
     if(act === "cloud-out") return cloudSignOut();
     if(act === "note-test") return testNote();
+    if(act === "note-ask"){ askPermission(); return turnNote(b.getAttribute("data-id"), true); }
     const key = b.getAttribute("data-list");
     if(!state.edit || !key) return;
     const list = editList(key);
@@ -3769,7 +3777,7 @@ function backToToday(){
   });
   root.addEventListener("change", function(ev){
     const el = ev.target;
-    if(el.hasAttribute("data-note")) return toggleNote(el);
+    if(el.hasAttribute("data-note")) return turnNote(el.getAttribute("data-note"), el.checked);
     if(el.id === "s-read"){
       state.settings.readApp = el.value;
       flushSave();

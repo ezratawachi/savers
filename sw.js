@@ -1,4 +1,4 @@
-const CACHE = "savers-v38";
+const CACHE = "savers-v39";
 // The Gemini voice clips live in their own cache and survive every update.
 const KEEP = [CACHE, "savers-voz"];
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
