@@ -73,6 +73,7 @@ button.chip:active{transform:scale(.97);transition-duration:.08s}
 button.chip span{font-weight:400;margin-left:2px}
 
 .banner{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.92rem}
+.bbtns{display:flex;gap:14px}
 .linkbtn{background:none;border:0;color:var(--sky);font-weight:700;cursor:pointer;padding:6px 0;white-space:nowrap;transition:opacity .2s ease}
 /* text buttons dim on touch-down, like iOS */
 .linkbtn:active,.tbtn:active{opacity:.5;transition-duration:0s}
@@ -269,6 +270,10 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .srow select{flex:0 1 auto;min-width:0;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.95rem;text-align:right;text-align-last:right;padding:4px 0;-webkit-appearance:none;appearance:none;cursor:pointer}
 .srow select:focus{color:var(--ink);outline:0}
 .chev.blank{visibility:hidden}
+.srow.cloudin b{color:var(--sky)}
+.srow.cloudout b{color:var(--warn);font-weight:400}
+.srow:disabled{opacity:.6}
+.sfoot:empty{display:none}
 /* a block's letters, under its hour */
 .srow.sub{min-height:44px;padding:8px 14px 8px 30px}
 .srow.sub b{font-weight:400;font-size:.95rem}
@@ -612,6 +617,7 @@ const state = {
   showOff: false,    // today is a day without SAVERS and "Hacer mis SAVERS hoy" was tapped
   lastExport: null,
   since: null,
+  settingsSig: "",   // JSON of the settings as last saved or received from the cloud
   affReviewed: null, // "YYYY-MM" of the last monthly affirmation review
   schedTab: null,    // Normal | Gym selector in Ajustes › Horario
   page: null,        // Ajustes screen: null = list, "aff" | "vis" | "sched" | "backup"
@@ -660,6 +666,8 @@ const store = {
     state.settings = normalizeSettings(raw);
     // Migrate older formats (e.g. drop the book) right away.
     if(raw && JSON.stringify(raw) !== JSON.stringify(state.settings)) this.set("savers:settings", state.settings);
+    // What the settings looked like at the last save, to tell a real change (which goes to the cloud) from a load.
+    state.settingsSig = JSON.stringify(state.settings);
     state.lastExport = this.get("savers:lastExport");
     // The monthly review starts counting from the month after the app first sees this.
     state.affReviewed = this.get("savers:affReviewed");
@@ -668,9 +676,12 @@ const store = {
     if(!state.since){ state.since = new Date().toISOString(); this.set("savers:since", state.since); }
   },
   save: function(){
+    const sig = JSON.stringify(state.settings);
+    if(sig !== state.settingsSig){ state.settingsSig = sig; this.set("savers:settingsAt", new Date().toISOString()); }
     const ok = this.set("savers:days", state.days) && this.set("savers:settings", state.settings);
     setStatus(ok ? "" : "No se pudo guardar");
     if(!ok) toast("No se pudo guardar en el iPhone. Exporta una copia.");
+    cloudPush();
   }
 };
 // Ask iOS to not evict this app's storage.
@@ -831,7 +842,8 @@ function backupAge(){
   const ref = state.lastExport || state.since;
   return ref ? Math.floor((Date.now() - new Date(ref).getTime()) / 86400000) : 0;
 }
-function backupOverdue(){ return backupAge() > BACKUP_REMIND_DAYS; }
+// With the cloud on, it keeps the copy: no reminder to export.
+function backupOverdue(){ return !cloudLinked() && backupAge() > BACKUP_REMIND_DAYS; }
 function exportBackup(){
   const json = backupJSON();
   const name = "savers-copia-" + todayStr() + ".json";
@@ -901,6 +913,243 @@ $("#import-file").addEventListener("change", function(e){
   r.onerror = function(){ toast("No se pudo leer el archivo"); };
   r.readAsText(f);
 });
+
+/* ---------- cloud: Firebase, signed in with Google ---------- */
+// This device's localStorage stays the source of truth: the app never waits for the network. Every save also goes
+// up to Firestore (users/{uid}/days/{date} and users/{uid}/meta/settings), and changes made on the other device
+// come down live. The newest updatedAt wins, like an import. Only settings and days travel: the Gemini key never.
+// The API key below is public by design; the Firestore rules let only the owner's Google account in.
+const FIREBASE = {
+  apiKey: "AIzaSyDoPNQn11bcA1mamy7TeedgaYBb91VvJPk",
+  authDomain: "savers-ezra.firebaseapp.com",
+  projectId: "savers-ezra",
+  appId: "1:22715050591:web:cab59c235ed783aad3c9ea"
+};
+const FB_SDK = "https://www.gstatic.com/firebasejs/12.19.0/";
+const cloud = {
+  fb: null,          // the loaded SDK functions
+  user: null,        // the signed-in user, or null
+  ready: false,      // the first download is in, so saves can go up without overwriting the cloud
+  busy: false,       // signing in
+  error: "",
+  unsub: [],
+  inflight: {},      // date -> updatedAt being written
+  pushed: {},        // date -> updatedAt the cloud already has
+  pendingRender: false
+};
+cloud.pushed = store.get("savers:cloudPushed") || {};
+// A device that was linked before shows as linked right away, even before Firebase answers.
+function cloudLinked(){ return !!store.get("savers:cloudUid"); }
+function cloudLastAt(){ return store.get("savers:cloudAt"); }
+function cloudTouch(){ store.set("savers:cloudAt", new Date().toISOString()); }
+
+function loadCloud(){
+  if(cloud.loading) return cloud.loading;
+  cloud.loading = Promise.all([
+    import(FB_SDK + "firebase-app.js"),
+    import(FB_SDK + "firebase-auth.js"),
+    import(FB_SDK + "firebase-firestore.js")
+  ]).then(function(m){
+    const app = m[0].initializeApp(FIREBASE);
+    const fb = Object.assign({}, m[1], m[2]);
+    fb.auth = m[1].getAuth(app);
+    fb.db = m[2].getFirestore(app);
+    cloud.fb = fb;
+    fb.onAuthStateChanged(fb.auth, onCloudUser);
+    return fb;
+  }).catch(function(e){ cloud.loading = null; throw e; });
+  return cloud.loading;
+}
+
+function cloudSignIn(){
+  const fb = cloud.fb;
+  if(!fb){ loadCloud().then(function(){ toast("Listo, toca otra vez Entrar con Google"); }, function(){ toast("Sin conexión: prueba más tarde"); }); return; }
+  cloud.busy = true; cloud.error = "";
+  renderCloudBits();
+  const provider = new fb.GoogleAuthProvider();
+  provider.setCustomParameters({prompt: "select_account"});
+  // Called straight from the tap, so Safari lets the Google window open.
+  fb.signInWithPopup(fb.auth, provider).catch(function(e){
+    const code = e && e.code || "";
+    if(code === "auth/popup-blocked") cloud.error = "Safari no abrió la ventana de Google. Toca otra vez.";
+    else if(code === "auth/network-request-failed") cloud.error = "Sin conexión: prueba más tarde.";
+    else if(code !== "auth/popup-closed-by-user" && code !== "auth/cancelled-popup-request") cloud.error = "No se pudo entrar (" + code.replace("auth/", "") + ")";
+  }).then(function(){ cloud.busy = false; renderCloudBits(); });
+}
+function cloudSignOut(){
+  ask("¿Cerrar sesión?", "Tus registros se quedan en este aparato, pero dejan de guardarse en la nube.",
+    [{label: "Cancelar", value: "cancel"}, {label: "Cerrar sesión", value: "ok", primary: true}], "cancel")
+    .then(function(v){
+      if(v !== "ok" || !cloud.fb) return;
+      try { localStorage.removeItem("savers:cloudUid"); } catch(e){}
+      cloud.fb.signOut(cloud.fb.auth);
+    });
+}
+
+function stopCloud(){
+  cloud.unsub.forEach(function(u){ try { u(); } catch(e){} });
+  cloud.unsub = [];
+  cloud.ready = false;
+  cloud.inflight = {};
+}
+function onCloudUser(user){
+  stopCloud();
+  cloud.user = user;
+  // Signed out (or the session ran out): this device keeps its data and stops syncing.
+  if(!user){ try { localStorage.removeItem("savers:cloudUid"); } catch(e){} renderCloudBits(); return; }
+  const fb = cloud.fb, uid = user.uid;
+  // First time on this device: whatever the cloud has wins over this device's settings.
+  const firstLink = store.get("savers:cloudLastUid") !== uid;
+  if(firstLink){ cloud.pushed = {}; store.set("savers:cloudPushed", cloud.pushed); try { localStorage.removeItem("savers:cloudSeen"); } catch(e){} }
+  let gotSettings = false, gotDays = false;
+  function maybeReady(){
+    if(cloud.ready || !gotSettings || !gotDays) return;
+    cloud.ready = true;
+    store.set("savers:cloudUid", uid);
+    store.set("savers:cloudLastUid", uid);
+    cloudTouch();
+    cloudPush();
+    renderCloudBits();
+    if(state.tab === "today") cloudRerender();
+  }
+  function fail(e){
+    stopCloud();
+    const denied = e && e.code === "permission-denied";
+    cloud.error = denied ? "Esta cuenta de Google no tiene acceso a esta app." : "No se pudo conectar con la nube.";
+    if(denied){ try { localStorage.removeItem("savers:cloudUid"); } catch(x){} fb.signOut(fb.auth); }
+    renderCloudBits();
+  }
+  const settingsRef = fb.doc(fb.db, "users", uid, "meta", "settings");
+  // On a first link, an answer from the (empty) local cache must not count as "the cloud has nothing".
+  cloud.unsub.push(fb.onSnapshot(settingsRef, function(snap){
+    if(firstLink && snap.metadata.fromCache) return;
+    if(!snap.metadata.hasPendingWrites && snap.exists()) applyCloudSettings(snap.data(), firstLink && !gotSettings);
+    gotSettings = true;
+    maybeReady();
+  }, fail));
+  // Only days that changed since the last visit come down: a few reads per open, not the whole history.
+  const seen = store.get("savers:cloudSeen") || 0;
+  const q = fb.query(fb.collection(fb.db, "users", uid, "days"), fb.where("syncedAt", ">", fb.Timestamp.fromMillis(seen)));
+  cloud.unsub.push(fb.onSnapshot(q, function(snap){
+    if(firstLink && snap.metadata.fromCache) return;
+    let changed = false, maxSeen = store.get("savers:cloudSeen") || 0;
+    snap.docChanges().forEach(function(ch){
+      if(ch.type === "removed" || ch.doc.metadata.hasPendingWrites) return;
+      const data = ch.doc.data();
+      if(data.syncedAt) maxSeen = Math.max(maxSeen, data.syncedAt.toMillis());
+      if(applyCloudDay(ch.doc.id, data.day)) changed = true;
+    });
+    store.set("savers:cloudSeen", maxSeen);
+    if(changed){ store.set("savers:days", state.days); cloudRerender(); }
+    gotDays = true;
+    maybeReady();
+  }, fail));
+}
+
+function applyCloudSettings(data, force){
+  if(!data || !data.settings) return;
+  const at = String(data.updatedAt || "");
+  if(!force && at <= String(store.get("savers:settingsAt") || "")) return;
+  state.settings = normalizeSettings(data.settings);
+  state.settingsSig = JSON.stringify(state.settings);
+  store.set("savers:settings", state.settings);
+  store.set("savers:settingsAt", at);
+  store.set("savers:settingsPushed", at);
+  prepareVoice();
+  cloudRerender();
+}
+function applyCloudDay(ds, inc){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(ds) || !inc || typeof inc !== "object") return false;
+  const cur = state.days[ds], at = String(inc.updatedAt || "");
+  // The same version (often this device's own write coming back) changes nothing.
+  if(cur && (at === String(cur.updatedAt || "") || (hasContent(cur) && at < String(cur.updatedAt || "")))) return false;
+  state.days[ds] = Object.assign(blankDay(ds), inc);
+  dropOldFields(state.days[ds]);
+  cloud.pushed[ds] = at;
+  store.set("savers:cloudPushed", cloud.pushed);
+  return true;
+}
+
+// Sends whatever changed since the cloud last heard from this device. Offline, Firestore keeps it and sends it
+// when the network returns; if the app closes first, the next open sends it again.
+function cloudPush(){
+  if(!cloud.ready || !cloud.user) return;
+  const fb = cloud.fb, uid = cloud.user.uid;
+  Object.keys(state.days).forEach(function(ds){
+    const d = state.days[ds];
+    if(!d || typeof d !== "object") return;
+    const at = String(d.updatedAt || "");
+    if(cloud.pushed[ds] === at || cloud.inflight[ds] === at) return;
+    cloud.inflight[ds] = at;
+    fb.setDoc(fb.doc(fb.db, "users", uid, "days", ds), {day: clone(d), syncedAt: fb.serverTimestamp()}).then(function(){
+      if(cloud.inflight[ds] === at) delete cloud.inflight[ds];
+      cloud.pushed[ds] = at;
+      store.set("savers:cloudPushed", cloud.pushed);
+      cloudTouch(); renderCloudBits();
+    }, function(){ if(cloud.inflight[ds] === at) delete cloud.inflight[ds]; });
+  });
+  const sAt = String(store.get("savers:settingsAt") || "");
+  if(store.get("savers:settingsPushed") !== sAt && cloud.inflight.settings !== sAt){
+    cloud.inflight.settings = sAt;
+    fb.setDoc(fb.doc(fb.db, "users", uid, "meta", "settings"), {settings: clone(state.settings), updatedAt: sAt, syncedAt: fb.serverTimestamp()}).then(function(){
+      if(cloud.inflight.settings === sAt) delete cloud.inflight.settings;
+      store.set("savers:settingsPushed", sAt);
+      cloudTouch(); renderCloudBits();
+    }, function(){ if(cloud.inflight.settings === sAt) delete cloud.inflight.settings; });
+  }
+}
+function cloudPending(){
+  const sAt = String(store.get("savers:settingsAt") || "");
+  return store.get("savers:settingsPushed") !== sAt || Object.keys(state.days).some(function(ds){
+    return state.days[ds] && cloud.pushed[ds] !== String(state.days[ds].updatedAt || "");
+  });
+}
+
+// A change from the other device shows up, but never under a finger that's typing, editing or running a timer.
+function cloudRerender(){
+  const a = document.activeElement;
+  if((a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") && a.type !== "checkbox") || state.edit || anyRunning() || document.querySelector(".backdrop")){
+    cloud.pendingRender = true;
+    return;
+  }
+  cloud.pendingRender = false;
+  const y = window.scrollY;
+  if(state.tab === "today") renderToday();
+  else if(state.tab === "history") renderHistory();
+  else { rerenderSettingsKeepScroll(); return; }
+  window.scrollTo(0, y);
+}
+document.addEventListener("focusout", function(){ if(cloud.pendingRender) setTimeout(cloudRerender, 50); });
+
+// The Nube section and the Ajustes row, redrawn in place when the cloud's state changes.
+function cloudStatusLabel(){
+  if(!cloudLinked()) return "";
+  if(cloud.error) return cloud.error;
+  if(!cloud.ready) return navigator.onLine === false ? "Sin conexión · se sube después" : "Conectando…";
+  if(cloudPending()) return navigator.onLine === false ? "Sin conexión · se sube después" : "Subiendo…";
+  const at = cloudLastAt();
+  if(!at) return "Guardado";
+  const min = Math.floor((Date.now() - new Date(at).getTime()) / 60000);
+  return "Guardado · " + (min < 1 ? "ahora" : min < 60 ? "hace " + min + " min" : min < 1440 ? "hace " + Math.floor(min / 60) + " h" : "hace " + Math.floor(min / 1440) + " días");
+}
+function renderCloudBits(){
+  if(state.tab === "settings" && !state.edit){
+    const shown = $("#view-settings").getAttribute("data-cloud");
+    const a = document.activeElement, typing = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA") && a.type !== "checkbox";
+    if(shown !== cloudShape() && !typing) rerenderSettingsKeepScroll();
+    else {
+      const st = $("#cloud-status"); if(st){ st.textContent = cloudStatusLabel(); st.classList.toggle("warn", !!cloud.error); }
+      const row = $("#backup-row"); if(row) row.textContent = backupRowLabel();
+      const err = $("#cloud-error"); if(err) err.textContent = cloud.error;
+      const b = $("#cloud-in"); if(b) b.disabled = cloud.busy;
+    }
+  }
+  const hb = $("#go-cloud"); if(hb) hb.disabled = cloud.busy;
+}
+// What the Nube section looks like, so a status tick only redraws text.
+function cloudShape(){ return cloudLinked() ? "on" : "off"; }
+window.addEventListener("online", function(){ if(state.tab === "settings") renderCloudBits(); });
+window.addEventListener("offline", function(){ if(state.tab === "settings") renderCloudBits(); });
 
 /* ---------- feel: sound, voice, bounce ---------- */
 // Haptics: iOS only vibrates when a finger really toggles a native switch, so every letter wraps a hidden
@@ -1764,7 +2013,8 @@ function renderDay(root, ds, record, opts){
         '<p class="hello">' + esc(hello) + ' <span class="status" id="status"></span></p>' +
         '<h1 class="date">' + esc(headDate(ds)) + '</h1>' +
       '</div>' + chip + '</div>';
-    if(!hasPersonalData()) html += '<div class="banner"><span>Importa tu copia para cargar tus afirmaciones y horario.</span><button class="linkbtn" id="go-import">Importar</button></div>';
+    if(!hasPersonalData() && !cloudLinked()) html += '<div class="banner"><span>Entra con Google o importa tu copia para cargar tus afirmaciones y horario.</span>' +
+      '<span class="bbtns"><button class="linkbtn" id="go-cloud"' + (cloud.busy ? " disabled" : "") + '>Entrar</button><button class="linkbtn" id="go-import">Importar</button></span></div>';
   }
 
   if(type === "shabbat"){
@@ -1988,6 +2238,8 @@ function bindDay(root, record){
   if(fold) fold.addEventListener("toggle", function(){ foldOpenFor = fold.open ? state.today : ""; });
   const gi = $("#go-import", root);
   if(gi) gi.addEventListener("click", function(){ $("#import-file").click(); });
+  const gc = $("#go-cloud", root);
+  if(gc) gc.addEventListener("click", cloudSignIn);
   // The chip and "Ver horario" open the same sheet: what this day is, and its hours.
   $$("#day-type, [data-sched]", root).forEach(function(b){ b.addEventListener("click", function(){ openDaySheet(ds); }); });
   $$("[data-open]", root).forEach(function(b){ b.addEventListener("click", function(){ openSettingsFromToday(b.getAttribute("data-open")); }); });
@@ -3169,9 +3421,10 @@ function lastBackupLabel(){
   const d = backupAge();
   return d === 0 ? "Hoy" : d === 1 ? "Ayer" : "Hace " + d + " días";
 }
-function rowHTML(page, detail, warn){
+function backupRowLabel(){ return cloudLinked() ? "En la nube" : lastBackupLabel(); }
+function rowHTML(page, detail, warn, id){
   return '<button class="srow" data-go="' + page + '"><b>' + PAGES[page] + '</b>' +
-    '<small' + (warn ? ' class="warn"' : '') + '>' + esc(detail) + '</small><span class="chev" aria-hidden="true"></span></button>';
+    '<small' + (id ? ' id="' + id + '"' : '') + (warn ? ' class="warn"' : '') + '>' + esc(detail) + '</small><span class="chev" aria-hidden="true"></span></button>';
 }
 function settingsListHTML(){
   const s = state.settings;
@@ -3190,8 +3443,8 @@ function settingsListHTML(){
       '<label class="srow" for="s-music"><b>Mantener mi música</b><input type="checkbox" switch id="s-music"' + (keepMusic() ? " checked" : "") + '></label>' +
     '</div>' +
     '<p class="sfoot">En los temporizadores tu música sigue sonando, pero la voz solo se oye si el iPhone no está en silencio. Apagado, la voz pausa tu música y suena siempre.</p>' +
-    '<div class="slist">' + rowHTML("backup", lastBackupLabel(), backupOverdue()) + '</div>' +
-    '<p class="sfoot">Tus registros viven solo en este iPhone.</p>';
+    '<div class="slist">' + rowHTML("backup", backupRowLabel(), backupOverdue(), "backup-row") + '</div>' +
+    '<p class="sfoot">' + (cloudLinked() ? "Tus registros se guardan en este aparato y en la nube." : "Tus registros viven solo en este aparato.") + '</p>';
 }
 function settingsPageHTML(){
   const s = state.settings, e = state.edit, p = state.page;
@@ -3216,11 +3469,27 @@ function settingsPageHTML(){
   const last = state.lastExport
     ? new Date(state.lastExport).toLocaleDateString("es", {day:"numeric", month:"long", year:"numeric"}) + " (" + lastBackupLabel().toLowerCase() + ")"
     : "nunca";
-  return top + '<div class="gblock">' +
-    '<p class="note">Tus registros viven solo en este iPhone. Exporta una copia de vez en cuando y guárdala en Archivos o iCloud.</p>' +
+  return top + cloudHTML() +
+    '<div class="slabel">Copia en archivo</div>' +
+    '<div class="gblock" style="margin-top:14px">' +
+    '<p class="note">' + (cloudLinked() ? "Un JSON con todo, para guardarlo en Archivos o dárselo a una IA." : "Tus registros viven solo en este aparato. Exporta una copia de vez en cuando y guárdala en Archivos o iCloud.") + '</p>' +
     '<p><b>Última copia:</b> <span' + (backupOverdue() ? ' class="warn"' : '') + '>' + esc(last) + '</span></p>' +
-    '<div class="row"><button class="btn primary" data-act="export">Exportar copia</button><button class="btn" data-act="import">Importar copia</button></div>' +
+    '<div class="row"><button class="btn' + (cloudLinked() ? '' : ' primary') + '" data-act="export">Exportar copia</button><button class="btn" data-act="import">Importar copia</button></div>' +
   '</div>';
+}
+function cloudHTML(){
+  if(!cloudLinked()) return '<div class="slabel">Nube</div>' +
+    '<div class="slist"><button class="srow cloudin" id="cloud-in" data-act="cloud-in"' + (cloud.busy ? " disabled" : "") + '><b>Entrar con Google</b></button></div>' +
+    '<p class="sfoot warn" id="cloud-error">' + esc(cloud.error) + '</p>' +
+    '<p class="sfoot">Tus registros se guardan solos en la nube y los ves también en la Mac. Solo tu cuenta de Google puede abrirlos.</p>';
+  const email = cloud.user && cloud.user.email || "";
+  return '<div class="slabel">Nube</div>' +
+    '<div class="slist">' +
+      '<div class="srow"><b>Estado</b><small id="cloud-status"' + (cloud.error ? ' class="warn"' : '') + '>' + esc(cloudStatusLabel()) + '</small></div>' +
+      (email ? '<div class="srow"><b>Cuenta</b><small>' + esc(email) + '</small></div>' : '') +
+      '<button class="srow cloudout" data-act="cloud-out"><b>Cerrar sesión</b></button>' +
+    '</div>' +
+    '<p class="sfoot">Se guarda solo. Si cambias lo mismo en el iPhone y en la Mac, se queda el último cambio.</p>';
 }
 function vozPageHTML(){
   const cur = ttsVoice(), key = ttsKey();
@@ -3243,6 +3512,7 @@ function vozPageHTML(){
 function renderSettings(){
   const root = $("#view-settings");
   root.innerHTML = state.page ? settingsPageHTML() : settingsListHTML();
+  root.setAttribute("data-cloud", cloudShape());
   $$("textarea.grow", root).forEach(autoGrow);
   showVoiceStatus();
   updateEdge();
@@ -3339,6 +3609,8 @@ function backToToday(){
     }
     if(act === "try") return tryVoice(b.getAttribute("data-v"), b);
     if(act === "import") return $("#import-file").click();
+    if(act === "cloud-in") return cloudSignIn();
+    if(act === "cloud-out") return cloudSignOut();
     const key = b.getAttribute("data-list");
     if(!state.edit || !key) return;
     const list = editList(key);
@@ -3460,6 +3732,8 @@ document.addEventListener("visibilitychange", function(){
 
 /* ---------- boot ---------- */
 store.load();
+// The cloud loads in the background; the app never waits for it.
+loadCloud().catch(function(){});
 restoreRuns();
 syncReading();
 switchTab("today");

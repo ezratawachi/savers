@@ -1,4 +1,4 @@
-const CACHE = "savers-v35";
+const CACHE = "savers-v36";
 // The Gemini voice clips live in their own cache and survive every update.
 const KEEP = [CACHE, "savers-voz"];
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
@@ -20,7 +20,9 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  const cacheable = url.origin === self.location.origin || url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
+  const cacheable = url.origin === self.location.origin || url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com" ||
+    // The Firebase SDK, so the app opens offline with the cloud code ready (the version is in the path).
+    (url.hostname === "www.gstatic.com" && url.pathname.startsWith("/firebasejs/"));
   if (!cacheable) return;
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
