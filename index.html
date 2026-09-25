@@ -237,8 +237,15 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .srow b{flex:1 0 auto;font-weight:700}
 .srow small{min-width:0;font-size:.88rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srow small.warn{color:var(--warn);font-weight:700}
-.srow input[type=text]{flex:0 1 60%;min-width:0;border:0;background:transparent;padding:4px 0;text-align:right;color:var(--muted)}
-.srow input[type=text]:focus{color:var(--ink);outline:0}
+.srow input[type=text],.srow input[type=password]{flex:0 1 60%;min-width:0;border:0;background:transparent;padding:4px 0;text-align:right;color:var(--muted)}
+.srow input[type=text]:focus,.srow input[type=password]:focus{color:var(--ink);outline:0}
+/* Voz: pick a voice by its name, hear it with Probar */
+.vrow{cursor:default}
+.vpick{flex:1 1 auto;min-width:0;min-height:44px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.vpick b{flex:none}
+.vcheck{flex:0 0 1.2em;color:var(--sky);font-weight:800;text-align:center}
+.vtry{flex:0 0 auto;padding:6px 12px;font-size:.9rem;color:var(--ink)}
+.vtry:disabled{opacity:.6}
 .srow input[type=checkbox]{flex:0 0 auto;margin:0;accent-color:var(--ok)}
 .srow select{flex:0 1 auto;min-width:0;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.95rem;text-align:right;text-align-last:right;padding:4px 0;-webkit-appearance:none;appearance:none;cursor:pointer}
 .srow select:focus{color:var(--ink);outline:0}
@@ -861,6 +868,7 @@ function applyImport(data, parts, incomingDays){
   });
   state.edit = null;
   flushSave();
+  prepareVoice();
   toast(parts.length === 1 && parts[0][0] === "schedule" ? "Horario importado" : "Copia importada");
   switchTab(state.tab);
 }
@@ -930,7 +938,8 @@ function completeSound(){
 function bell(){ tone(1175, 1175, 1.1, 0.1); tone(3243, 3243, 0.3, 0.03); }
 function softTone(){ tone(660, 660, 0.35, 0.05); }
 
-// Spoken cues use the iPhone's own Spanish voice. They only play while SAVERS is on screen.
+// Spoken cues use a Gemini voice when its clip is ready on this iPhone, and the iPhone's own Spanish voice otherwise.
+// They only play while SAVERS is on screen.
 let voiceCache = null;
 function spanishVoice(){
   if(voiceCache) return voiceCache;
@@ -946,7 +955,7 @@ function spanishVoice(){
   return voiceCache;
 }
 try { if(window.speechSynthesis) speechSynthesis.addEventListener("voiceschanged", function(){ voiceCache = null; }); } catch(e){}
-function say(text){
+function sayIphone(text){
   try {
     if(!window.speechSynthesis || !text) return;
     const u = new SpeechSynthesisUtterance(text);
@@ -956,6 +965,220 @@ function say(text){
     if(speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
     speechSynthesis.speak(u);
   } catch(e){}
+}
+// tone: "ejercicio" | "visualizacion" | "aviso". A clip that isn't ready yet never makes the cue wait.
+let saySeq = 0;
+function say(text, tone){
+  if(!text) return;
+  const seq = ++saySeq;
+  stopVoice();
+  const clip = ttsKey() ? clips.get(clipKey(text, tone, ttsVoice())) : null;
+  if(!clip){ sayIphone(text); return; }
+  clipBuffer(clip)
+    .then(function(buf){ if(seq === saySeq) playClip(buf); })
+    .catch(function(){ if(seq === saySeq) sayIphone(text); });
+}
+function stopVoice(){
+  try { if(voiceSrc) voiceSrc.stop(); } catch(e){}
+  voiceSrc = null;
+  try { if(window.speechSynthesis) speechSynthesis.cancel(); } catch(e){}
+}
+
+/* ---------- gemini voice: each phrase is made once and kept on this iPhone ---------- */
+// The key and the chosen voice live only in localStorage: never in the backup, the export or the repo.
+// No key, no internet or no free quota left: the iPhone voice speaks instead, without a word about it.
+const TTS_MODEL = "gemini-3.8-flash-tts";
+const TTS_URL = "https://generativelanguage.googleapis.com/v1beta/interactions";
+const TTS_CACHE = "savers-voz";   // sw.js keeps this cache when it updates
+const VOICES = [
+  {id: "Sulafat", desc: "Mujer · cálida"},
+  {id: "Vindemiatrix", desc: "Mujer · suave"},
+  {id: "Achird", desc: "Hombre · amable"},
+  {id: "Algieba", desc: "Hombre · sereno"}
+];
+const TONES = {
+  visualizacion: "Mexican Spanish accent. Calm, soft and slow, like a guided meditation, with gentle pauses.",
+  ejercicio: "Mexican Spanish accent. Energetic, clear and encouraging, like a coach. Brisk pace.",
+  aviso: "Mexican Spanish accent. Neutral, warm and clear."
+};
+const clips = new Map();   // clipKey -> {raw: wav bytes, buf: decoded AudioBuffer or null}
+const voiceStatus = {ready: 0, total: 0, error: ""};
+let voiceSrc = null, preparing = null, prepareAgain = false, voiceHold = 0;
+
+function ttsKey(){ return store.get("savers:geminiKey") || ""; }
+function ttsVoice(){ const v = store.get("savers:voice"); return VOICES.some(function(x){ return x.id === v; }) ? v : VOICES[0].id; }
+function clipKey(text, tone, voice){ return voice + "|" + (TONES[tone] ? tone : "aviso") + "|" + text; }
+
+// Everything the app can say today, with the tone it's said in.
+function spokenPhrases(){
+  const out = [["Marchar en el sitio, un minuto.", "ejercicio"], ["Listo. Ejercicio marcado.", "aviso"], ["Visualización lista.", "aviso"]];
+  STEPS.forEach(function(s, i){ if(i > 0 && !s.rest) out.push([exCue(i), "ejercicio"]); });
+  visSteps().forEach(function(s){ out.push([s.text, "visualizacion"]); });
+  const seen = {};
+  return out.filter(function(p){ const k = p[1] + "|" + p[0]; if(!p[0] || seen[k]) return false; seen[k] = true; return true; });
+}
+
+async function clipURL(key){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(TTS_MODEL + "|" + key));
+  const hex = Array.from(new Uint8Array(buf).slice(0, 16)).map(function(b){ return b.toString(16).padStart(2, "0"); }).join("");
+  return new URL("voz/" + hex + ".wav", location.href).href;
+}
+function b64bytes(s){ const bin = atob(s), out = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
+// Gemini answers with a WAV; raw 16-bit PCM (24 kHz mono) gets a header so it plays anywhere.
+function asWav(bytes){
+  if(bytes.length > 12 && String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) === "RIFF") return bytes;
+  const rate = 24000, out = new Uint8Array(44 + bytes.length), v = new DataView(out.buffer);
+  const tag = function(o, s){ for(let i = 0; i < 4; i++) out[o + i] = s.charCodeAt(i); };
+  tag(0, "RIFF"); v.setUint32(4, 36 + bytes.length, true); tag(8, "WAVE"); tag(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  tag(36, "data"); v.setUint32(40, bytes.length, true);
+  out.set(bytes, 44);
+  return out;
+}
+function audioIn(data){
+  if(!data || typeof data !== "object") return "";
+  if(data.output_audio && data.output_audio.data) return data.output_audio.data;
+  let found = "";
+  (Array.isArray(data.steps) ? data.steps : []).forEach(function(st){
+    (st && Array.isArray(st.content) ? st.content : []).forEach(function(c){ if(c && c.type === "audio" && c.data) found = c.data; });
+  });
+  return found;
+}
+async function synth(text, tone, voice){
+  const res = await fetch(TTS_URL, {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "x-goog-api-key": ttsKey()},
+    body: JSON.stringify({
+      model: TTS_MODEL,
+      input: [{type: "user_input", content: [{type: "text", text: text, annotations: [{type: "speech_metadata", style: TONES[tone] || TONES.aviso}]}]}],
+      response_format: {type: "audio"},
+      generation_config: {speech_config: [{voice: voice}]}
+    })
+  });
+  const data = await res.json().catch(function(){ return null; });
+  if(!res.ok){
+    const e = (Array.isArray(data) ? data[0] : data) || {}, info = e.error || {};
+    const err = new Error(info.message || "HTTP " + res.status);
+    err.status = res.status;
+    err.reason = (info.details || []).map(function(d){ return d.reason || ""; }).join(" ");
+    const retry = (info.details || []).map(function(d){ return d.retryDelay; }).filter(Boolean)[0];
+    err.retry = retry ? parseFloat(retry) * 1000 : 0;
+    throw err;
+  }
+  const b64 = audioIn(data);
+  if(!b64) throw new Error("Sin audio");
+  return asWav(b64bytes(b64));
+}
+function ttsError(err){
+  if(!err || err.name === "TypeError") return "Sin conexión. Prueba cuando tengas internet.";
+  if(err.status === 429) return "Se acabó el límite gratis por ahora. Mientras, suena la voz del iPhone.";
+  if(err.status === 401 || err.status === 403 || /API_KEY/.test(err.reason || "")) return "La clave no funciona. Revisa que esté completa.";
+  return "Gemini no respondió" + (err.status ? " (código " + err.status + ")" : "") + ". Mientras, suena la voz del iPhone.";
+}
+
+// A clip from memory, then from this iPhone, then from Gemini (only when make is true).
+async function getClip(cache, text, tone, voice, make){
+  const key = clipKey(text, tone, voice);
+  if(clips.has(key)) return clips.get(key);
+  const url = await clipURL(key);
+  const hit = await cache.match(url);
+  let raw = hit ? await hit.arrayBuffer() : null;
+  if(!raw){
+    if(!make) return null;
+    const bytes = await synth(text, tone, voice);
+    await cache.put(url, new Response(bytes, {headers: {"Content-Type": "audio/wav"}}));
+    raw = bytes.buffer;
+  }
+  const clip = {raw: raw, buf: null, url: url};
+  clips.set(key, clip);
+  return clip;
+}
+function clipBuffer(clip){
+  if(clip.buf) return Promise.resolve(clip.buf);
+  if(!audio.ctx) audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  return audio.ctx.decodeAudioData(clip.raw.slice(0)).then(function(b){ clip.buf = b; return b; });
+}
+function playClip(buf, onEnd){
+  const ctx = audio.ctx; if(!ctx) return;
+  if(ctx.state !== "running") ctx.resume();
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.onended = function(){ if(voiceSrc === src) voiceSrc = null; if(onEnd) onEnd(); };
+  src.start();
+  voiceSrc = src;
+}
+
+// Makes whatever is missing, one phrase at a time, and forgets clips nothing says anymore.
+function prepareVoice(){
+  if(preparing){ prepareAgain = true; return; }
+  preparing = makeClips().catch(function(){}).then(function(){
+    preparing = null;
+    if(prepareAgain){ prepareAgain = false; prepareVoice(); }
+  });
+}
+async function makeClips(){
+  if(!ttsKey() || !window.caches || !window.crypto || !crypto.subtle) return;
+  const cache = await caches.open(TTS_CACHE), voice = ttsVoice(), list = spokenPhrases();
+  const keep = new Set();
+  voiceStatus.total = list.length; voiceStatus.ready = 0;
+  let stop = Date.now() < voiceHold || !navigator.onLine;
+  for(const p of list){
+    let clip = null;
+    try { clip = await getClip(cache, p[0], p[1], voice, !stop); }
+    catch(err){
+      stop = true;
+      voiceStatus.error = ttsError(err);
+      if(err.status === 429){
+        const wait = Math.max(err.retry || 0, 60000);
+        voiceHold = Date.now() + wait;
+        setTimeout(prepareVoice, wait + 1000);
+      }
+    }
+    if(clip){ keep.add(clip.url); voiceStatus.ready++; }
+    showVoiceStatus();
+  }
+  if(voiceStatus.ready === voiceStatus.total) voiceStatus.error = "";
+  showVoiceStatus();
+  // Only a complete pass knows what's no longer said.
+  if(stop) return;
+  const urls = new Set(Array.from(keep));
+  (await cache.keys()).forEach(function(req){ if(!urls.has(req.url)) cache.delete(req); });
+  clips.forEach(function(c, k){ if(!urls.has(c.url)) clips.delete(k); });
+}
+function voiceStatusText(){
+  if(!ttsKey()) return "Sin clave, suena la voz del iPhone.";
+  if(voiceStatus.error) return voiceStatus.error;
+  if(!voiceStatus.total) return "Preparando las frases…";
+  return voiceStatus.ready === voiceStatus.total
+    ? "Las " + voiceStatus.total + " frases están listas en este iPhone."
+    : voiceStatus.ready + " de " + voiceStatus.total + " frases listas. Las que faltan suenan con la voz del iPhone.";
+}
+function showVoiceStatus(){
+  const el = $("#voz-status"); if(!el) return;
+  el.textContent = voiceStatusText();
+  el.classList.toggle("warn", !!voiceStatus.error && !!ttsKey());
+}
+// "Probar" reads your first visualization question in that voice.
+async function tryVoice(voice, btn){
+  if(!ttsKey()){ toast("Primero pega tu clave de Gemini"); $("#s-key") && $("#s-key").focus(); return; }
+  setAudioMode(runAudioMode());
+  ensureAudio();
+  const first = visSteps()[0];
+  const text = first ? first.text : "Buenos días. Esta es tu voz para SAVERS.";
+  btn.disabled = true; btn.textContent = "Creando…";
+  try {
+    const clip = await getClip(await caches.open(TTS_CACHE), text, "visualizacion", voice, true);
+    const buf = await clipBuffer(clip);
+    saySeq++; stopVoice();
+    playClip(buf, function(){ if(!anyRunning()) setAudioMode("ambient"); });
+  } catch(err){
+    toast(ttsError(err));
+    if(!anyRunning()) setAudioMode("ambient");
+  } finally {
+    btn.disabled = false; btn.textContent = "Probar";
+  }
 }
 // iOS only lets a page speak later if it spoke once during a tap.
 function unlockSpeech(){
@@ -1667,19 +1890,19 @@ const runs = {
     enter: function(i, how){
       const s = STEPS[i];
       beep(s.rest ? 520 : 880, how === "start" ? .15 : .18);
-      if(how === "start" && i === 0) say("Marchar en el sitio, un minuto.");
-      else if(s.rest) say(exCue(i + 1));
-      else if(how === "skip") say(exCue(i));
+      if(how === "start" && i === 0) say("Marchar en el sitio, un minuto.", "ejercicio");
+      else if(s.rest) say(exCue(i + 1), "ejercicio");
+      else if(how === "skip") say(exCue(i), "ejercicio");
     },
     second: function(i, remain){
       if(remain > 0 && remain <= 3) beep(660, .08);
       // Steps with no 5-second change before them get announced a few seconds early.
       const next = STEPS[i + 1];
-      if(remain === 6 && next && !next.rest && !STEPS[i].rest) say(exCue(i + 1));
+      if(remain === 6 && next && !next.rest && !STEPS[i].rest) say(exCue(i + 1), "ejercicio");
     },
     finish: function(){
       beep(988, .25); setTimeout(function(){ beep(1318, .35); }, 260);
-      say("Listo. Ejercicio marcado.");
+      say("Listo. Ejercicio marcado.", "aviso");
       return {letter: "ejercicio", toast: "Ejercicio terminado y marcado"};
     },
     view: function(r, idx){
@@ -1697,12 +1920,12 @@ const runs = {
     enter: function(i, how){
       const s = visSteps()[i]; if(!s) return;
       if(how === "start") beep(880, .15); else bell();
-      say(s.text);
+      say(s.text, "visualizacion");
     },
     second: function(i, remain){ if(remain === 10) softTone(); },
     finish: function(){
       bell();
-      setTimeout(function(){ say("Visualización lista."); }, 700);
+      setTimeout(function(){ say("Visualización lista.", "aviso"); }, 700);
       return {letter: "visualizacion", toast: "Visualización lista y marcada"};
     },
     view: function(r, idx){
@@ -1784,7 +2007,7 @@ function pauseRun(r, keepAudioMode){
 }
 function resetRun(r){
   pauseRun(r);
-  try { if(window.speechSynthesis) speechSynthesis.cancel(); } catch(e){}
+  saySeq++; stopVoice();
   r.base = 0; r.started = false; r.lastIdx = 0; r.lastRemain = null;
   persistRun(r); updateRunUI(r);
 }
@@ -2789,7 +3012,7 @@ function editItemsHTML(listKey, items, noun, textPlaceholder){
 }
 
 /* ---------- ajustes ---------- */
-const PAGES = {sched: "Horario", aff: "Afirmaciones", vis: "Visualización", backup: "Copia de seguridad"};
+const PAGES = {sched: "Horario", aff: "Afirmaciones", vis: "Visualización", voz: "Voz", backup: "Copia de seguridad"};
 function countLabel(n, one, many){ return n + " " + (n === 1 ? one : many); }
 function lastBackupLabel(){
   if(!state.lastExport) return "Nunca";
@@ -2813,6 +3036,7 @@ function settingsListHTML(){
       rowHTML("vis", vis ? countLabel(vis, "pregunta", "preguntas") : "Vacío") +
     '</div>' +
     '<div class="slist">' +
+      rowHTML("voz", ttsKey() ? ttsVoice() : "Del iPhone") +
       '<label class="srow" for="s-music"><b>Mantener mi música</b><input type="checkbox" switch id="s-music"' + (keepMusic() ? " checked" : "") + '></label>' +
     '</div>' +
     '<p class="sfoot">En los temporizadores tu música sigue sonando, pero la voz solo se oye si el iPhone no está en silencio. Apagado, la voz pausa tu música y suena siempre.</p>' +
@@ -2824,9 +3048,10 @@ function settingsPageHTML(){
   const top = e
     ? '<div class="gtop nav"><button class="tbtn left" data-act="cancel">Cancelar</button><h2>' + PAGES[p] + '</h2><button class="tbtn right" data-act="done">Listo</button></div>'
     : '<div class="gtop nav"><button class="tbtn left back" data-act="back">' + (state.from === "today" ? "Hoy" : "Ajustes") + '</button><h2>' + PAGES[p] + '</h2>' +
-      (p === "backup" || p === "sched" ? '' : '<button class="tbtn right" data-act="edit">Editar</button>') + '</div>';
-  // Horario changes as you go, like iOS Settings: no Editar.
+      (p === "backup" || p === "sched" || p === "voz" ? '' : '<button class="tbtn right" data-act="edit">Editar</button>') + '</div>';
+  // Horario and Voz change as you go, like iOS Settings: no Editar.
   if(p === "sched") return top + schedPageHTML();
+  if(p === "voz") return top + vozPageHTML();
   if(p === "aff") return top + '<div class="gblock">' + (e
     ? editItemsHTML("aff", e.affirmations, "afirmación", "Escribe tu afirmación") +
       '<button class="addbtn" data-act="add" data-list="aff">＋ Agregar afirmación</button>'
@@ -2847,10 +3072,29 @@ function settingsPageHTML(){
     '<div class="row"><button class="btn primary" data-act="export">Exportar copia</button><button class="btn" data-act="import">Importar copia</button></div>' +
   '</div>';
 }
+function vozPageHTML(){
+  const cur = ttsVoice(), key = ttsKey();
+  return '<div class="slabel">Voz de Gemini</div>' +
+    '<div class="slist">' + VOICES.map(function(v){
+      const on = key && v.id === cur;
+      return '<div class="srow vrow">' +
+        '<button class="vpick" data-act="voice" data-v="' + v.id + '" aria-pressed="' + on + '"><b>' + v.id + '</b><small>' + v.desc + '</small></button>' +
+        '<span class="vcheck" aria-hidden="true">' + (on ? '✓' : '') + '</span>' +
+        '<button class="btn vtry" data-act="try" data-v="' + v.id + '">Probar</button>' +
+      '</div>';
+    }).join("") + '</div>' +
+    '<p class="sfoot">Probar lee tu primera pregunta de visualización. La visualización suena calmada, el ejercicio con energía y los avisos en tono neutro.</p>' +
+    '<div class="slist">' +
+      '<label class="srow" for="s-key"><b>Clave</b><input type="password" id="s-key" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" value="' + esc(key) + '" placeholder="Pégala aquí"></label>' +
+    '</div>' +
+    '<p class="sfoot" id="voz-status"></p>' +
+    '<p class="sfoot">Sácala gratis en aistudio.google.com con Get API key. Se queda solo en este iPhone: no va en tu copia ni en la exportación. Sin internet o sin límite gratis, suena la voz del iPhone.</p>';
+}
 function renderSettings(){
   const root = $("#view-settings");
   root.innerHTML = state.page ? settingsPageHTML() : settingsListHTML();
   $$("textarea.grow", root).forEach(autoGrow);
+  showVoiceStatus();
   updateEdge();
 }
 
@@ -2880,6 +3124,7 @@ function commitEdit(){
   if(e.visualization) state.settings.visualization = {items: clean(e.visualization.items), note: e.visualization.note.trim()};
   state.edit = null;
   flushSave();
+  prepareVoice();
 }
 // Listo on Afirmaciones counts as this month's review, changed or not.
 function saveEdit(){
@@ -2936,6 +3181,13 @@ function backToToday(){
     if(act === "cancel") return endEdit(false);
     if(act === "done") return endEdit(true);
     if(act === "export") return exportBackup();
+    if(act === "voice"){
+      if(!ttsKey()){ toast("Primero pega tu clave de Gemini"); return $("#s-key").focus(); }
+      store.set("savers:voice", b.getAttribute("data-v"));
+      rerenderSettingsKeepScroll();
+      return prepareVoice();
+    }
+    if(act === "try") return tryVoice(b.getAttribute("data-v"), b);
     if(act === "import") return $("#import-file").click();
     const key = b.getAttribute("data-list");
     if(!state.edit || !key) return;
@@ -2973,6 +3225,13 @@ function backToToday(){
       if(anyRunning()) setAudioMode(runAudioMode());
       return;
     }
+    if(el.id === "s-key"){
+      const k = el.value.replace(/\s+/g, "");
+      if(k) store.set("savers:geminiKey", k); else { try { localStorage.removeItem("savers:geminiKey"); } catch(e){} }
+      voiceStatus.error = ""; voiceStatus.total = 0; voiceHold = 0;
+      rerenderSettingsKeepScroll();
+      return prepareVoice();
+    }
     if(el.hasAttribute("data-wday")){
       ensureSchedule().week[el.getAttribute("data-wday")] = el.value;
       flushSave();
@@ -2984,7 +3243,7 @@ function backToToday(){
     state.settings.name = el.value;
     flushSave();
   });
-  root.addEventListener("keydown", function(ev){ if(ev.key === "Enter" && ev.target.id === "s-name") ev.target.blur(); });
+  root.addEventListener("keydown", function(ev){ if(ev.key === "Enter" && (ev.target.id === "s-name" || ev.target.id === "s-key")) ev.target.blur(); });
 })();
 
 /* ---------- tabs ---------- */
@@ -3039,6 +3298,7 @@ document.addEventListener("visibilitychange", function(){
   if(document.visibilityState === "hidden"){ flushSave(); return; }
   checkRollover();
   syncReading();
+  prepareVoice();
   if(anyRunning()){
     try { if(audio.ctx && audio.ctx.state !== "running") audio.ctx.resume(); } catch(e){}
     requestWake();
@@ -3051,6 +3311,8 @@ store.load();
 restoreRuns();
 syncReading();
 switchTab("today");
+prepareVoice();
+window.addEventListener("online", prepareVoice);
 
 if("serviceWorker" in navigator && location.protocol === "https:"){
   window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
