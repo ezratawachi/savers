@@ -1,0 +1,16 @@
+name = "savers-avisos"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+VAPID_SUBJECT = "https://ezratawachi.github.io/savers/"
+VAPID_PUBLIC = "BIvaRP3KWRIB_45ksoxRsTGcASP7HkqZLR7W_jFPMnfzFNRHK2M6RA39FJxdVSJaiW4gwlyAQNl-jazb2LPExd8"
+
+[[durable_objects.bindings]]
+name = "INBOX"
+class_name = "Inbox"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Inbox"]

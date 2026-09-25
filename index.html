@@ -174,9 +174,6 @@ details[open]:not(.closing)>summary .caret,.entry.open .caret{transform:rotate(-
 .timer.is-done .btn.primary{background:var(--surface);border-color:var(--line);color:var(--ink)}
 .timer[data-run="visualizacion"] [data-r="next"]{font-size:1.02rem;line-height:1.45;color:var(--ink);min-height:2.9em;margin-top:2px}
 .timer.is-done [data-r="next"]{min-height:0}
-.howto{margin-top:10px;font-size:.92rem}
-.howto summary{color:var(--sky);font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center}
-.howto ol{margin:4px 0 6px}
 /* letter toggles: a label around a hidden native switch (the real tap on it is what vibrates) */
 label.chk,label.wdone{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .wdone-row{display:flex;justify-content:flex-end;margin-top:10px}
@@ -435,8 +432,11 @@ const DEFAULT_SETTINGS = {
   name: "",
   affirmations: [{label: "", text: ""}],
   visualization: DEFAULT_VIS,
-  schedule: null
+  schedule: null,
+  readApp: "libros"
 };
+// Where "Empezar lectura" takes you; a paper book opens nothing.
+const READ_APPS = {libros: {name: "Libros", url: "ibooks://"}, kindle: {name: "Kindle", url: "kindle://"}, papel: {name: "Libro físico", url: ""}};
 const SECS_PER_AFFIRMATION = 25;
 // Silencio and Lectura last what you set; the other letters' minutes come from what's in them.
 const USUAL_MINUTES = {silencio: 10, lectura: 4};
@@ -648,6 +648,7 @@ function normalizeSettings(s){
     };
   }
   if(s.schedule && typeof s.schedule === "object") out.schedule = migrateSchedule(clone(s.schedule));
+  if(READ_APPS[s.readApp]) out.readApp = s.readApp;
   return out;
 }
 
@@ -2497,23 +2498,41 @@ function updateRunUI(r){
 }
 function updateAllRunUI(){ Object.keys(runs).forEach(function(k){ updateRunUI(runs[k]); }); }
 
-/* ---------- lectura: the Reloj timer comes from an iOS shortcut ---------- */
-// The shortcut gets today's minutes as its input and hands them to its timer, so it never needs changing.
-const READ_SHORTCUT = "Lectura SAVERS";
+/* ---------- lectura: the timer runs here, a notification says when it's over ---------- */
 let readIv = null;
 function readingState(){
   const r = store.get("savers:reading");
   return r && r.day === todayStr() && Number(r.start) ? r : null;
 }
 function readMinutes(){ const ds = todayStr(); return minutesOn(schedTypeOf(ds), "lectura", ds); }
-function clearReading(){ try { localStorage.removeItem("savers:reading"); } catch(e){} syncReading(); }
+// A reading stopped before its time takes its notification with it.
+function clearReading(){
+  const r = readingState();
+  if(r && r.notify && readLeft(r) > 0) pushPost("/cancel", {id: "lectura"}).catch(function(){});
+  try { localStorage.removeItem("savers:reading"); } catch(e){}
+  syncReading();
+}
 // A reading keeps the minutes it started with, even if they change while it runs.
 function readLeft(r){ return Math.max(0, Math.ceil((okMinutes(r.min) || USUAL_MINUTES.lectura) * 60 - (Date.now() - Number(r.start)) / 1000)); }
 function startReading(){
-  const min = readMinutes();
-  store.set("savers:reading", {day: todayStr(), start: Date.now(), min: min});
+  const r = {day: todayStr(), start: Date.now(), min: readMinutes(), notify: noteOn("lectura")};
+  store.set("savers:reading", r);
   syncReading();
-  location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent(READ_SHORTCUT) + "&input=text&text=" + min;
+  if(r.notify) sendReadingNote(r);
+  const app = READ_APPS[state.settings.readApp];
+  if(app && app.url) location.href = app.url;
+}
+function sendReadingNote(r){
+  pushPost("/schedule", {note: {id: "lectura", at: Number(r.start) + r.min * 60000, url: "./",
+    title: "Terminó la lectura · " + r.min + (r.min === 1 ? " minuto" : " minutos"), body: ""}}).then(function(){
+    const cur = store.get("savers:reading");
+    if(cur && cur.start === r.start){ cur.sent = true; store.set("savers:reading", cur); }
+  }).catch(function(){});
+}
+// If iOS froze the app before the notification was set, it's set when you come back.
+function resendReadingNote(){
+  const r = readingState();
+  if(r && r.notify && !r.sent && readLeft(r) > 0) sendReadingNote(r);
 }
 function finishReading(){
   const r = store.get("savers:reading");
@@ -2534,39 +2553,118 @@ function syncReading(){
   if(!r){ clearInterval(readIv); readIv = null; }
   renderReading(r);
 }
+function readingHint(){
+  const app = READ_APPS[state.settings.readApp], note = noteOn("lectura");
+  if(app && app.url) return "Se abre " + app.name + (note ? " y te aviso al terminar." : ". Se marca sola al volver.");
+  return note ? "Te aviso al terminar." : "Se marca sola al terminar.";
+}
 function renderReading(r){
   const box = $(".timer[data-read]"); if(!box) return;
   const left = r ? readLeft(r) : 0;
   const rest = !r && doneToday("lectura");
   box.classList.toggle("is-done", rest);
   $('[data-rd="now"]', box).textContent = r ? "Leyendo" : rest ? "Hecho" : readMinutes() + " minutos";
-  $('[data-rd="next"]', box).textContent = r ? "Faltan " + Math.floor(left / 60) + ":" + pad(left % 60) + ". Se marca sola al volver." : rest ? "Si quieres, puedes leer otra vez." : "Se abre Libros y el Reloj te avisa al terminar.";
+  $('[data-rd="next"]', box).textContent = r ? "Faltan " + Math.floor(left / 60) + ":" + pad(left % 60) + (READ_APPS[state.settings.readApp].url ? ". Se marca sola al volver." : ".") : rest ? "Si quieres, puedes leer otra vez." : readingHint();
   $('[data-rd="go"]', box).textContent = rest ? "Repetir" : "Empezar lectura";
   $('[data-rd="go"]', box).hidden = !!r;
   $('[data-rd="done"]', box).hidden = !r;
   $('[data-rd="cancel"]', box).hidden = !r;
-  // The app can't see the shortcut; if it didn't run, you're back here with the reading going.
-  $('[data-rd="help"]', box).hidden = !r;
 }
 function readingHTML(mins){
   return '<div class="timer" data-read>' +
       '<div class="tm-now" data-rd="now">' + mins + ' minutos</div>' +
-      '<div class="tm-next" data-rd="next">Se abre Libros y el Reloj te avisa al terminar.</div>' +
+      '<div class="tm-next" data-rd="next">' + readingHint() + '</div>' +
       '<div class="row">' +
         '<button class="btn primary" data-rd="go">Empezar lectura</button>' +
         '<button class="btn primary" data-rd="done" hidden>Ya terminé</button>' +
         '<button class="btn" data-rd="cancel" hidden>Cancelar</button>' +
       '</div>' +
-      '<details class="howto" data-rd="help" hidden><summary>¿No se abrió el Reloj?</summary>' + shortcutStepsHTML() + '</details>' +
     '</div>';
 }
-function shortcutStepsHTML(){
-  return '<ol>' +
-    '<li>Abre la app <b>Atajos</b> y toca <b>+</b>.</li>' +
-    '<li>Agrega la acción <b>Iniciar temporizador</b>. Toca el número y elige <b>Entrada del atajo</b>, en minutos.</li>' +
-    '<li>Agrega la acción <b>Abrir app</b> y elige <b>Libros</b>.</li>' +
-    '<li>Toca el nombre arriba y llámalo exactamente <b>' + READ_SHORTCUT + '</b>.</li>' +
-    '</ol><p class="note">Así el Reloj usa los minutos de la app. Si tu atajo tiene un número fijo, cámbialo por Entrada del atajo. Si iOS pregunta "¿Abrir en Atajos?", toca Abrir.</p>';
+
+/* ---------- avisos: push notifications sent by the savers-avisos worker on Cloudflare ---------- */
+// The worker only keeps this iPhone's push address and when to notify. Everything here stays on
+// this device: the switches, and the random name the worker knows it by.
+const PUSH_URL = "https://savers-avisos.savers-avisos.workers.dev";
+const PUSH_KEY = "BIvaRP3KWRIB_45ksoxRsTGcASP7HkqZLR7W_jFPMnfzFNRHK2M6RA39FJxdVSJaiW4gwlyAQNl-jazb2LPExd8";
+const NOTES = [
+  {id: "lectura", name: "Fin de la lectura", about: "Te llega cuando terminan tus minutos de lectura, aunque SAVERS esté cerrada."}
+];
+const noteStatus = {msg: "", busy: ""};
+function pushCan(){ return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+function pushDevice(){
+  let d = store.get("savers:pushDevice");
+  if(!/^[0-9a-f]{32}$/.test(d || "")){
+    d = Array.from(crypto.getRandomValues(new Uint8Array(16)), function(b){ return b.toString(16).padStart(2, "0"); }).join("");
+    store.set("savers:pushDevice", d);
+  }
+  return d;
+}
+function notesOn(){ return store.get("savers:avisos") || {}; }
+function noteOn(id){ return !!notesOn()[id] && pushCan() && Notification.permission === "granted"; }
+function anyNoteOn(){ return NOTES.some(function(n){ return noteOn(n.id); }); }
+function setNote(id, on){ const a = notesOn(); if(on) a[id] = true; else delete a[id]; store.set("savers:avisos", a); }
+// text/plain needs no preflight, and keepalive lets the request finish while Libros opens.
+function pushPost(path, body){
+  body.device = pushDevice();
+  return fetch(PUSH_URL + path, {method: "POST", headers: {"Content-Type": "text/plain"}, body: JSON.stringify(body), keepalive: true})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error || r.status); return j; }); });
+}
+function unb64u(str){
+  const s = atob(str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4));
+  return Uint8Array.from(s, function(c){ return c.charCodeAt(0); });
+}
+// Asks iOS the first time (it has to come from the tap), then hands the push address to the worker.
+async function pushSubscribe(ask){
+  const perm = ask ? await Notification.requestPermission() : Notification.permission;
+  if(perm !== "granted") throw new Error(perm);
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: unb64u(PUSH_KEY)});
+  await pushPost("/subscribe", {sub: sub.toJSON()});
+}
+// iOS can renew the push address; each open hands the current one to the worker.
+function refreshPush(){ if(anyNoteOn()) pushSubscribe(false).catch(function(){}); }
+function toggleNote(el){
+  const id = el.getAttribute("data-note");
+  if(!el.checked){
+    setNote(id, false);
+    if(id === "lectura"){ const r = readingState(); if(r && r.notify){ r.notify = false; store.set("savers:reading", r); pushPost("/cancel", {id: id}).catch(function(){}); } }
+    noteStatus.msg = "";
+    syncReading();
+    return rerenderSettingsKeepScroll();
+  }
+  noteStatus.busy = id; noteStatus.msg = "";
+  rerenderSettingsKeepScroll();
+  pushSubscribe(true).then(function(){
+    setNote(id, true);
+    if(id === "lectura"){ const r = readingState(); if(r && readLeft(r) > 0){ r.notify = true; r.sent = false; store.set("savers:reading", r); sendReadingNote(r); } }
+  }).catch(function(e){
+    const m = String(e && e.message || e);
+    noteStatus.msg = m === "denied" ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS."
+      : m === "default" ? "No se activaron. Vuelve a intentarlo."
+      : "No se pudo conectar. Revisa tu internet y vuelve a intentarlo.";
+  }).then(function(){
+    noteStatus.busy = "";
+    syncReading();
+    if(state.tab === "settings" && state.page === "avisos") rerenderSettingsKeepScroll();
+  });
+}
+function testNote(){
+  pushPost("/test", {}).then(function(){ toast("Aviso de prueba enviado"); })
+    .catch(function(){ toast("No se pudo mandar. Apaga y prende el aviso."); });
+}
+function avisosPageHTML(){
+  if(!pushCan()) return '<p class="sfoot" style="margin-top:14px">Para recibir avisos, abre SAVERS desde su ícono en la pantalla de inicio.</p>';
+  const blocked = Notification.permission === "denied";
+  return '<div class="slist" style="margin-top:14px">' + NOTES.map(function(n){
+      return '<label class="srow" for="n-' + n.id + '"><b>' + n.name + '</b><input type="checkbox" switch id="n-' + n.id + '" data-note="' + n.id + '"' +
+        (noteOn(n.id) || noteStatus.busy === n.id ? " checked" : "") + (blocked || noteStatus.busy ? " disabled" : "") + '></label>';
+    }).join("") + '</div>' +
+    '<p class="sfoot">' + NOTES.map(function(n){ return n.about; }).join(" ") + '</p>' +
+    '<p class="sfoot warn" role="status">' + esc(blocked ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS." : noteStatus.msg) + '</p>' +
+    (anyNoteOn() ? '<div class="slist"><button class="srow cloudin" data-act="note-test"><b>Mandar un aviso de prueba</b></button></div>' : '') +
+    '<p class="sfoot">Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › SAVERS.</p>';
 }
 
 /* ---------- history ---------- */
@@ -3337,8 +3435,7 @@ function openMinutesSheet(type, key){
     '<div class="shead"><h3 id="min-t">' + l.name + '</h3><button class="tbtn" data-close>Listo</button></div>' +
     '<div data-seg>' + segHTML() + '</div>' +
     '<div data-pick>' + pickHTML() + '</div>' +
-    '<div data-foot>' + footHTML() + '</div>' +
-    (key === "lectura" ? '<details class="howto"><summary>Cómo crear el atajo de lectura</summary>' + shortcutStepsHTML() + '</details>' : ''),
+    '<div data-foot>' + footHTML() + '</div>',
     {labelledby: "min-t", onClose: function(){ rerenderSettingsKeepScroll(); }});
   function refresh(){
     $("[data-seg]", s.sheet).innerHTML = segHTML();
@@ -3414,7 +3511,7 @@ function editItemsHTML(listKey, items, noun, textPlaceholder){
 }
 
 /* ---------- ajustes ---------- */
-const PAGES = {sched: "Horario", aff: "Afirmaciones", vis: "Visualización", voz: "Voz", backup: "Copia de seguridad"};
+const PAGES = {sched: "Horario", aff: "Afirmaciones", vis: "Visualización", avisos: "Notificaciones", voz: "Voz", backup: "Copia de seguridad"};
 function countLabel(n, one, many){ return n + " " + (n === 1 ? one : many); }
 function lastBackupLabel(){
   if(!state.lastExport) return "Nunca";
@@ -3437,8 +3534,12 @@ function settingsListHTML(){
       rowHTML("sched", countLabel(daysOfType("normal").length + daysOfType("gym").length, "día", "días")) +
       rowHTML("aff", affs ? countLabel(affs, "frase", "frases") : "Vacío") +
       rowHTML("vis", vis ? countLabel(vis, "pregunta", "preguntas") : "Vacío") +
+      '<label class="srow" for="s-read"><b>Leer en</b><select id="s-read">' + Object.keys(READ_APPS).map(function(k){
+        return '<option value="' + k + '"' + (s.readApp === k ? " selected" : "") + '>' + READ_APPS[k].name + '</option>';
+      }).join("") + '</select><span class="chev down" aria-hidden="true"></span></label>' +
     '</div>' +
     '<div class="slist">' +
+      rowHTML("avisos", anyNoteOn() ? "Activadas" : "Apagadas") +
       rowHTML("voz", ttsKey() ? ttsVoice() : "Del iPhone") +
       '<label class="srow" for="s-music"><b>Mantener mi música</b><input type="checkbox" switch id="s-music"' + (keepMusic() ? " checked" : "") + '></label>' +
     '</div>' +
@@ -3451,10 +3552,11 @@ function settingsPageHTML(){
   const top = e
     ? '<div class="gtop nav"><button class="tbtn left" data-act="cancel">Cancelar</button><h2>' + PAGES[p] + '</h2><button class="tbtn right" data-act="done">Listo</button></div>'
     : '<div class="gtop nav"><button class="tbtn left back" data-act="back">' + (state.from === "today" ? "Hoy" : "Ajustes") + '</button><h2>' + PAGES[p] + '</h2>' +
-      (p === "backup" || p === "sched" || p === "voz" ? '' : '<button class="tbtn right" data-act="edit">Editar</button>') + '</div>';
-  // Horario and Voz change as you go, like iOS Settings: no Editar.
+      (p === "backup" || p === "sched" || p === "voz" || p === "avisos" ? '' : '<button class="tbtn right" data-act="edit">Editar</button>') + '</div>';
+  // Horario, Notificaciones and Voz change as you go, like iOS Settings: no Editar.
   if(p === "sched") return top + schedPageHTML();
   if(p === "voz") return top + vozPageHTML();
+  if(p === "avisos") return top + avisosPageHTML();
   if(p === "aff") return top + '<div class="gblock">' + (e
     ? editItemsHTML("aff", e.affirmations, "afirmación", "Escribe tu afirmación") +
       '<button class="addbtn" data-act="add" data-list="aff">＋ Agregar afirmación</button>'
@@ -3611,6 +3713,7 @@ function backToToday(){
     if(act === "import") return $("#import-file").click();
     if(act === "cloud-in") return cloudSignIn();
     if(act === "cloud-out") return cloudSignOut();
+    if(act === "note-test") return testNote();
     const key = b.getAttribute("data-list");
     if(!state.edit || !key) return;
     const list = editList(key);
@@ -3642,6 +3745,12 @@ function backToToday(){
   });
   root.addEventListener("change", function(ev){
     const el = ev.target;
+    if(el.hasAttribute("data-note")) return toggleNote(el);
+    if(el.id === "s-read"){
+      state.settings.readApp = el.value;
+      flushSave();
+      return syncReading();
+    }
     if(el.id === "s-music"){
       store.set("savers:keepMusic", el.checked);
       if(anyRunning()) setAudioMode(runAudioMode());
@@ -3721,6 +3830,7 @@ document.addEventListener("visibilitychange", function(){
   if(document.visibilityState === "hidden"){ flushSave(); return; }
   checkRollover();
   syncReading();
+  resendReadingNote();
   updateSun();
   prepareVoice();
   if(anyRunning()){
@@ -3741,7 +3851,13 @@ prepareVoice();
 window.addEventListener("online", prepareVoice);
 
 if("serviceWorker" in navigator && location.protocol === "https:"){
-  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").then(refreshPush).catch(function(){}); });
+  // Tapping a notification brings you to Hoy, unless you're in the middle of editing.
+  navigator.serviceWorker.addEventListener("message", function(e){
+    if(!e.data || e.data.go !== "today" || state.edit) return;
+    syncReading();
+    if(state.tab !== "today"){ state.from = null; state.page = null; switchTab("today"); }
+  });
 }
 })();
 </script>

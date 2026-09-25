@@ -2,3 +2,5 @@
 !.claude/skills/
 privado/
 .DS_Store
+avisos/node_modules/
+avisos/.wrangler/
