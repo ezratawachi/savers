@@ -25,6 +25,8 @@
   --line:#E0DDD6; --edge:#E3E1DB; --shadow:0 1px 2px rgba(16,21,31,.06);
   --dawn:#E27D60; --dawn-ink:#1B2538; --dawn-soft:#F9E4DC; --dawn-line:transparent; --sky:#3B5A8C; --ok:#2F7D5B; --warn:#B42318;
   --press:rgba(16,21,31,.05); --ease:cubic-bezier(.22,1,.36,1);
+  /* the sun in the "Ahora" card: amber is the sun and its last minute, nothing else */
+  --sun:#D4900F; --sun-trail:#E9C67A; --sun-zone:#F2D9A0; --sun-ink:#8F5E07;
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body:"Atkinson Hyperlegible", "Helvetica Neue", Arial, system-ui, sans-serif;
   color-scheme: light;
@@ -34,6 +36,7 @@
     --bg:#10151F; --surface:#1B2538; --surface-2:#263149; --ink:#E6E9F0; --muted:#9AA3B5;
     --line:#3A4660; --edge:rgba(255,255,255,.08); --shadow:none;
     --dawn:#E27D60; --dawn-ink:#10151F; --dawn-soft:#1B2538; --dawn-line:rgba(226,125,96,.5); --sky:#9DB4DB; --ok:#5DC093; --warn:#FF8A7A; --press:rgba(255,255,255,.06);
+    --sun:#F2B544; --sun-trail:rgba(242,181,68,.5); --sun-zone:rgba(242,181,68,.28); --sun-ink:#F2C46B;
     color-scheme: dark;
   }
 }
@@ -41,6 +44,7 @@
   --bg:#10151F; --surface:#1B2538; --surface-2:#263149; --ink:#E6E9F0; --muted:#9AA3B5;
   --line:#3A4660; --edge:rgba(255,255,255,.08); --shadow:none;
   --dawn:#E27D60; --dawn-ink:#10151F; --dawn-soft:#1B2538; --dawn-line:rgba(226,125,96,.5); --sky:#9DB4DB; --ok:#5DC093; --warn:#FF8A7A; --press:rgba(255,255,255,.06);
+  --sun:#F2B544; --sun-trail:rgba(242,181,68,.5); --sun-zone:rgba(242,181,68,.28); --sun-ink:#F2C46B;
   color-scheme: dark;
 }
 *{box-sizing:border-box}
@@ -114,6 +118,21 @@ details[open]:not(.closing)>summary .caret,.entry.open .caret{transform:rotate(-
 .card.now{border-color:var(--sky)}
 .ttl .now-tag{display:none;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--sky);color:var(--bg);font-size:.72rem;font-weight:700;line-height:1.5;vertical-align:2px}
 .card.now .ttl .now-tag{display:inline-block}
+/* the sun walks toward the minutes this letter has left; only the "Ahora" card shows it, and then its
+   minutes move from the right corner to the end of the line */
+.card>summary,.card>.cardrow{flex-wrap:wrap;row-gap:0}
+.sun{display:none;flex:0 0 100%;align-items:center;gap:10px;padding:2px 0 2px 52px}
+.card.now:not(.done) .sun{display:flex}
+.card.now:not(.done):has(.sun) .time{display:none}
+.sun-track{position:relative;flex:1;height:12px}
+.sun-track i{position:absolute;top:5px;height:2px;border-radius:2px}
+.sun-track .base{left:0;right:0;background:var(--surface-2)}
+.sun-track .zone{left:calc(var(--z) * 100%);right:0;top:4px;height:4px;background:var(--sun-zone)}
+.sun-track .trail{left:0;width:calc(var(--p) * 100%);background:var(--sun-trail)}
+.sun-track .dot{top:0;left:calc(var(--p) * 100%);width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--sun)}
+.sun-left{font-size:.84rem;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sun.last .sun-left{color:var(--sun-ink)}
+.sun.over .sun-left{color:var(--sky)}
 .card.done .ttl{opacity:.5}
 /* done: a plain row, the filled circle says it all; reopened (Escritura, a repeat) it gets its box back */
 .card.done{background:transparent;box-shadow:none;border-color:transparent}
@@ -1567,18 +1586,90 @@ function updateNow(){
   const now = nextKey(dayBlocks(ds, schedTypeOf(ds)), d);
   let next = null;
   $$(".card[data-card]", dayView.root).forEach(function(card){
-    if(card.getAttribute("data-card") !== now) card.classList.remove("now");
+    if(card.getAttribute("data-card") !== now){ if(card.classList.contains("now")) growWith(card, function(){ card.classList.remove("now"); }); }
     else if(!card.classList.contains("now")) next = card;
   });
   clearTimeout(nowT);
   if(!next) return;
   nowT = setTimeout(function(){
     if(!next.isConnected) return;
+    const from = liveHeight(next);
     next.classList.add("now");
-    if(next.tagName === "DETAILS" && !next.classList.contains("done")) setOpen(next, true, {after: function(){ reveal(next); }});
-    else reveal(next);
+    updateSun();
+    if(next.tagName === "DETAILS" && !next.classList.contains("done")) setOpen(next, true, {from: from, after: function(){ reveal(next); }});
+    else growWith(next, null, from, function(){ reveal(next); });
   }, reduceMotion() ? 0 : 150);
 }
+// A card whose row changes height (its sun showing up or going away) glides to it instead of jumping.
+function growWith(card, change, from, after){
+  if(from == null) from = liveHeight(card);
+  if(change) change();
+  if(card._h){ if(after) after(); return; }
+  const to = liveHeight(card);
+  if(reduceMotion() || Math.abs(to - from) < 0.5){ if(after) after(); return; }
+  animateHeight(card, from, to, after);
+}
+
+/* ---------- the sun: where you should be in the letter you're on ---------- */
+// It walks the "Ahora" card's line in the minutes the schedule gives that letter, from the hour it
+// should start (its block's hour plus the letters before it). The last minute of the line is amber;
+// once time is up it waits at the end and says what comes next. It never blinks, sounds or turns red.
+const SUN_HTML = '<span class="sun" aria-hidden="true"><span class="sun-track"><i class="base"></i><i class="zone"></i><i class="trail"></i><i class="dot"></i></span><span class="sun-left"></span></span>';
+// {start, len} in minutes of the day, for a letter of today's morning; null when it has no hour.
+function sunPlan(ds, key){
+  // Today only, and only on a day that has SAVERS (doing them anyway on a "Sin SAVERS" day has no hours).
+  if(ds !== state.today || !isScheduled(ds)) return null;
+  const type = schedTypeOf(ds), blocks = dayBlocks(ds, type);
+  for(let i = 0; i < blocks.length; i++){
+    const b = blocks[i];
+    if(b.later || !b.head || b.keys.indexOf(key) < 0) continue;
+    let at = parseTime(b.head[0]);
+    if(at == null) return null;
+    for(let j = 0; j < b.keys.length; j++){
+      const m = letterMinutes(b.keys[j], type, ds);
+      if(b.keys[j] === key) return m > 0 ? {start: at, len: m} : null;
+      at += m;
+    }
+  }
+  return null;
+}
+// What comes after this letter: the next letter still to do, or else the next thing in the schedule (Baño).
+function sunNext(ds, d, key){
+  const type = schedTypeOf(ds);
+  const keys = [];
+  dayBlocks(ds, type).forEach(function(b){ if(!b.later) keys.push.apply(keys, b.keys); });
+  for(let i = keys.indexOf(key) + 1; i > 0 && i < keys.length; i++){ if(!d.checks[keys[i]]) return LETTER_BY[keys[i]].name; }
+  const t = scheduleType(type), steps = t && Array.isArray(t.steps) ? t.steps : [];
+  const at = steps.findIndex(function(st){ return st && Array.isArray(st.letters) && st.letters.indexOf(key) >= 0; });
+  for(let i = at + 1; at >= 0 && i < steps.length; i++){
+    const st = steps[i];
+    if(!st) continue;
+    const open = (Array.isArray(st.letters) ? st.letters : []).some(function(k){ return LETTER_BY[k] && !d.checks[k]; });
+    if(!Array.isArray(st.letters) || !st.letters.length || open) return st.short || st.title || "";
+  }
+  return "";
+}
+function updateSun(){
+  if(dayView.record || !dayView.root || state.tab !== "today") return;
+  const card = $(".card.now:not(.done)", dayView.root), el = card && $(".sun", card);
+  if(!el) return;
+  const ds = state.today, key = card.getAttribute("data-card"), plan = sunPlan(ds, key);
+  if(!plan) return;
+  const t = new Date(), now = t.getHours() * 60 + t.getMinutes() + t.getSeconds() / 60;
+  const left = plan.start + plan.len - now;
+  const p = Math.min(1, Math.max(0, (now - plan.start) / plan.len));
+  el.style.setProperty("--p", p.toFixed(4));
+  el.style.setProperty("--z", Math.max(0, (plan.len - 1) / plan.len).toFixed(4));
+  const over = left <= 0, last = !over && left <= 1;
+  el.classList.toggle("over", over);
+  el.classList.toggle("last", last);
+  let label;
+  if(over){ const next = sunNext(ds, state.days[ds] || blankDay(ds), key); label = next ? "Sigue " + next : "0 min"; }
+  else label = Math.ceil(Math.min(left, plan.len)) + " min";
+  const out = $(".sun-left", el);
+  if(out.textContent !== label) out.textContent = label;
+}
+setInterval(updateSun, 1000);
 
 /* ---------- writing: one component for Hoy and Historial ---------- */
 const W_FIELDS = [
@@ -1738,11 +1829,14 @@ function renderDay(root, ds, record, opts){
       letterToggleHTML("chk", l, on, "Marcar " + l.name, '<span class="chk-t">' + (on ? "✓" : l.L) + '</span>') +
       '<span class="ttl"><b>' + l.name + '<span class="now-tag">Ahora</span></b><span>' + info.sub + '</span></span>' +
       '<span class="time">' + esc(info.time) + '</span>';
+    // Every timed morning letter carries its sun; only the "Ahora" one shows it (see updateSun).
+    const sun = !record && sunPlan(ds, l.key) ? SUN_HTML : "";
     // Only a card with something to do inside opens (Silencio, and Ejercicio on gym days, don't).
-    if(info.fixed) return '<div ' + cls + '><div class="cardrow">' + row + '<span class="nocaret"></span></div></div>';
+    if(info.fixed) return '<div ' + cls + '><div class="cardrow">' + row + '<span class="nocaret"></span>' + sun + '</div></div>';
     const inner = l.key === "escritura" ? writingHTML(ds, d, record ? "d" : "t") : '<div class="body">' + info.html + '</div>';
-    return '<details ' + cls + ((isNow || (!record && openCards.has(l.key))) && !on ? " open" : "") + '>' +
-      '<summary>' + row + '<span class="caret" aria-hidden="true"></span></summary>' + inner + '</details>';
+    // "Ahora" is drawn closed: opening the app is for seeing where you are. Marking a letter opens the next one.
+    return '<details ' + cls + (!record && openCards.has(l.key) && !on ? " open" : "") + '>' +
+      '<summary>' + row + '<span class="caret" aria-hidden="true"></span>' + sun + '</summary>' + inner + '</details>';
   }
 
   if(fin){
@@ -1762,7 +1856,7 @@ function renderDay(root, ds, record, opts){
 
   root.innerHTML = html;
   bindDay(root, record);
-  if(!record){ updateAllRunUI(); syncReading(); }
+  if(!record){ updateAllRunUI(); syncReading(); updateSun(); }
   setStatus(statusMsg);
   fitFields(root);
 }
@@ -1886,8 +1980,8 @@ function bindDay(root, record){
   if(!record) $$("details.card[data-card]", root).forEach(function(det){
     det.addEventListener("toggle", function(){
       const k = det.getAttribute("data-card");
-      // The "Ahora" card opens by itself; only cards opened by hand are remembered.
-      if(det.open){ if(!det.classList.contains("now")) openCards.add(k); } else openCards.delete(k);
+      // Open stays open while the app is open (drawing Hoy again keeps it); a fresh start has them all closed.
+      if(det.open) openCards.add(k); else openCards.delete(k);
     });
   });
   const fold = $("details.fold", root);
@@ -3355,6 +3449,7 @@ document.addEventListener("visibilitychange", function(){
   if(document.visibilityState === "hidden"){ flushSave(); return; }
   checkRollover();
   syncReading();
+  updateSun();
   prepareVoice();
   if(anyRunning()){
     try { if(audio.ctx && audio.ctx.state !== "running") audio.ctx.resume(); } catch(e){}
