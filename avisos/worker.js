@@ -52,10 +52,6 @@ export default {
       await box.cancel(b.id);
       return reply(200);
     }
-    if (path === "/test") {
-      const res = await box.schedule({ id: "prueba", at: Date.now(), title: "Los avisos funcionan", body: "", url: "./" });
-      return reply(res.ok ? 200 : 409, res);
-    }
     return reply(404);
   }
 };

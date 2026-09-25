@@ -2523,7 +2523,7 @@ function startReading(){
   if(app && app.url) location.href = app.url;
 }
 function sendReadingNote(r){
-  pushPost("/schedule", {note: {id: "lectura", at: Number(r.start) + r.min * 60000, url: "./",
+  pushNote({note: {id: "lectura", at: Number(r.start) + r.min * 60000, url: "./",
     title: "Terminó la lectura · " + r.min + (r.min === 1 ? " minuto" : " minutos"), body: ""}}).then(function(){
     const cur = store.get("savers:reading");
     if(cur && cur.start === r.start){ cur.sent = true; store.set("savers:reading", cur); }
@@ -2614,14 +2614,34 @@ function unb64u(str){
   const s = atob(str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4));
   return Uint8Array.from(s, function(c){ return c.charCodeAt(0); });
 }
-// Asks iOS the first time (it has to come from the tap), then hands the push address to the worker.
+// iOS only shows its question while the finger's tap is still going on, so the question starts on the
+// switch's click itself, before anything else runs (the change that follows can come too late).
+let permAsk = null;
+function askPermission(){
+  if(Notification.permission === "default") permAsk = Promise.resolve(Notification.requestPermission());
+}
+// The answer to the question the click asked, or a new question if there was no click (a keyboard).
+function permissionAnswer(){
+  const a = permAsk;
+  permAsk = null;
+  if(a) return a;
+  return Notification.permission === "default" ? Promise.resolve(Notification.requestPermission()) : Promise.resolve(Notification.permission);
+}
+// Asks iOS the first time, then hands the push address to the worker.
 async function pushSubscribe(ask){
-  const perm = ask ? await Notification.requestPermission() : Notification.permission;
+  const perm = ask ? await permissionAnswer() : Notification.permission;
   if(perm !== "granted") throw new Error(perm);
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
   if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: unb64u(PUSH_KEY)});
   await pushPost("/subscribe", {sub: sub.toJSON()});
+}
+// If the worker lost this iPhone's push address (the push service dropped it), hand it over again and retry once.
+function pushNote(body){
+  return pushPost("/schedule", body).catch(function(e){
+    if(String(e && e.message) !== "no-sub") throw e;
+    return pushSubscribe(false).then(function(){ return pushPost("/schedule", body); });
+  });
 }
 // iOS can renew the push address; each open hands the current one to the worker.
 function refreshPush(){ if(anyNoteOn()) pushSubscribe(false).catch(function(){}); }
@@ -2641,7 +2661,9 @@ function toggleNote(el){
     if(id === "lectura"){ const r = readingState(); if(r && readLeft(r) > 0){ r.notify = true; r.sent = false; store.set("savers:reading", r); sendReadingNote(r); } }
   }).catch(function(e){
     const m = String(e && e.message || e);
-    noteStatus.msg = m === "denied" ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS."
+    // Denied while iOS still says "not asked yet" means it never showed the question.
+    noteStatus.msg = m === "denied" && Notification.permission === "default" ? "El iPhone no mostró la pregunta. Vuelve a tocar el interruptor."
+      : m === "denied" ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS."
       : m === "default" ? "No se activaron. Vuelve a intentarlo."
       : "No se pudo conectar. Revisa tu internet y vuelve a intentarlo.";
   }).then(function(){
@@ -2651,7 +2673,7 @@ function toggleNote(el){
   });
 }
 function testNote(){
-  pushPost("/test", {}).then(function(){ toast("Aviso de prueba enviado"); })
+  pushNote({note: {id: "prueba", at: Date.now(), title: "Los avisos funcionan", body: "", url: "./"}}).then(function(){ toast("Aviso de prueba enviado"); })
     .catch(function(){ toast("No se pudo mandar. Apaga y prende el aviso."); });
 }
 function avisosPageHTML(){
@@ -3688,6 +3710,8 @@ function backToToday(){
 (function bindSettings(){
   const root = $("#view-settings");
   root.addEventListener("click", function(ev){
+    const note = ev.target.closest("input[data-note]");
+    if(note && note.checked && pushCan()) askPermission();
     const go = ev.target.closest("[data-go]");
     if(go) return openPage(go.getAttribute("data-go"));
     const step = ev.target.closest("[data-step]");
