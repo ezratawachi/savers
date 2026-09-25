@@ -1001,12 +1001,32 @@ const TONES = {
   ejercicio: "Mexican Spanish accent. Energetic, clear and encouraging, like a coach. Brisk pace.",
   aviso: "Mexican Spanish accent. Neutral, warm and clear."
 };
-const clips = new Map();   // clipKey -> {raw: wav bytes, buf: decoded AudioBuffer or null}
-const voiceStatus = {ready: 0, total: 0, error: ""};
-let voiceSrc = null, preparing = null, prepareAgain = false, voiceHold = 0;
+// The free tier allows about 3 voice requests a minute and a handful a day, so phrases are asked for slowly
+// and a new voice only takes over once all its phrases are here: one routine never mixes two Gemini voices.
+const ASK_GAP = 21000;
+const clips = new Map();   // clipKey -> {raw: wav bytes, buf: decoded AudioBuffer or null, url, voice}; only the voice that speaks
+const voiceStatus = {total: 0, ready: 0, nextReady: 0, error: "", daily: false};
+let voiceSrc = null, preparing = null, prepareAgain = false, minuteHold = 0, minuteMisses = 0, lastAsk = 0;
 
 function ttsKey(){ return store.get("savers:geminiKey") || ""; }
-function ttsVoice(){ const v = store.get("savers:voice"); return VOICES.some(function(x){ return x.id === v; }) ? v : VOICES[0].id; }
+function knownVoice(v){ return VOICES.some(function(x){ return x.id === v; }) ? v : ""; }
+function ttsVoice(){ return knownVoice(store.get("savers:voice")) || VOICES[0].id; }
+// The voice that was picked and is still being made; the current one keeps speaking until it's complete.
+function nextVoice(){ const v = knownVoice(store.get("savers:voiceNext")); return v && v !== ttsVoice() ? v : ""; }
+function dailyHold(){ return Number(store.get("savers:voiceHold")) || 0; }
+function clearVoiceHolds(){ try { localStorage.removeItem("savers:voiceHold"); } catch(e){} minuteHold = 0; minuteMisses = 0; }
+// The daily quota comes back at midnight, Pacific time.
+function nextQuotaReset(){
+  const now = new Date(), la = new Date(now.toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
+  const left = 86400 - (la.getHours() * 3600 + la.getMinutes() * 60 + la.getSeconds());
+  return now.getTime() + left * 1000 + 60000;
+}
+function chooseVoice(v){
+  const s = voiceStatus, complete = s.total > 0 && s.ready === s.total;
+  // Until the current voice is complete there's nothing worth keeping on: switch right away.
+  if(v === ttsVoice() || !complete){ store.set("savers:voice", v); try { localStorage.removeItem("savers:voiceNext"); } catch(e){} }
+  else store.set("savers:voiceNext", v);
+}
 function clipKey(text, tone, voice){ return voice + "|" + (TONES[tone] ? tone : "aviso") + "|" + text; }
 
 // Everything the app can say today, with the tone it's said in.
@@ -1064,6 +1084,7 @@ async function synth(text, tone, voice){
     err.reason = (info.details || []).map(function(d){ return d.reason || ""; }).join(" ");
     const retry = (info.details || []).map(function(d){ return d.retryDelay; }).filter(Boolean)[0];
     err.retry = retry ? parseFloat(retry) * 1000 : 0;
+    err.daily = /PerDay/i.test(JSON.stringify(info.details || []));
     throw err;
   }
   const b64 = audioIn(data);
@@ -1072,27 +1093,44 @@ async function synth(text, tone, voice){
 }
 function ttsError(err){
   if(!err || err.name === "TypeError") return "Sin conexión. Prueba cuando tengas internet.";
-  if(err.status === 429) return "Se acabó el límite gratis por ahora. Mientras, suena la voz del iPhone.";
+  if(err.status === 429 && (err.daily || Date.now() < dailyHold())) return "Ya se usó el límite gratis de hoy. Mañana puedes probar más voces.";
+  if(err.status === 429) return "Google pide una pausa. Espera un minuto y vuelve a probar.";
   if(err.status === 401 || err.status === 403 || /API_KEY/.test(err.reason || "")) return "La clave no funciona. Revisa que esté completa.";
   return "Gemini no respondió" + (err.status ? " (código " + err.status + ")" : "") + ". Mientras, suena la voz del iPhone.";
 }
 
-// A clip from memory, then from this iPhone, then from Gemini (only when make is true).
-async function getClip(cache, text, tone, voice, make){
+// Is the phrase on this iPhone? If not and ask is set, Gemini makes it. load keeps it in memory, ready to play.
+async function ensureClip(cache, text, tone, voice, opts){
   const key = clipKey(text, tone, voice);
   if(clips.has(key)) return clips.get(key);
   const url = await clipURL(key);
   const hit = await cache.match(url);
-  let raw = hit ? await hit.arrayBuffer() : null;
-  if(!raw){
-    if(!make) return null;
+  let raw = null;
+  if(hit){
+    if(!opts.load) return true;
+    raw = await hit.arrayBuffer();
+  } else {
+    if(!opts.ask) return null;
+    if(opts.pace){ const w = lastAsk + ASK_GAP - Date.now(); if(w > 0) await new Promise(function(r){ setTimeout(r, w); }); }
+    lastAsk = Date.now();
     const bytes = await synth(text, tone, voice);
+    clearVoiceHolds();
     await cache.put(url, new Response(bytes, {headers: {"Content-Type": "audio/wav"}}));
+    if(!opts.load) return true;
     raw = bytes.buffer;
   }
-  const clip = {raw: raw, buf: null, url: url};
+  const clip = {raw: raw, buf: null, url: url, voice: voice};
   clips.set(key, clip);
   return clip;
+}
+// A full day's quota waits for its reset; a busy minute tries again in a minute (three in a row count as the day).
+function noteVoiceError(err){
+  if(err && err.status === 429){
+    minuteMisses++;
+    if(err.daily || minuteMisses >= 3){ store.set("savers:voiceHold", nextQuotaReset()); voiceStatus.daily = true; }
+    else { const wait = Math.max(err.retry || 0, 60000); minuteHold = Date.now() + wait; setTimeout(prepareVoice, wait + 1000); }
+    voiceStatus.error = "";
+  } else voiceStatus.error = ttsError(err);
 }
 function clipBuffer(clip){
   if(clip.buf) return Promise.resolve(clip.buf);
@@ -1120,45 +1158,55 @@ function prepareVoice(){
 }
 async function makeClips(){
   if(!ttsKey() || !window.caches || !window.crypto || !crypto.subtle) return;
-  const cache = await caches.open(TTS_CACHE), voice = ttsVoice(), list = spokenPhrases();
-  const keep = new Set();
-  voiceStatus.total = list.length; voiceStatus.ready = 0;
-  let stop = Date.now() < voiceHold || !navigator.onLine;
-  for(const p of list){
-    let clip = null;
-    try { clip = await getClip(cache, p[0], p[1], voice, !stop); }
-    catch(err){
-      stop = true;
-      voiceStatus.error = ttsError(err);
-      if(err.status === 429){
-        const wait = Math.max(err.retry || 0, 60000);
-        voiceHold = Date.now() + wait;
-        setTimeout(prepareVoice, wait + 1000);
-      }
+  const cache = await caches.open(TTS_CACHE), list = spokenPhrases(), voice = ttsVoice(), next = nextVoice();
+  const s = voiceStatus;
+  let ask = navigator.onLine && Date.now() >= Math.max(dailyHold(), minuteHold);
+  s.total = list.length; s.ready = 0; s.nextReady = 0; s.daily = Date.now() < dailyHold();
+  if(ask) s.error = "";
+  async function pass(v, load, field){
+    for(const p of list){
+      try { if(await ensureClip(cache, p[0], p[1], v, {ask: ask, load: load, pace: true})) s[field]++; }
+      catch(err){ ask = false; noteVoiceError(err); }
+      showVoiceStatus();
     }
-    if(clip){ keep.add(clip.url); voiceStatus.ready++; }
-    showVoiceStatus();
   }
-  if(voiceStatus.ready === voiceStatus.total) voiceStatus.error = "";
+  // What the current voice is missing (a new visualization question) comes first.
+  await pass(voice, true, "ready");
+  if(next) await pass(next, false, "nextReady");
   showVoiceStatus();
-  // Only a complete pass knows what's no longer said.
-  if(stop) return;
-  const urls = new Set(Array.from(keep));
+  // Keep every voice's clips of what the app says today, so going back to a voice costs nothing.
+  const urls = new Set();
+  for(const v of VOICES) for(const p of list) urls.add(await clipURL(clipKey(p[0], p[1], v.id)));
   (await cache.keys()).forEach(function(req){ if(!urls.has(req.url)) cache.delete(req); });
-  clips.forEach(function(c, k){ if(!urls.has(c.url)) clips.delete(k); });
+  if(next && s.nextReady === list.length){
+    store.set("savers:voice", next);
+    try { localStorage.removeItem("savers:voiceNext"); } catch(e){}
+    prepareAgain = true;
+    refreshVozPage();
+  }
+  clips.forEach(function(c, k){ if(c.voice !== ttsVoice() || !urls.has(c.url)) clips.delete(k); });
 }
 function voiceStatusText(){
   if(!ttsKey()) return "Sin clave, suena la voz del iPhone.";
-  if(voiceStatus.error) return voiceStatus.error;
-  if(!voiceStatus.total) return "Preparando las frases…";
-  return voiceStatus.ready === voiceStatus.total
-    ? "Las " + voiceStatus.total + " frases están listas en este iPhone."
-    : voiceStatus.ready + " de " + voiceStatus.total + " frases listas. Las que faltan suenan con la voz del iPhone.";
+  const s = voiceStatus, n = s.total, next = nextVoice();
+  if(s.error) return s.error;
+  if(!n) return "Preparando las frases…";
+  let t = next ? next + " se está preparando: " + s.nextReady + " de " + n + " frases. Mientras, suena " + ttsVoice() + "."
+    : s.ready === n ? "Las " + n + " frases están listas en este iPhone."
+    : s.ready + " de " + n + " frases listas. Las que faltan suenan con la voz del iPhone.";
+  if(s.daily && (next || s.ready < n)) t += " Se acabó el límite gratis de hoy: mañana se completan.";
+  return t;
+}
+function refreshVozPage(){
+  if(state.tab !== "settings" || state.page !== "voz") return;
+  const a = document.activeElement;
+  if(a && a.id === "s-key") return showVoiceStatus();
+  rerenderSettingsKeepScroll();
 }
 function showVoiceStatus(){
   const el = $("#voz-status"); if(!el) return;
   el.textContent = voiceStatusText();
-  el.classList.toggle("warn", !!voiceStatus.error && !!ttsKey());
+  el.classList.toggle("warn", !!ttsKey() && (!!voiceStatus.error || (voiceStatus.daily && (!!nextVoice() || voiceStatus.ready < voiceStatus.total))));
 }
 // "Probar" reads your first visualization question in that voice.
 async function tryVoice(voice, btn){
@@ -1169,12 +1217,14 @@ async function tryVoice(voice, btn){
   const text = first ? first.text : "Buenos días. Esta es tu voz para SAVERS.";
   btn.disabled = true; btn.textContent = "Creando…";
   try {
-    const clip = await getClip(await caches.open(TTS_CACHE), text, "visualizacion", voice, true);
+    const clip = await ensureClip(await caches.open(TTS_CACHE), text, "visualizacion", voice, {ask: true, load: true});
     const buf = await clipBuffer(clip);
     saySeq++; stopVoice();
     playClip(buf, function(){ if(!anyRunning()) setAudioMode("ambient"); });
   } catch(err){
+    if(err && err.status === 429) noteVoiceError(err);
     toast(ttsError(err));
+    showVoiceStatus();
     if(!anyRunning()) setAudioMode("ambient");
   } finally {
     btn.disabled = false; btn.textContent = "Probar";
@@ -3076,9 +3126,9 @@ function vozPageHTML(){
   const cur = ttsVoice(), key = ttsKey();
   return '<div class="slabel">Voz de Gemini</div>' +
     '<div class="slist">' + VOICES.map(function(v){
-      const on = key && v.id === cur;
+      const on = key && v.id === cur, soon = key && v.id === nextVoice();
       return '<div class="srow vrow">' +
-        '<button class="vpick" data-act="voice" data-v="' + v.id + '" aria-pressed="' + on + '"><b>' + v.id + '</b><small>' + v.desc + '</small></button>' +
+        '<button class="vpick" data-act="voice" data-v="' + v.id + '" aria-pressed="' + on + '"><b>' + v.id + '</b><small>' + v.desc + (soon ? ' · preparando' : '') + '</small></button>' +
         '<span class="vcheck" aria-hidden="true">' + (on ? '✓' : '') + '</span>' +
         '<button class="btn vtry" data-act="try" data-v="' + v.id + '">Probar</button>' +
       '</div>';
@@ -3183,7 +3233,7 @@ function backToToday(){
     if(act === "export") return exportBackup();
     if(act === "voice"){
       if(!ttsKey()){ toast("Primero pega tu clave de Gemini"); return $("#s-key").focus(); }
-      store.set("savers:voice", b.getAttribute("data-v"));
+      chooseVoice(b.getAttribute("data-v"));
       rerenderSettingsKeepScroll();
       return prepareVoice();
     }
@@ -3228,7 +3278,8 @@ function backToToday(){
     if(el.id === "s-key"){
       const k = el.value.replace(/\s+/g, "");
       if(k) store.set("savers:geminiKey", k); else { try { localStorage.removeItem("savers:geminiKey"); } catch(e){} }
-      voiceStatus.error = ""; voiceStatus.total = 0; voiceHold = 0;
+      voiceStatus.error = ""; voiceStatus.total = 0;
+      clearVoiceHolds();
       rerenderSettingsKeepScroll();
       return prepareVoice();
     }
