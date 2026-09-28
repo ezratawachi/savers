@@ -174,6 +174,9 @@ details[open]:not(.closing)>summary .caret,.entry.open .caret{transform:rotate(-
 .timer.is-done .btn.primary{background:var(--surface);border-color:var(--line);color:var(--ink)}
 .timer[data-run="visualizacion"] [data-r="next"]{font-size:1.02rem;line-height:1.45;color:var(--ink);min-height:2.9em;margin-top:2px}
 .timer.is-done [data-r="next"]{min-height:0}
+.howto{margin-top:10px;font-size:.92rem}
+.howto summary{color:var(--sky);font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.howto ol{margin:4px 0 6px}
 /* letter toggles: a label around a hidden native switch (the real tap on it is what vibrates) */
 label.chk,label.wdone{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .wdone-row{display:flex;justify-content:flex-end;margin-top:10px}
@@ -2502,6 +2505,9 @@ function updateRunUI(r){
 function updateAllRunUI(){ Object.keys(runs).forEach(function(k){ updateRunUI(runs[k]); }); }
 
 /* ---------- lectura: the timer runs here, a notification says when it's over ---------- */
+// While this iPhone can't get notifications (its filter blocks them for web apps), the iOS shortcut
+// "Lectura SAVERS" sets the Reloj timer and opens Libros, as before. With the switch on, it's not used.
+const READ_SHORTCUT = "Lectura SAVERS";
 let readIv = null;
 function readingState(){
   const r = store.get("savers:reading");
@@ -2521,7 +2527,11 @@ function startReading(){
   const r = {day: todayStr(), start: Date.now(), min: readMinutes(), notify: noteOn("lectura")};
   store.set("savers:reading", r);
   syncReading();
-  if(r.notify) sendReadingNote(r);
+  if(!r.notify){
+    location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent(READ_SHORTCUT) + "&input=text&text=" + r.min;
+    return;
+  }
+  sendReadingNote(r);
   const app = READ_APPS[state.settings.readApp];
   if(app && app.url) location.href = app.url;
 }
@@ -2557,9 +2567,9 @@ function syncReading(){
   renderReading(r);
 }
 function readingHint(){
-  const app = READ_APPS[state.settings.readApp], note = noteOn("lectura");
-  if(app && app.url) return "Se abre " + app.name + (note ? " y te aviso al terminar." : ". Se marca sola al volver.");
-  return note ? "Te aviso al terminar." : "Se marca sola al terminar.";
+  if(!noteOn("lectura")) return "Se abre Libros y el Reloj te avisa al terminar.";
+  const app = READ_APPS[state.settings.readApp];
+  return app && app.url ? "Se abre " + app.name + " y te aviso al terminar." : "Te aviso al terminar.";
 }
 function renderReading(r){
   const box = $(".timer[data-read]"); if(!box) return;
@@ -2567,11 +2577,13 @@ function renderReading(r){
   const rest = !r && doneToday("lectura");
   box.classList.toggle("is-done", rest);
   $('[data-rd="now"]', box).textContent = r ? "Leyendo" : rest ? "Hecho" : readMinutes() + " minutos";
-  $('[data-rd="next"]', box).textContent = r ? "Faltan " + Math.floor(left / 60) + ":" + pad(left % 60) + (READ_APPS[state.settings.readApp].url ? ". Se marca sola al volver." : ".") : rest ? "Si quieres, puedes leer otra vez." : readingHint();
+  $('[data-rd="next"]', box).textContent = r ? "Faltan " + Math.floor(left / 60) + ":" + pad(left % 60) + (r.notify && !READ_APPS[state.settings.readApp].url ? "." : ". Se marca sola al volver.") : rest ? "Si quieres, puedes leer otra vez." : readingHint();
   $('[data-rd="go"]', box).textContent = rest ? "Repetir" : "Empezar lectura";
   $('[data-rd="go"]', box).hidden = !!r;
   $('[data-rd="done"]', box).hidden = !r;
   $('[data-rd="cancel"]', box).hidden = !r;
+  // The app can't see the shortcut; if it didn't run, you're back here with the reading going.
+  $('[data-rd="help"]', box).hidden = !r || !!r.notify;
 }
 function readingHTML(mins){
   return '<div class="timer" data-read>' +
@@ -2582,7 +2594,16 @@ function readingHTML(mins){
         '<button class="btn primary" data-rd="done" hidden>Ya terminé</button>' +
         '<button class="btn" data-rd="cancel" hidden>Cancelar</button>' +
       '</div>' +
+      '<details class="howto" data-rd="help" hidden><summary>¿No se abrió el Reloj?</summary>' + shortcutStepsHTML() + '</details>' +
     '</div>';
+}
+function shortcutStepsHTML(){
+  return '<ol>' +
+    '<li>Abre la app <b>Atajos</b> y toca <b>+</b>.</li>' +
+    '<li>Agrega la acción <b>Iniciar temporizador</b>. Toca el número y elige <b>Entrada del atajo</b>, en minutos.</li>' +
+    '<li>Agrega la acción <b>Abrir app</b> y elige <b>Libros</b>.</li>' +
+    '<li>Toca el nombre arriba y llámalo exactamente <b>' + READ_SHORTCUT + '</b>.</li>' +
+    '</ol><p class="note">Así el Reloj usa los minutos de la app. Si tu atajo tiene un número fijo, cámbialo por Entrada del atajo. Si iOS pregunta "¿Abrir en Atajos?", toca Abrir.</p>';
 }
 
 /* ---------- avisos: push notifications sent by the savers-avisos worker on Cloudflare ---------- */
@@ -3466,7 +3487,8 @@ function openMinutesSheet(type, key){
     '<div class="shead"><h3 id="min-t">' + l.name + '</h3><button class="tbtn" data-close>Listo</button></div>' +
     '<div data-seg>' + segHTML() + '</div>' +
     '<div data-pick>' + pickHTML() + '</div>' +
-    '<div data-foot>' + footHTML() + '</div>',
+    '<div data-foot>' + footHTML() + '</div>' +
+    (key === "lectura" && !noteOn("lectura") ? '<details class="howto"><summary>Cómo crear el atajo de lectura</summary>' + shortcutStepsHTML() + '</details>' : ''),
     {labelledby: "min-t", onClose: function(){ rerenderSettingsKeepScroll(); }});
   function refresh(){
     $("[data-seg]", s.sheet).innerHTML = segHTML();
