@@ -181,8 +181,16 @@ details[open]:not(.closing)>summary .caret,.entry.open .caret{transform:rotate(-
 /* the moving drawing of each exercise, inside its timer */
 .exfig{margin:10px 0 2px;background:var(--surface);border-radius:12px;padding:10px 10px 12px}
 .exfig:empty,.timer.is-done .exfig{display:none}
-.exfig .ph b{display:block;font-family:var(--display);font-size:1.05rem;line-height:1.2}
-.exfig .ph span{display:block;font-size:.82rem;color:var(--muted);min-height:1.3em}
+.exfig .ph b{display:block;font-family:var(--display);font-size:1.05rem;line-height:1.2;min-height:1.2em}
+.timer[data-run="ejercicio"] .tm-next:empty{display:none}
+.exmap{display:flex;gap:3px;margin-top:8px}
+.exmap .part{flex:var(--w) 1 0;min-width:0}
+.exmap .part i{display:block;height:6px;border-radius:6px;background:var(--surface);overflow:hidden}
+.exmap .part b{display:block;height:100%;width:0;background:var(--dawn);transition:width .3s ease}
+.exmap .part span{display:block;margin-top:4px;font-size:.68rem;letter-spacing:-.01em;line-height:1.2;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exmap .part.now span{color:var(--sky);font-weight:700}
+.exmap .part.now i{box-shadow:0 0 0 1.5px var(--sky)}
+.timer.is-done .exmap{display:none}
 .exfig svg{display:block;width:100%;height:auto;aspect-ratio:2/1;margin:6px 0 2px;overflow:visible}
 .exfig .tip{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.95rem}
 .exfig .tip i{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--sky)}
@@ -1795,13 +1803,8 @@ function letterInfo(key, type){
       };
       return {
         sub: "Rutina en casa", time: "8 min",
-        html:
-          runBoxHTML("ejercicio") +
-          '<ol><li><b>Minuto 0–1:</b> marchar en el sitio subiendo rodillas.</li>' +
-          '<li><b>Minuto 1–7:</b> 2 rondas de 40 segundos por ejercicio:<ul>' +
-          CIRCUIT.map(function(c){ return '<li><b>' + c[0] + ':</b> ' + c[1] + '</li>'; }).join("") +
-          '</ul></li><li><b>Minuto 7–8:</b> boca arriba con las piernas sobre una silla, respiraciones lentas.</li></ol>' +
-          '<p class="note">Para si hay hormigueo o dolor que baja por la pierna.</p>'
+        // The drawing shows how, the map shows where you are: no list to read.
+        html: runBoxHTML("ejercicio")
       };
     case "lectura":
       if(gym){
@@ -2372,7 +2375,7 @@ function armOnFloor(s){ return farm(s, fang(s, [s[0] + 47.8, ON_FLOOR.arm]), 0);
 
 const EX_FIGS = {
   marcha: {
-    view: [-36, -66, 372], far: [4, 0], ready: "de pie, derecho",
+    view: [-36, -66, 372], far: [4, 0],
     p: {lift: 0, side: 1},
     pose: function(p){
       const H = [150, 36.5], S = fpt(H, FL.torso, 2), head = fpt(S, FL.neck, 2);
@@ -2385,7 +2388,7 @@ const EX_FIGS = {
         nearLeg: a ? up() : stand(), farLeg: a ? stand() : up(), moving: a ? ["nearLeg", "farArm"] : ["farLeg", "nearArm"]};
     },
     build: function(tl, p, ui){
-      ui("Sube una rodilla, luego la otra", "a tu ritmo, sin correr");
+      ui("Sube una rodilla, luego la otra");
       [1, -1].forEach(function(side){
         tl.call(function(){ p.side = side; })
           .to(p, {lift: 1, duration: .5, ease: "sine.out"})
@@ -2395,7 +2398,7 @@ const EX_FIGS = {
     still: {lift: 1, side: 1}
   },
   birddog: {
-    view: [36, 20, 210], far: [4, 0], ready: "en cuatro apoyos, manos bajo los hombros",
+    view: [36, 20, 210], far: [4, 0],
     p: {arm: 180, thigh: 180, side: 1},
     pose: function(p){
       const K = [118, ON_FLOOR.leg], H = [118, K[1] - FL.thigh], sy = ON_FLOOR.arm - FL.upper - FL.fore;
@@ -2407,15 +2410,15 @@ const EX_FIGS = {
         trails: [function(k){ return farm(S, flerp(180, 86, k), 0)[2]; }, function(k){ return flegFK(H, flerp(180, 270, k), 270).pts[2]; }]};
     },
     build: function(tl, p, ui, trail){
-      [[1, "brazo derecho y pierna izquierda"], [-1, "brazo izquierdo y pierna derecha"]].forEach(function(s){
-        tl.call(function(){ p.side = s[0]; ui("Así empiezas", "en cuatro apoyos, manos bajo los hombros"); })
+      [1, -1].forEach(function(side){
+        tl.call(function(){ p.side = side; ui("Así empiezas"); })
           .to(trail, {o: 1, duration: .5}).to({}, {duration: .4})
-          .call(function(){ ui("Estira", s[1]); })
+          .call(function(){ ui("Estira"); })
           .to(p, {arm: 86, duration: 1.6, ease: "sine.inOut"})
           .to(p, {thigh: 270, duration: 1.6, ease: "sine.inOut"}, "<0.1")
-          .call(function(){ ui("Sostén", "2 o 3 segundos, la cadera quieta"); })
+          .call(function(){ ui("Sostén 2–3 s"); })
           .to({}, {duration: 2.4})
-          .call(function(){ ui("Vuelve", "despacio, y cambia de lado"); })
+          .call(function(){ ui("Vuelve"); })
           .to(p, {arm: 180, duration: 1.4, ease: "sine.inOut"})
           .to(p, {thigh: 180, duration: 1.4, ease: "sine.inOut"}, "<0.08")
           .to(trail, {o: 0, duration: .5}, "<0.7");
@@ -2424,7 +2427,7 @@ const EX_FIGS = {
     still: {arm: 86, thigh: 270, side: 1}
   },
   deadbug: {
-    view: [22, 6, 236], far: [5, -3.5], back: [120, 148], ready: "boca arriba, brazos al techo, rodillas a 90°",
+    view: [22, 6, 236], far: [5, -3.5], back: [120, 148],
     p: {arm: 0, thigh: 0, shin: 0, side: 1},
     pose: function(p){
       const S = [88, ON_FLOOR.torso], H = [154, ON_FLOOR.torso], head = [S[0] - FL.neck, ON_FLOOR.head];
@@ -2434,15 +2437,15 @@ const EX_FIGS = {
         trails: [function(k){ return farm(S, -86 * k)[2]; }, function(k){ return flegFK(H, 80 * k, 90 - 10 * k).pts[2]; }]};
     },
     build: function(tl, p, ui, trail){
-      [[1, "brazo derecho y pierna izquierda"], [-1, "brazo izquierdo y pierna derecha"]].forEach(function(s){
-        tl.call(function(){ p.side = s[0]; ui("Así empiezas", "brazos al techo, rodillas a 90°"); })
+      [1, -1].forEach(function(side){
+        tl.call(function(){ p.side = side; ui("Así empiezas"); })
           .to(trail, {o: 1, duration: .5}).to({}, {duration: .5})
-          .call(function(){ ui("Baja despacio", s[1]); })
+          .call(function(){ ui("Baja despacio"); })
           .to(p, {arm: -86, duration: 2.4, ease: "sine.inOut"})
           .to(p, {thigh: 80, shin: -90, duration: 2.4, ease: "sine.inOut"}, "<0.12")
-          .call(function(){ ui("Así terminas", "sin despegar la espalda del piso"); })
+          .call(function(){ ui("Así terminas"); })
           .to({}, {duration: 1})
-          .call(function(){ ui("Vuelve", "despacio, al centro"); })
+          .call(function(){ ui("Vuelve"); })
           .to(p, {arm: 0, duration: 1.8, ease: "sine.inOut"})
           .to(p, {thigh: 0, shin: 0, duration: 1.8, ease: "sine.inOut"}, "<0.1")
           .to(trail, {o: 0, duration: .6}, "<0.9");
@@ -2451,7 +2454,7 @@ const EX_FIGS = {
     still: {arm: -86, thigh: 80, shin: -90, side: 1}
   },
   puente: {
-    view: [40, 24, 200], far: [4, 0], ready: "boca arriba, rodillas dobladas, pies en el piso",
+    view: [40, 24, 200], far: [4, 0],
     p: {lift: 0},
     pose: function(p){
       const S = BRIDGE_S, A = BRIDGE_A, T = [A[0] + FL.foot, ON_FLOOR.foot], H = fpt(S, FL.torso, 90 - BRIDGE_TOP * p.lift);
@@ -2461,20 +2464,20 @@ const EX_FIGS = {
         trails: [function(k){ return fpt(S, FL.torso, 90 - BRIDGE_TOP * k); }]};
     },
     build: function(tl, p, ui, trail){
-      tl.call(function(){ ui("Así empiezas", "rodillas dobladas, pies en el piso"); })
+      tl.call(function(){ ui("Así empiezas"); })
         .to(trail, {o: 1, duration: .5}).to({}, {duration: .3})
-        .call(function(){ ui("Sube la cadera", "apretando glúteos"); })
+        .call(function(){ ui("Sube la cadera"); })
         .to(p, {lift: 1, duration: 1.6, ease: "sine.inOut"})
-        .call(function(){ ui("Sostén arriba", "hombros, cadera y rodillas en línea"); })
+        .call(function(){ ui("Sostén arriba"); })
         .to({}, {duration: 1.2})
-        .call(function(){ ui("Baja despacio", "vértebra por vértebra"); })
+        .call(function(){ ui("Baja despacio"); })
         .to(p, {lift: 0, duration: 1.6, ease: "sine.inOut"})
         .to(trail, {o: 0, duration: .5}, "<1");
     },
     still: {lift: 1}
   },
   sentadilla: {
-    view: [-24, -70, 376], far: [4, 0], ready: "de pie, delante de la silla",
+    view: [-24, -70, 376], far: [4, 0],
     chair: {x0: 98, x1: 136, y: SQUAT_LOW[1] + FW.torso / 2 + FW.chair / 2 + .5, back: 50, backAt: 98},
     p: {down: 0, touch: 0},
     pose: function(p){
@@ -2484,13 +2487,13 @@ const EX_FIGS = {
         nearLeg: flegIK(H, A, T), farLeg: flegIK(H, A, T), moving: [], seatOn: p.touch, trails: [squatHip]};
     },
     build: function(tl, p, ui, trail){
-      tl.call(function(){ ui("De pie", "pies al ancho de la cadera"); })
+      tl.call(function(){ ui("De pie"); })
         .to(trail, {o: 1, duration: .5}).to({}, {duration: .2})
-        .call(function(){ ui("Baja", "cadera atrás, pecho arriba"); })
+        .call(function(){ ui("Baja"); })
         .to(p, {down: 1, duration: 1.8, ease: "sine.inOut"})
-        .call(function(){ ui("Toca la silla", "sin sentarte del todo"); })
+        .call(function(){ ui("Toca la silla"); })
         .to(p, {touch: 1, duration: .15}).to({}, {duration: .45})
-        .call(function(){ ui("Sube", "empujando con los talones"); })
+        .call(function(){ ui("Sube"); })
         .to(p, {touch: 0, duration: .3})
         .to(p, {down: 0, duration: 1.4, ease: "sine.inOut"}, "<")
         .to(trail, {o: 0, duration: .5}, "<0.8");
@@ -2498,7 +2501,7 @@ const EX_FIGS = {
     still: {down: 1, touch: 1}
   },
   descanso: {
-    view: [36, 22, 200], far: [4, 0], ready: "boca arriba, piernas sobre la silla",
+    view: [36, 22, 200], far: [4, 0],
     chair: {x0: 164, x1: 204, y: ON_FLOOR.torso - FL.thigh + FW.leg / 2 + FW.chair / 2, back: 40, backAt: 204},
     p: {breath: 0},
     pose: function(p){
@@ -2506,9 +2509,9 @@ const EX_FIGS = {
       return {S: S, H: H, head: [S[0] - FL.neck, ON_FLOOR.head], nearArm: null, farArm: armOnFloor(S), nearLeg: leg, farLeg: leg, moving: [], breath: p.breath};
     },
     build: function(tl, p, ui){
-      tl.call(function(){ ui("Inhala", "llena la barriga, despacio"); })
+      tl.call(function(){ ui("Inhala"); })
         .to(p, {breath: 1, duration: 4, ease: "sine.inOut"})
-        .call(function(){ ui("Exhala", "suelta todo el aire"); })
+        .call(function(){ ui("Exhala"); })
         .to(p, {breath: 0, duration: 5, ease: "sine.inOut"});
     },
     still: {breath: 1}
@@ -2535,10 +2538,10 @@ function ptsAttr(ps){ return ps ? ps.map(function(p){ return p[0].toFixed(2) + "
 // Draws one step into slot. "ready" holds the starting pose (during the 5-second change); "play" loops the movement.
 function mountExFig(slot, key, mode){
   const fig = EX_FIGS[key], v = fig.view;
-  slot.innerHTML = '<div class="ph"><b></b><span></span></div>' +
+  slot.innerHTML = '<div class="ph"><b></b></div>' +
     '<svg viewBox="' + v[0] + ' ' + v[1] + ' ' + v[2] + ' ' + v[2] / 2 + '" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" fill="none"></svg>' +
     '<div class="tip"><i></i>' + esc(EX_TIP[key]) + '</div>';
-  const svg = $("svg", slot), phB = $(".ph b", slot), phS = $(".ph span", slot);
+  const svg = $("svg", slot), phB = $(".ph b", slot);
   svgEl(svg, "line", {x1: v[0] + 6, y1: FIG_FLOOR, x2: v[0] + v[2] - 6, y2: FIG_FLOOR, stroke: "var(--floor)", "stroke-width": 3});
   if(fig.back) svgEl(svg, "line", {x1: fig.back[0], y1: FIG_FLOOR, x2: fig.back[1], y2: FIG_FLOOR, stroke: "var(--sky)", "stroke-width": 3});
   let seat = null;
@@ -2596,12 +2599,12 @@ function mountExFig(slot, key, mode){
     }
     trailEls.forEach(function(el){ el.setAttribute("opacity", trail.o * .7); });
   }
-  function ui(a, b){ phB.textContent = a; phS.textContent = b; }
+  function ui(a){ phB.textContent = a; }
 
-  if(mode === "ready"){ render(); ui("Prepárate", fig.ready); return null; }
-  const still = function(){ Object.assign(p, fig.still); trail.o = 1; render(); ui(EX_TIP[key], fig.ready); };
+  if(mode === "ready"){ render(); ui("Prepárate"); return null; }
+  const still = function(){ Object.assign(p, fig.still); trail.o = 1; render(); ui("Así se hace"); };
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){ still(); return null; }
-  render(); ui("", fig.ready);
+  render(); ui("");
   const handle = {tl: null, io: null, dead: false};
   loadGsap().then(function(gsap){
     if(handle.dead) return;
@@ -2659,11 +2662,11 @@ const runs = {
       return {letter: "ejercicio", toast: "Ejercicio terminado y marcado"};
     },
     view: function(r, idx){
-      if(!r.started) return {now: "Listo para empezar", next: "Primero: marchar en el sitio"};
-      const s = STEPS[idx], nx = STEPS[idx + 1];
+      if(!r.started) return {now: "Listo para empezar", next: ""};
+      const s = STEPS[idx];
       return {
         now: s.rest ? "Cambia de ejercicio" : s.name,
-        next: nx ? "Sigue: " + (nx.rest ? (STEPS[idx + 2] ? STEPS[idx + 2].name : "") : nx.name) : "Último bloque"
+        next: ""
       };
     }
   },
@@ -2817,13 +2820,34 @@ function runBoxHTML(key){
     '<div class="tm-next" data-r="next"></div>' +
     (key === "ejercicio" ? '<div class="exfig" data-r="fig"></div>' : '') +
     '<div class="tm-clock" data-r="clock" aria-live="off">' + Math.floor(runTotal(r) / 60) + ':' + pad(runTotal(r) % 60) + '</div>' +
-    '<div class="bar"><i data-r="bar"></i></div>' +
+    (key === "ejercicio" ? exMapHTML() : '<div class="bar"><i data-r="bar"></i></div>') +
     '<div class="row">' +
       '<button class="btn primary" data-act="go">Empezar</button>' +
       '<button class="btn" data-act="skip">Siguiente</button>' +
       '<button class="btn" data-act="reset" hidden>Reiniciar</button>' +
     '</div>' +
   '</div>';
+}
+// Ejercicio's map: the six parts in a row, each a short bar that fills. Done is terracotta, now is blue.
+// The circuit runs twice, so in round 2 its four parts fill again (the step name says which round).
+// The third number is each name's width in bold (px): parts get that share of the row, so all six fit on a 375-pt iPhone.
+const EX_MAP = [["marcha", "Marcha", 37], ["birddog", "Bird dog", 43], ["deadbug", "Dead bug", 48], ["puente", "Puente", 35], ["sentadilla", "Sentadilla", 52], ["descanso", "Respira", 39]];
+function exMapHTML(){
+  return '<div class="exmap" data-r="map">' + EX_MAP.map(function(m){
+    return '<div class="part" data-part="' + m[0] + '" style="--w:' + m[2] + '"><i><b></b></i><span>' + m[1] + '</span></div>';
+  }).join("") + '</div>';
+}
+// A 5-second change belongs to the part that comes next.
+function exSegOf(i){ const k = stepFig(i) || stepFig(i + 1); return EX_MAP.findIndex(function(m){ return m[0] === k; }); }
+function updateExMap(box, r, idx, el){
+  const map = $('[data-r="map"]', box); if(!map) return;
+  const cur = r.started ? exSegOf(idx) : -1, s = STEPS[idx];
+  const part = r.started && s && !s.rest ? Math.min(1, Math.max(0, (el - stepStart(r, idx)) / s.secs)) : 0;
+  $$(".part", map).forEach(function(seg, k){
+    seg.classList.toggle("done", cur >= 0 && k < cur);
+    seg.classList.toggle("now", k === cur);
+    $("b", seg).style.width = (cur < 0 ? 0 : k < cur ? 1 : k === cur ? part : 0) * 100 + "%";
+  });
 }
 function doneToday(key){ const d = state.days[state.today]; return !!(d && d.checks && d.checks[key]); }
 function updateRunUI(r){
@@ -2843,7 +2867,9 @@ function updateRunUI(r){
     clock = st[idx] ? Math.max(0, Math.ceil(stepStart(r, idx) + st[idx].secs - el)) : 0;
   }
   $('[data-r="clock"]', box).textContent = Math.floor(clock / 60) + ":" + pad(clock % 60);
-  $('[data-r="bar"]', box).style.width = (r.started && total ? el / total * 100 : 0) + "%";
+  const bar = $('[data-r="bar"]', box);
+  if(bar) bar.style.width = (r.started && total ? el / total * 100 : 0) + "%";
+  else updateExMap(box, r, idx, el);
   $('[data-act="go"]', box).textContent = r.running ? "Pausar" : r.started ? "Seguir" : rest ? "Repetir" : "Empezar";
   $('[data-act="reset"]', box).hidden = !r.started;
   if(r.key === "ejercicio") exFigFor(box, rest ? null : idx, r.started);
