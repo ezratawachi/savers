@@ -1,7 +1,7 @@
-const CACHE = "savers-v40";
+const CACHE = "savers-v41";
 // The Gemini voice clips live in their own cache and survive every update.
 const KEEP = [CACHE, "savers-voz"];
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png", "./vendor/gsap.min.js"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
