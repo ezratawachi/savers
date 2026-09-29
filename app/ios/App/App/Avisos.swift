@@ -41,7 +41,9 @@ public class AvisosPlugin: CAPPlugin, CAPBridgedPlugin, NotificationHandlerProto
         let content = UNMutableNotificationContent()
         content.title = call.getString("title") ?? ""
         content.body = call.getString("body") ?? ""
-        content.sound = .default
+        // SAVERS' own soft bell (the E5–B5 pair of softBell in index.html), not the iPhone's generic tone.
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("campana.caf"))
+        content.threadIdentifier = id
         let secs = max(1, at / 1000 - Date().timeIntervalSince1970)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: secs, repeats: false)
         center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger)) { error in

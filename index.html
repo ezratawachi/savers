@@ -3106,7 +3106,7 @@ function startReading(){
 }
 function sendReadingNote(r){
   pushNote({note: {id: "lectura", at: Number(r.start) + r.min * 60000, url: "./",
-    title: "Terminó la lectura · " + r.min + (r.min === 1 ? " minuto" : " minutos"), body: ""}}).then(function(){
+    title: "Lectura terminada", body: "Leíste " + r.min + (r.min === 1 ? " minuto" : " minutos") + ". Se marca sola al volver a SAVERS."}}).then(function(){
     const cur = store.get("savers:reading");
     if(cur && cur.start === r.start){ cur.sent = true; store.set("savers:reading", cur); }
   }).catch(function(){});
@@ -3284,7 +3284,7 @@ function turnNote(id, on){
   });
 }
 function testNote(){
-  pushNote({note: {id: "prueba", at: Date.now(), title: "Los avisos funcionan", body: "", url: "./"}}).then(function(){ toast("Aviso de prueba enviado"); })
+  pushNote({note: {id: "prueba", at: Date.now(), title: "Los avisos funcionan", body: "Así te aviso cuando termina tu lectura.", url: "./"}}).then(function(){ toast("Aviso de prueba enviado"); })
     .catch(function(){ toast("No se pudo mandar. Apaga y prende el aviso."); });
 }
 function avisosPageHTML(){

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A1B2C3D40000000000000005 /* campana.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000006 /* campana.caf */; };
 		A1B2C3D40000000000000003 /* Avisos.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000004 /* Avisos.swift */; };
 		A1B2C3D40000000000000001 /* GoogleLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000002 /* GoogleLogin.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A1B2C3D40000000000000006 /* campana.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = campana.caf; sourceTree = "<group>"; };
 		A1B2C3D40000000000000004 /* Avisos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Avisos.swift; sourceTree = "<group>"; };
 		A1B2C3D40000000000000002 /* GoogleLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleLogin.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				A1B2C3D40000000000000002 /* GoogleLogin.swift */,
 				A1B2C3D40000000000000004 /* Avisos.swift */,
+				A1B2C3D40000000000000006 /* campana.caf */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -154,6 +157,7 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				A1B2C3D40000000000000005 /* campana.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
