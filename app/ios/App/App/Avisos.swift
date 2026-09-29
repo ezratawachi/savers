@@ -4,7 +4,7 @@ import UserNotifications
 
 // Notifications for the web inside the app. The iPhone schedules them itself: no server and no push, which the
 // filter's app list blocked for the web app, and which a free Apple ID can't sign anyway.
-// The web calls: permission, ask, schedule {id, at (ms), title, body}, cancel {id}. Scheduling an id again replaces it.
+// The web calls: permission, ask, schedule {id, at (ms), title, body}, cancel {id}, tapped. Scheduling an id again replaces it.
 @objc(AvisosPlugin)
 public class AvisosPlugin: CAPPlugin, CAPBridgedPlugin, NotificationHandlerProtocol {
     public let identifier = "AvisosPlugin"
@@ -13,9 +13,12 @@ public class AvisosPlugin: CAPPlugin, CAPBridgedPlugin, NotificationHandlerProto
         CAPPluginMethod(name: "permission", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "ask", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "schedule", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "cancel", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "cancel", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "tapped", returnType: CAPPluginReturnPromise)
     ]
     private let center = UNUserNotificationCenter.current()
+    // The last notification tapped, until the web asks: a tap can open the app before the web is there to hear it.
+    private var lastTapped = ""
 
     override public func load() {
         bridge?.notificationRouter.localNotificationHandler = self
@@ -61,8 +64,19 @@ public class AvisosPlugin: CAPPlugin, CAPBridgedPlugin, NotificationHandlerProto
         return [.banner, .list, .sound]
     }
 
-    // Tapping one brings the web to Hoy, like the web app's notifications did.
+    // Which notification was tapped; asking clears it.
+    @objc func tapped(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            call.resolve(["id": self.lastTapped])
+            self.lastTapped = ""
+        }
+    }
+
+    // Tapping one tells the web, which asks which one it was and opens its place (Hoy, Lectura, the review).
     public func didReceive(response: UNNotificationResponse) {
-        DispatchQueue.main.async { self.bridge?.triggerWindowJSEvent(eventName: "saversnote") }
+        DispatchQueue.main.async {
+            self.lastTapped = response.notification.request.identifier
+            self.bridge?.triggerWindowJSEvent(eventName: "saversnote")
+        }
     }
 }

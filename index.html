@@ -280,6 +280,9 @@ button.srow:active,.entry:active{background-image:linear-gradient(var(--press),v
 .srow b{flex:1 0 auto;font-weight:700}
 .srow small{min-width:0;font-size:.88rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srow small.warn{color:var(--warn);font-weight:700}
+.srow .stext{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.srow .stext b{flex:none}
+.srow .stext small{white-space:normal}
 .srow input[type=text],.srow input[type=password]{flex:0 1 60%;min-width:0;border:0;background:transparent;padding:4px 0;text-align:right;color:var(--muted)}
 .srow input[type=text]:focus,.srow input[type=password]:focus{color:var(--ink);outline:0}
 /* Voz: pick a voice by its name, hear it with Probar */
@@ -662,6 +665,7 @@ const state = {
   since: null,
   settingsSig: "",   // JSON of the settings as last saved or received from the cloud
   affReviewed: null, // "YYYY-MM" of the last monthly affirmation review
+  review: false,     // in the monthly review: Afirmaciones, then Visualización
   schedTab: null,    // Normal | Gym selector in Ajustes › Horario
   page: null,        // Ajustes screen: null = list, "aff" | "vis" | "sched" | "backup"
   from: null,        // "today" when a screen was opened from Hoy: Listo/Cancelar go back there
@@ -726,6 +730,7 @@ const store = {
     setStatus(ok ? "" : "No se pudo guardar");
     if(!ok) toast("No se pudo guardar en el iPhone. Exporta una copia.");
     cloudPush();
+    planSoon();
   }
 };
 // Ask iOS to not evict this app's storage.
@@ -1166,6 +1171,7 @@ function cloudPending(){
 
 // A change from the other device shows up, but never under a finger that's typing, editing or running a timer.
 function cloudRerender(){
+  planSoon();
   const a = document.activeElement;
   if((a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") && a.type !== "checkbox") || state.edit || anyRunning() || document.querySelector(".backdrop")){
     cloud.pendingRender = true;
@@ -1796,7 +1802,7 @@ function letterInfo(key, type){
         html: list.length
           ? '<div class="affs">' + list.map(function(a){ return '<p>' + esc(a.text) + '</p>'; }).join("") + '</div>' +
             (review
-              ? '<p class="note">Mes nuevo: ¿siguen sintiéndose tuyas?</p><button class="linkbtn" data-open="aff">Revisar afirmaciones</button>'
+              ? '<p class="note">Mes nuevo: ¿siguen sintiéndose tuyas?</p><button class="linkbtn" data-open="aff" data-review>Revisar afirmaciones</button>'
               : '<p class="note">Despacio, sintiendo cada frase.</p>')
           : '<p>Todavía no tienes afirmaciones.</p><button class="btn" data-open="aff">Agregar afirmaciones</button>'
       };
@@ -2296,7 +2302,7 @@ function bindDay(root, record){
   if(gc) gc.addEventListener("click", cloudSignIn);
   // The chip and "Ver horario" open the same sheet: what this day is, and its hours.
   $$("#day-type, [data-sched]", root).forEach(function(b){ b.addEventListener("click", function(){ openDaySheet(ds); }); });
-  $$("[data-open]", root).forEach(function(b){ b.addEventListener("click", function(){ openSettingsFromToday(b.getAttribute("data-open")); }); });
+  $$("[data-open]", root).forEach(function(b){ b.addEventListener("click", function(){ openSettingsFromToday(b.getAttribute("data-open"), b.hasAttribute("data-review")); }); });
   const ex = $('.finish [data-act="export"]', root);
   if(ex) ex.addEventListener("click", exportBackup);
   const sg = $("#sun-go", root);
@@ -3178,9 +3184,14 @@ function shortcutStepsHTML(){
 // this device: the switches, and the random name the worker knows it by.
 const PUSH_URL = "https://savers-avisos.savers-avisos.workers.dev";
 const PUSH_KEY = "BIvaRP3KWRIB_45ksoxRsTGcASP7HkqZLR7W_jFPMnfzFNRHK2M6RA39FJxdVSJaiW4gwlyAQNl-jazb2LPExd8";
+// app: only inside the iPhone app, which schedules them days ahead. def: on until you turn it off.
 const NOTES = [
-  {id: "lectura", name: "Fin de la lectura", about: "Te llega cuando terminan tus minutos de lectura, aunque SAVERS esté cerrada."}
+  {id: "lectura", name: "Fin de la lectura", about: "Cuando terminan tus minutos, aunque SAVERS esté cerrada."},
+  {id: "leer", name: "Hora de leer", app: true, def: true, about: "Los días de gym, si todavía no leíste."},
+  {id: "dormir", name: "Prepararte para dormir", app: true, def: true, about: "45 minutos antes de dormir, de domingo a jueves."},
+  {id: "revision", name: "Revisión del mes", app: true, def: true, about: "Afirmaciones y visualización, el primer domingo a las 11:00 am."}
 ];
+function shownNotes(){ return NOTES.filter(function(n){ return !n.app || appNotes; }); }
 const noteStatus = {msg: "", busy: ""};
 // Inside the iPhone app (app/ in this repo) there's no web push: the app schedules local notifications itself
 // through its Avisos plugin, so the worker isn't used and iOS's answer is asked through the app.
@@ -3204,9 +3215,14 @@ function pushDevice(){
   return d;
 }
 function notesOn(){ return store.get("savers:avisos") || {}; }
-function noteOn(id){ return !!notesOn()[id] && pushCan() && notePerm() === "granted"; }
-function anyNoteOn(){ return NOTES.some(function(n){ return noteOn(n.id); }); }
-function setNote(id, on){ const a = notesOn(); if(on) a[id] = true; else delete a[id]; store.set("savers:avisos", a); }
+function noteWanted(id){
+  const a = notesOn();
+  if(id in a) return !!a[id];
+  return NOTES.some(function(n){ return n.id === id && n.def; });
+}
+function noteOn(id){ return noteWanted(id) && pushCan() && notePerm() === "granted"; }
+function anyNoteOn(){ return shownNotes().some(function(n){ return noteOn(n.id); }); }
+function setNote(id, on){ const a = notesOn(); a[id] = !!on; store.set("savers:avisos", a); }
 // text/plain needs no preflight, and keepalive lets the request finish while Libros opens.
 function pushPost(path, body){
   body.device = pushDevice();
@@ -3261,6 +3277,7 @@ function turnNote(id, on){
     if(id === "lectura"){ const r = readingState(); if(r && r.notify){ r.notify = false; store.set("savers:reading", r); cancelNote(id); } }
     noteStatus.msg = "";
     syncReading();
+    planSoon();
     return rerenderSettingsKeepScroll();
   }
   noteStatus.busy = id; noteStatus.msg = "";
@@ -3278,6 +3295,7 @@ function turnNote(id, on){
   }).then(function(){
     noteStatus.busy = "";
     syncReading();
+    planSoon();
     if(state.tab === "settings" && state.page === "avisos") rerenderSettingsKeepScroll();
   });
 }
@@ -3285,19 +3303,78 @@ function testNote(){
   pushNote({note: {id: "prueba", at: Date.now(), title: "Los avisos funcionan", body: "Así te aviso cuando termina tu lectura.", url: "./"}}).then(function(){ toast("Aviso de prueba enviado"); })
     .catch(function(){ toast("No se pudo mandar. Apaga y prende el aviso."); });
 }
+
+/* ---------- avisos agendados: dormir, hora de leer, revisión del mes ---------- */
+// Inside the app, the iPhone keeps the next two weeks of these. Each open (and each change to the schedule,
+// a marked Lectura, a switch) plans them again from the schedule, so a changed hour moves its notification.
+const PLAN_DAYS = 14;
+// Shabbat: nothing from Friday afternoon until Saturday is over.
+function shabbatQuiet(at){ const d = new Date(at), w = d.getDay(); return w === 6 || (w === 5 && d.getHours() >= 15); }
+function atMinute(ds, min){ const d = parse(ds); d.setHours(0, min, 0, 0); return d.getTime(); }
+function stepLike(list, re){ return list.filter(function(st){ return re.test(st.title || ""); })[0]; }
+// The night before a SAVERS day, 45 minutes before its "Dormido".
+function bedNote(ds){
+  if(!isScheduled(ds)) return null;
+  const type = schedTypeOf(ds), t = scheduleType(type);
+  const night = groupList(t, "night"), steps = groupList(t, "steps");
+  const bed = parseTime(stepTime(stepLike(night, /dorm/i) || night[night.length - 1], ds));
+  if(bed == null) return null;
+  const wake = parseTime(stepTime(stepLike(steps, /te paras|despiert/i) || steps[0], ds));
+  // "10:15 pm" is the night before; "12:10 am" would already be the day itself.
+  const at = atMinute(bed >= 12 * 60 ? fmt(addDays(parse(ds), -1)) : ds, bed - 45);
+  return {id: "dormir-" + ds, at: at, title: "Hora de prepararte para dormir",
+    body: "Dormido a las " + timeLabel(bed) + "." + (wake == null ? "" : (type === "gym" ? " Mañana es gym: te paras a las " : " Mañana te paras a las ") + timeLabel(wake) + ".")};
+}
+// A Lectura that's "Más tarde" that day (the gym days), while it isn't marked.
+function readNote(ds){
+  if(!isScheduled(ds)) return null;
+  const type = schedTypeOf(ds), min = parseTime(laterTime(type, "lectura", ds)), d = state.days[ds];
+  if(min == null || (d && d.checks && d.checks.lectura)) return null;
+  const n = minutesOn(type, "lectura", ds);
+  return {id: "leer-" + ds, at: atMinute(ds, min), title: "Hora de leer", body: "Tus " + n + (n === 1 ? " minuto" : " minutos") + " de lectura de hoy."};
+}
+// The first Sunday of the month at 11:00; this month's only while it's still ahead and not done.
+function reviewNote(){
+  const s = state.settings;
+  if(!filled(s.affirmations).length && !filled(s.visualization.items).length) return null;
+  function firstSunday(y, m){ const d = new Date(y, m, 1, 11, 0, 0, 0); d.setDate(1 + (7 - d.getDay()) % 7); return d.getTime(); }
+  const now = new Date();
+  let at = firstSunday(now.getFullYear(), now.getMonth());
+  if(!affReviewDue() || at <= Date.now()) at = firstSunday(now.getFullYear(), now.getMonth() + 1);
+  return {id: "revision", at: at, title: "Revisión del mes", body: "¿Tus afirmaciones y tu visualización siguen sintiéndose tuyas?"};
+}
+function planNotes(){
+  if(!appNotes) return;
+  const want = {}, now = Date.now(), today = parse(todayStr());
+  function add(n){ if(n && n.at > now && !shabbatQuiet(n.at)) want[n.id] = n; }
+  if(notePerm() === "granted"){
+    for(let i = 0; i <= PLAN_DAYS; i++){
+      const ds = fmt(addDays(today, i));
+      if(noteOn("dormir")) add(bedNote(ds));
+      if(noteOn("leer")) add(readNote(ds));
+    }
+    if(noteOn("revision")) add(reviewNote());
+  }
+  (store.get("savers:planned") || []).forEach(function(id){ if(!want[id]) cancelNote(id); });
+  Object.keys(want).forEach(function(id){ appNote("schedule", want[id]).catch(function(){}); });
+  store.set("savers:planned", Object.keys(want));
+}
+function planSoon(){ clearTimeout(planSoon.t); planSoon.t = setTimeout(planNotes, 1500); }
+
+function noteLabelHTML(n){ return '<span class="stext"><b>' + n.name + '</b><small>' + n.about + '</small></span>'; }
 function avisosPageHTML(){
   if(!pushCan()) return '<p class="sfoot" style="margin-top:14px">Para recibir avisos, abre SAVERS desde su ícono en la pantalla de inicio.</p>';
   const blocked = notePerm() === "denied";
-  return '<div class="slist" style="margin-top:14px">' + NOTES.map(function(n){
+  return '<div class="slist" style="margin-top:14px">' + shownNotes().map(function(n){
       const on = noteOn(n.id) || noteStatus.busy === n.id;
       if(notePerm() === "default" && !noteStatus.busy){
-        return '<div class="srow asks"><b>' + n.name + '</b><input type="checkbox" switch tabindex="-1" aria-hidden="true">' +
+        return '<div class="srow asks">' + noteLabelHTML(n) + '<input type="checkbox" switch tabindex="-1" aria-hidden="true">' +
           '<button class="cover" data-act="note-ask" data-id="' + n.id + '" role="switch" aria-checked="false" aria-label="' + n.name + '"></button></div>';
       }
-      return '<label class="srow" for="n-' + n.id + '"><b>' + n.name + '</b><input type="checkbox" switch id="n-' + n.id + '" data-note="' + n.id + '"' +
+      return '<label class="srow" for="n-' + n.id + '">' + noteLabelHTML(n) + '<input type="checkbox" switch id="n-' + n.id + '" data-note="' + n.id + '"' +
         (on ? " checked" : "") + (blocked || noteStatus.busy ? " disabled" : "") + '></label>';
     }).join("") + '</div>' +
-    '<p class="sfoot">' + NOTES.map(function(n){ return n.about; }).join(" ") + '</p>' +
+    (appNotes ? '<p class="sfoot">Nada desde el viernes en la tarde hasta que termina Shabbat.</p>' : '') +
     '<p class="sfoot warn" role="status">' + esc(blocked ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS." : noteStatus.msg) + '</p>' +
     (anyNoteOn() ? '<div class="slist"><button class="srow cloudin" data-act="note-test"><b>Mandar un aviso de prueba</b></button></div>' : '') +
     '<p class="sfoot">Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › SAVERS.</p>';
@@ -4187,7 +4264,7 @@ function settingsListHTML(){
 function settingsPageHTML(){
   const s = state.settings, e = state.edit, p = state.page;
   const top = e
-    ? '<div class="gtop nav"><button class="tbtn left" data-act="cancel">Cancelar</button><h2>' + PAGES[p] + '</h2><button class="tbtn right" data-act="done">Listo</button></div>'
+    ? '<div class="gtop nav"><button class="tbtn left" data-act="cancel">Cancelar</button><h2>' + PAGES[p] + '</h2><button class="tbtn right" data-act="done">' + (state.review && p === "aff" ? "Siguiente" : "Listo") + '</button></div>'
     : '<div class="gtop nav"><button class="tbtn left back" data-act="back">' + (state.from === "today" ? "Hoy" : "Ajustes") + '</button><h2>' + PAGES[p] + '</h2>' +
       (p === "backup" || p === "sched" || p === "voz" || p === "avisos" ? '' : '<button class="tbtn right" data-act="edit">Editar</button>') + '</div>';
   // Horario, Notificaciones and Voz change as you go, like iOS Settings: no Editar.
@@ -4286,15 +4363,28 @@ function commitEdit(){
   prepareVoice();
 }
 // Listo on Afirmaciones counts as this month's review, changed or not.
+// In the monthly review the toast waits for the end, after Visualización.
 function saveEdit(){
   const aff = !!state.edit.affirmations, due = aff && affReviewDue();
-  if(isEditDirty()){ commitEdit(); toast("Cambios guardados"); }
-  else if(due) toast("Afirmaciones revisadas");
+  if(isEditDirty()){ commitEdit(); if(!state.review) toast("Cambios guardados"); }
+  else if(due && !state.review) toast("Afirmaciones revisadas");
   if(aff) markAffReviewed();
 }
 function endEdit(save){
   if(save) saveEdit();
   state.edit = null;
+  if(state.review){
+    // The review goes on from Afirmaciones to Visualización; Cancelar ends it where it is.
+    if(save && state.page === "aff"){
+      state.page = "vis";
+      beginEdit();
+      renderSettings();
+      window.scrollTo(0, 0);
+      return fadeIn($("#view-settings .gblock"));
+    }
+    state.review = false;
+    if(save) toast("Revisión del mes lista");
+  }
   if(state.from === "today") return backToToday();
   renderSettings();
   window.scrollTo(0, 0);
@@ -4308,12 +4398,26 @@ function openPage(page){
 }
 // "Revisar" and "Agregar" in Hoy open the screen already editing; Listo or Cancelar return to the same spot in Hoy.
 let todayY = 0;
-function openSettingsFromToday(page){
+function openSettingsFromToday(page, review){
+  state.review = !!review;
   todayY = window.scrollY;
   state.from = "today";
   state.page = page;
   beginEdit();
   switchTab("settings");
+}
+// The monthly review: Afirmaciones, then Visualización, both already editing. From the notification or Hoy's card.
+function startReview(){
+  navFinishNow();
+  if(state.tab !== "today"){ state.from = null; state.page = null; switchTab("today"); }
+  openSettingsFromToday("aff", true);
+}
+// A card of Hoy opened and in view, as if you had tapped it.
+function openLetterCard(key){
+  openCards.add(key);
+  switchTab("today");
+  const card = $('#view-today details[data-card="' + key + '"]');
+  if(card) card.scrollIntoView({block: "center"});
 }
 function backToToday(){
   state.from = null;
@@ -4419,6 +4523,7 @@ function backToToday(){
 /* ---------- tabs ---------- */
 function switchTab(tab){
   navFinishNow();
+  if(tab !== "settings") state.review = false;
   state.tab = tab;
   $$(".tab").forEach(function(b){ if(b.getAttribute("data-tab") === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("#view-today").hidden = tab !== "today";
@@ -4492,6 +4597,7 @@ window.addEventListener("online", prepareVoice);
 // In the app: read iOS's answer once, and a tapped notification comes in as a window event.
 function afterAppPerm(){
   syncReading();
+  planNotes();
   if(state.tab === "settings" && state.page === "avisos") rerenderSettingsKeepScroll();
 }
 function openFromNote(){
@@ -4499,9 +4605,27 @@ function openFromNote(){
   syncReading();
   if(state.tab !== "today"){ state.from = null; state.page = null; switchTab("today"); }
 }
+// In the app a notification says which one it was: "Hora de leer" opens Lectura, the review opens Afirmaciones.
+// An app built before "tapped" existed only says a notification was tapped: that one goes to Hoy.
+function canAskTapped(){
+  return (window.Capacitor.PluginHeaders || []).some(function(h){
+    return h.name === "Avisos" && (h.methods || []).some(function(m){ return m.name === "tapped"; });
+  });
+}
+function openTapped(){
+  if(!canAskTapped()) return openFromNote();
+  appNote("tapped").then(function(r){
+    const id = r && r.id || "";
+    if(!id) return;
+    if(id === "revision" && !state.edit) return startReview();
+    openFromNote();
+    if(/^leer-/.test(id) && !state.edit) openLetterCard("lectura");
+  }).catch(openFromNote);
+}
 if(appNotes){
   readAppPerm().then(afterAppPerm).catch(function(){});
-  window.addEventListener("saversnote", openFromNote);
+  openTapped();
+  window.addEventListener("saversnote", openTapped);
 }
 if("serviceWorker" in navigator && location.protocol === "https:"){
   window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").then(refreshPush).catch(function(){}); });
