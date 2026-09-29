@@ -1005,6 +1005,10 @@ function loadCloud(){
   return cloud.loading;
 }
 
+function nativeGoogleLogin(){
+  const C = window.Capacitor;
+  return C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.GoogleLogin || null;
+}
 function cloudSignIn(){
   const fb = cloud.fb;
   if(!fb){ loadCloud().then(function(){ toast("Listo, toca otra vez Entrar con Google"); }, function(){ toast("Sin conexión: prueba más tarde"); }); return; }
@@ -1012,11 +1016,19 @@ function cloudSignIn(){
   renderCloudBits();
   const provider = new fb.GoogleAuthProvider();
   provider.setCustomParameters({prompt: "select_account"});
-  // Called straight from the tap, so Safari lets the Google window open.
-  fb.signInWithPopup(fb.auth, provider).catch(function(e){
+  // Inside the iPhone app (app/ in this repo) the popup lands in Safari and never comes back, so the app signs
+  // into Google natively and hands over the tokens. Anywhere else: called straight from the tap, so Safari
+  // lets the Google window open.
+  const native = nativeGoogleLogin();
+  const signIn = native
+    ? native.signIn().then(function(t){ return fb.signInWithCredential(fb.auth, fb.GoogleAuthProvider.credential(t.idToken, t.accessToken)); })
+    : fb.signInWithPopup(fb.auth, provider);
+  signIn.catch(function(e){
     const code = e && e.code || "";
     if(code === "auth/popup-blocked") cloud.error = "Safari no abrió la ventana de Google. Toca otra vez.";
-    else if(code === "auth/network-request-failed") cloud.error = "Sin conexión: prueba más tarde.";
+    else if(code === "auth/network-request-failed" || code === "network") cloud.error = "Sin conexión: prueba más tarde.";
+    else if(code === "cancelled") {}
+    else if(native && !code.startsWith("auth/")) cloud.error = "No se pudo entrar con Google. Toca otra vez.";
     else if(code !== "auth/popup-closed-by-user" && code !== "auth/cancelled-popup-request") cloud.error = "No se pudo entrar (" + code.replace("auth/", "") + ")";
   }).then(function(){ cloud.busy = false; renderCloudBits(); });
 }
