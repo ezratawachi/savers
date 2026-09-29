@@ -35,7 +35,7 @@ button.main{background:var(--sky);color:var(--bg);border-color:var(--sky);text-a
 <body>
 <main>
   <h1>Prueba de sonido</h1>
-  <p>Pon música en 24six con buen volumen y apaga el silencio (interruptor del costado). Son 3 pruebas cortas, una a la vez.</p>
+  <p>Pon música en 24six con buen volumen y apaga el silencio (interruptor del costado). Son 3 pruebas cortas, una a la vez. Usa el iPhone como lo usas al hacer ejercicio (parlante o audífonos).</p>
 
   <div class="card">
     <p class="step" id="step"></p>
@@ -61,7 +61,7 @@ async function countdown(){
 function newCtx(){
   var C = window.AudioContext || window.webkitAudioContext, c = new C();
   var lim = c.createDynamicsCompressor();           // keeps the loud sounds from clipping
-  lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = .001; lim.release.value = .05;
+  lim.threshold.value = -1; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = .001; lim.release.value = .05;
   lim.connect(c.destination); c.out = lim; c.resume();
   return c;
 }
@@ -94,47 +94,28 @@ function spanishVoice(){
   return vs.filter(function(v){ return /^es[-_]MX/i.test(v.lang); })[0] || vs.filter(function(v){ return /^es/i.test(v.lang); })[0] || null;
 }
 
-var TESTS = [
-  {
-    title: "Prueba 1 de 3 · ¿La música se pausa y vuelve sola?",
-    // "transient-solo" should pause other audio; closing the context lets iOS tell 24six it may resume.
-    run: async function(){
-      setType("transient-solo"); info();
-      await countdown();
-      ctx = newCtx();
-      var t = ctx.currentTime + .05;
-      show("AHORA", true); info();
-      knock(ctx, t, 1250, .9); tone(ctx, t + .3, 523, 1.6, .25); knock(ctx, t + 2, 820, .9);
-      await wait(2400);
-      var c = ctx; ctx = null; await c.close().catch(function(){});
-      setType("ambient");
-      for(var n = 6; n >= 1; n--){ show("¿Vuelve tu música sola? " + n); await wait(1000); }
-      show("¿Qué pasó con tu música?"); info();
-    },
-    answers: ["Se pausó y volvió sola", "Se pausó y NO volvió", "No se pausó, siguió igual", "Bajó un poco y volvió"],
-    after: "Si tu música se quedó pausada, dale play en 24six antes de seguir."
-  },
-  {
-    title: "Prueba 2 de 3 · La voz del iPhone",
-    run: async function(){
-      setType("ambient"); info();
-      await countdown();
-      show("AHORA: escucha la voz", true);
-      await new Promise(function(res){
-        var u = new SpeechSynthesisUtterance("Baja. Sube. Baja. Sube. Sostén.");
-        var v = spanishVoice(); if(v) u.voice = v;
-        u.lang = v ? v.lang : "es-MX"; u.rate = .95;
-        u.onend = res; u.onerror = res;
-        speechSynthesis.cancel(); speechSynthesis.speak(u);
-        setTimeout(res, 9000);
-      });
-      await wait(1500);
-      show("Mientras hablaba, ¿tu música…?"); info();
-    },
-    answers: ["Bajó y volvió", "Siguió igual", "Se pausó", "No escuché la voz"]
-  },
-  {
-    title: "Prueba 3 de 3 · ¿Se escuchan los clacs sobre tu música?",
+// Long, bright, full-scale sounds: the ear judges loudness over ~0.2 s, so 0.09 s clicks felt quiet under music.
+// "Pitido de gimnasio": a filtered square wave, like interval timers.
+function gym(c, t, f, dur, peak){
+  var o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
+  o.type = "square"; o.frequency.value = f; lp.type = "lowpass"; lp.frequency.value = 6000;
+  o.connect(lp); lp.connect(g); g.connect(c.out);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .005);
+  g.gain.setValueAtTime(peak, t + dur - .03); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.start(t); o.stop(t + dur + .02);
+}
+// "Campana brillante": FM bell, strong at the start and ringing for half a second.
+function bell(c, t, f, dur, peak){
+  var car = c.createOscillator(), mod = c.createOscillator(), mg = c.createGain(), g = c.createGain();
+  car.frequency.value = f; mod.frequency.value = f * 3.5;
+  mg.gain.setValueAtTime(f * 2.5, t); mg.gain.exponentialRampToValueAtTime(f * .2, t + dur);
+  mod.connect(mg); mg.connect(car.frequency); car.connect(g); g.connect(c.out);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  car.start(t); mod.start(t); car.stop(t + dur + .02); mod.stop(t + dur + .02);
+}
+function rhythmTest(title, go, back, tick){
+  return {
+    title: title,
     run: async function(){
       setType("ambient"); info();
       await countdown();
@@ -142,19 +123,48 @@ var TESTS = [
       var t0 = ctx.currentTime + .05;
       for(var r = 0; r < 2; r++){
         var b = t0 + r * 6;
-        knock(ctx, b, 1250, .9);                                    // sube
-        knock(ctx, b + 2, 1900, .38, .035); knock(ctx, b + 3, 1900, .38, .035);   // sostén: tics
-        knock(ctx, b + 4, 820, .9);                                 // baja
+        go(ctx, b); tick(ctx, b + 2); tick(ctx, b + 3); back(ctx, b + 4);
       }
-      var labels = [[0, "Clac: sube"], [2000, "Tic… tic…"], [4000, "Clac: baja"], [6000, "Clac: sube"], [8000, "Tic… tic…"], [10000, "Clac: baja"]];
+      var labels = [[0, "Sube"], [2000, "Sostén…"], [4000, "Baja"], [6000, "Sube"], [8000, "Sostén…"], [10000, "Baja"]];
       var start = Date.now();
       for(var i = 0; i < labels.length; i++){ await wait(Math.max(0, labels[i][0] - (Date.now() - start))); show(labels[i][1], true); }
       await wait(2200);
       var c = ctx; ctx = null; c.close().catch(function(){});
-      show("¿Se escuchaban bien?"); info();
+      show("¿Cómo se escuchó sobre tu música?"); info();
     },
-    answers: ["Claros, se escuchan bien", "Se escuchan, pero bajito", "Se pierden en la música"]
-  }
+    answers: ["Claro, se escucha bien", "Se escucha, pero bajito", "Se pierde en la música"]
+  };
+}
+
+var TESTS = [
+  {
+    title: "Prueba 1 de 3 · La voz del iPhone",
+    // Safari only lets speech start inside the tap, so the tap speaks a silent word first; the real words come after the countdown.
+    tap: function(){
+      var u = new SpeechSynthesisUtterance(" "); u.volume = 0;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    },
+    run: async function(){
+      setType("ambient"); info();
+      await countdown();
+      show("AHORA: escucha la voz", true);
+      await new Promise(function(res){
+        var u = new SpeechSynthesisUtterance("Baja. Sube. Baja. Sube. Sostén.");
+        var v = spanishVoice(); if(v) u.voice = v;
+        u.lang = v ? v.lang : "es-MX"; u.rate = .95; u.volume = 1;
+        u.onend = res; u.onerror = res;
+        speechSynthesis.speak(u);
+        setTimeout(res, 9000);
+      });
+      await wait(1500);
+      show("¿Cómo fue la voz?"); info();
+    },
+    answers: ["La música bajó mientras hablaba", "Clara encima de la música", "Se escuchó, pero bajito", "No escuché la voz"]
+  },
+  rhythmTest("Prueba 2 de 3 · Pitido de gimnasio",
+    function(c, t){ gym(c, t, 1100, .3, 1); }, function(c, t){ gym(c, t, 760, .3, 1); }, function(c, t){ gym(c, t, 1500, .08, .7); }),
+  rhythmTest("Prueba 3 de 3 · Campana brillante",
+    function(c, t){ bell(c, t, 1320, .5, 1); }, function(c, t){ bell(c, t, 880, .5, 1); }, function(c, t){ bell(c, t, 1760, .15, .7); })
 ];
 
 var at = 0;
@@ -173,6 +183,7 @@ function load(){
 $("run").addEventListener("click", async function(){
   if(busy) return;
   busy = true; $("run").hidden = true;
+  if(TESTS[at].tap) TESTS[at].tap();
   try { await TESTS[at].run(); } catch(e){ show("Error: " + e.message); }
   busy = false;
   var box = $("answers"); box.innerHTML = "";
