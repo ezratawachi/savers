@@ -35,7 +35,7 @@ button.main{background:var(--sky);color:var(--bg);border-color:var(--sky);text-a
 <body>
 <main>
   <h1>Prueba de sonido</h1>
-  <p>Pon música en 24six con buen volumen y apaga el silencio (interruptor del costado). Son 3 pruebas cortas, una a la vez. Usa el iPhone como lo usas al hacer ejercicio (parlante o audífonos).</p>
+  <p>Pon música en 24six con buen volumen y apaga el silencio (interruptor del costado). Una prueba corta (a veces dos). Usa el iPhone como lo usas al hacer ejercicio (parlante o audífonos).</p>
 
   <div class="card">
     <p class="step" id="step"></p>
@@ -136,35 +136,43 @@ function rhythmTest(title, go, back, tick){
   };
 }
 
-var TESTS = [
-  {
-    title: "Prueba 1 de 3 · La voz del iPhone",
-    // Safari only lets speech start inside the tap, so the tap speaks a silent word first; the real words come after the countdown.
+// The trick: the iPhone voice lowers other apps' music while it speaks (tested 2026-09-29),
+// so a silent iPhone voice runs underneath while a recorded voice plays through Web Audio, like the Gemini clips.
+var clipBytes = fetch("prueba-voz.m4a").then(function(r){ return r.arrayBuffer(); });
+function silentTrickTest(title, vol){
+  return {
+    title: title,
     tap: function(){
       var u = new SpeechSynthesisUtterance(" "); u.volume = 0;
       speechSynthesis.cancel(); speechSynthesis.speak(u);
+      setType("ambient");
+      ctx = newCtx();
     },
     run: async function(){
-      setType("ambient"); info();
+      info();
+      var buf = await ctx.decodeAudioData((await clipBytes).slice(0));
       await countdown();
       show("AHORA: escucha la voz", true);
-      await new Promise(function(res){
-        var u = new SpeechSynthesisUtterance("Baja. Sube. Baja. Sube. Sostén.");
-        var v = spanishVoice(); if(v) u.voice = v;
-        u.lang = v ? v.lang : "es-MX"; u.rate = .95; u.volume = 1;
-        u.onend = res; u.onerror = res;
-        speechSynthesis.speak(u);
-        setTimeout(res, 9000);
-      });
-      await wait(1500);
-      show("¿Cómo fue la voz?"); info();
+      var cover = new SpeechSynthesisUtterance("uno dos tres cuatro cinco seis siete ocho nueve diez once doce trece catorce quince");
+      var v = spanishVoice(); if(v) cover.voice = v;
+      cover.lang = v ? v.lang : "es-MX"; cover.volume = vol; cover.rate = .6;
+      speechSynthesis.speak(cover);
+      await wait(400);
+      var src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.out);
+      await new Promise(function(res){ src.onended = res; src.start(); });
+      speechSynthesis.cancel();
+      var c = ctx; ctx = null; c.close().catch(function(){});
+      for(var n = 3; n >= 1; n--){ show("¿Vuelve tu música? " + n); await wait(1000); }
+      show("Mientras hablaba, ¿tu música…?"); info();
     },
-    answers: ["La música bajó mientras hablaba", "Clara encima de la música", "Se escuchó, pero bajito", "No escuché la voz"]
-  },
-  rhythmTest("Prueba 2 de 3 · Pitido de gimnasio",
-    function(c, t){ gym(c, t, 1100, .3, 1); }, function(c, t){ gym(c, t, 760, .3, 1); }, function(c, t){ gym(c, t, 1500, .08, .7); }),
-  rhythmTest("Prueba 3 de 3 · Campana brillante",
-    function(c, t){ bell(c, t, 1320, .5, 1); }, function(c, t){ bell(c, t, 880, .5, 1); }, function(c, t){ bell(c, t, 1760, .15, .7); })
+    answers: ["Bajó y volvió sola", "Siguió igual", "Bajó y NO volvió", "No escuché la voz"]
+  };
+}
+
+var TESTS = [
+  silentTrickTest("Prueba 1 · Voz grabada con el truco", 0),
+  // Only if the silent one didn't lower the music: the same with the iPhone voice barely audible.
+  silentTrickTest("Prueba 2 · El truco un poquito más fuerte", .04)
 ];
 
 var at = 0;
@@ -190,7 +198,7 @@ $("run").addEventListener("click", async function(){
   if(TESTS[at].after){ var p = document.createElement("p"); p.textContent = TESTS[at].after; p.style.margin = "0"; box.appendChild(p); }
   TESTS[at].answers.forEach(function(a){
     var b = document.createElement("button"); b.textContent = a;
-    b.addEventListener("click", function(){ done.push((at + 1) + ": " + a); at++; load(); });
+    b.addEventListener("click", function(){ done.push((at + 1) + ": " + a); at = (at === 0 && a !== "Siguió igual") ? TESTS.length : at + 1; load(); });
     box.appendChild(b);
   });
   var again = document.createElement("button"); again.textContent = "Repetir esta prueba";
