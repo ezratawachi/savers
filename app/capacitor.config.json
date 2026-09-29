@@ -1,0 +1,12 @@
+{
+  "appId": "com.ezratawachi.savers",
+  "appName": "SAVERS",
+  "webDir": "www",
+  "server": {
+    "url": "https://ezratawachi.github.io/savers/"
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#F3F2EE"
+  }
+}
