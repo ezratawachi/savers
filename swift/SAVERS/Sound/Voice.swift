@@ -1,26 +1,44 @@
 import AVFoundation
 
-/// The iPhone's own Spanish voice for spoken cues. Gemini's voice replaces it in session 3 when its clip is ready.
-/// Mixed with your music and quiet with the ring switch off, like the tones.
+/// How a phrase is said. The ids are the web's, so the clips' names match.
+enum SpeechTone: String {
+    /// Visualización (and the breathing): calm, soft and slow.
+    case calm = "visualizacion"
+    /// Ejercicio: energetic, like a coach.
+    case energetic = "ejercicio"
+    /// Short notices: "Visualización lista."
+    case notice = "aviso"
+
+    var id: String { rawValue }
+
+    /// What Gemini is asked for.
+    var style: String {
+        switch self {
+        case .calm: "Mexican Spanish accent. Calm, soft and slow, like a guided meditation, with gentle pauses."
+        case .energetic: "Mexican Spanish accent. Energetic, clear and encouraging, like a coach. Brisk pace."
+        case .notice: "Mexican Spanish accent. Neutral, warm and clear."
+        }
+    }
+}
+
+/// Spoken cues: Gemini's voice when its clip is on this iPhone, the iPhone's own Spanish voice otherwise, without a word about it.
 final class Voice {
     static let shared = Voice()
 
-    enum Tone {
-        /// Visualización: slow and calm.
-        case calm
-        /// Short notices: "Visualización lista."
-        case notice
-    }
-
     private let synth = AVSpeechSynthesizer()
     private lazy var voice: AVSpeechSynthesisVoice? = Self.bestSpanish()
+    /// Moves with every cue and every stop, so a delayed cue knows it's been overtaken.
+    private(set) var seq = 0
 
-    func say(_ text: String, _ tone: Tone) {
+    func say(_ text: String, _ tone: SpeechTone) {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        try? AVAudioSession.sharedInstance().setCategory(.ambient)
-        try? AVAudioSession.sharedInstance().setActive(true)
-        synth.stopSpeaking(at: .immediate)
+        stop()
+        if let clip = GeminiVoice.shared.clip(text, tone) {
+            ToneEngine.shared.clip(clip)
+            return
+        }
+        ToneEngine.shared.applySession()
         let u = AVSpeechUtterance(string: text)
         u.voice = voice
         u.rate = AVSpeechUtteranceDefaultSpeechRate * (tone == .calm ? 0.86 : 0.94)
@@ -28,7 +46,17 @@ final class Voice {
         synth.speak(u)
     }
 
-    func stop() { synth.stopSpeaking(at: .immediate) }
+    /// A long cue only speaks once its Gemini clip exists, so one routine never mixes voices; without a key, the iPhone says it.
+    func say(full: String, short: String, _ tone: SpeechTone) {
+        let g = GeminiVoice.shared
+        say(!g.hasKey || g.clip(full, tone) != nil ? full : short, tone)
+    }
+
+    func stop() {
+        seq += 1
+        synth.stopSpeaking(at: .immediate)
+        ToneEngine.shared.stop(.voice)
+    }
 
     /// Premium or Enhanced first, then Mexican Spanish, then any Spanish.
     private static func bestSpanish() -> AVSpeechSynthesisVoice? {

@@ -22,8 +22,13 @@ Claude lee esta guía, ve cuál es la primera sesión sin marcar y la hace. Al t
   *Hecho (29 sept):* la nube va sin el SDK de Firebase (más liviano): sube cada cambio y cada 15 s pregunta qué
   cambió en la Mac mientras la app está abierta. Visualización (con la voz del iPhone; la de Gemini llega en la 3)
   y Lectura (aviso "Lectura terminada" y se marca sola) probadas en el simulador. Entraste con Google y tus datos de la Mac bajaron bien.
-- [ ] **3. Ejercicio y voz**: dibujos, guía con sonidos, voz de Gemini.
+- [x] **3. Ejercicio y voz**: dibujos, guía con sonidos, voz de Gemini.
   *Tú pruebas:* pegar tu clave de Gemini en Ajustes › Voz y hacer la rutina de ejercicio completa.
+  *Hecho (29 sept):* la carta de Ejercicio abre con el dibujo que se mueve al ritmo de los sonidos, el reloj y el mapa
+  de las 6 partes. Los sonidos (subir, bajar, tic al sostener, campana) salen del mismo reloj de audio, así no se atrasan.
+  Ajustes › Voz tiene las 4 voces con Probar y el campo de la clave (se guarda en el llavero del iPhone, aparte de la web),
+  y "Mantener mi música". Probado en el simulador todo el recorrido sin terminarlo (terminarlo marcaría tu día real).
+  Falta que tú: pegues la clave (las frases se crean solas) y hagas la rutina completa escuchando.
 - [ ] **4. Historial, Ajustes y Horario**.
   *Tú pruebas:* ver meses pasados, abrir un día, cambiar una hora solo para mañana, editar una afirmación.
 - [ ] **5. Avisos y cambio de app**: notificaciones, renovación semanal, la nueva reemplaza a la vieja.

@@ -26,12 +26,17 @@ struct RootView: View {
                 store.refreshToday()
                 runs.resume()
                 cloud.resume()
+                GeminiVoice.shared.prepare()
             } else if phase == .background {
                 store.flush()
                 cloud.pause()
             }
         }
-        .task { await watchMidnight() }
+        .onChange(of: store.settings.visualization) { GeminiVoice.shared.prepare() }
+        .task {
+            GeminiVoice.shared.prepare()
+            await watchMidnight()
+        }
     }
 
     private func watchMidnight() async {

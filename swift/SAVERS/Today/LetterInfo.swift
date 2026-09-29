@@ -22,8 +22,7 @@ extension Routine {
                 let span = TimeText.span(settings.schedule?.gymTime).map { "\($0) min" } ?? "Gym"
                 return LetterInfo(subtitle: "Gym con tu entrenador", time: span, opens: false)
             }
-            // The guided routine arrives with the exercise session; until then the card doesn't open.
-            return LetterInfo(subtitle: "Rutina en casa", time: "8 min", opens: false)
+            return LetterInfo(subtitle: "Rutina en casa", time: "8 min", opens: true)
         case .lectura:
             return LetterInfo(subtitle: kind == .gym ? "Tu libro" : "Con tu café", time: mins, opens: true)
         case .escritura:

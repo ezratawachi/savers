@@ -7,10 +7,13 @@ struct SettingsPlaceholder: View {
     @Environment(\.webAuthenticationSession) private var webAuth
     @State private var importing = false
     @State private var askingSignOut = false
+    @State private var keepMusic = ToneEngine.keepMusic
+    private var gemini: GeminiVoice { .shared }
 
     var body: some View {
         NavigationStack {
             List {
+                soundSection
                 cloudSection
                 Section {
                     Button("Importar copia") { importing = true }
@@ -30,6 +33,21 @@ struct SettingsPlaceholder: View {
             Button("Cerrar sesión", role: .destructive) { cloud.signOut() }
         } message: {
             Text("Tus registros se quedan en este aparato, pero dejan de guardarse en la nube.")
+        }
+    }
+
+    private var soundSection: some View {
+        Section {
+            NavigationLink {
+                VoiceSettings()
+            } label: {
+                LabeledContent("Voz", value: gemini.hasKey ? gemini.voice : "Del iPhone")
+            }
+            Toggle("Mantener mi música", isOn: $keepMusic)
+                .tint(.sky)
+                .onChange(of: keepMusic) { _, on in ToneEngine.keepMusic = on }
+        } footer: {
+            Text("En los temporizadores tu música sigue sonando, pero la voz solo se oye si el iPhone no está en silencio. Apagado, la voz pausa tu música y suena siempre.")
         }
     }
 

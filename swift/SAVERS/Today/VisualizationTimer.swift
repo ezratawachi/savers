@@ -12,12 +12,12 @@ struct VisualizationTimer: View {
 
     private func panel(_ steps: [RunStep]) -> some View {
         let run = runs.vis
-        let total = runs.total(steps)
+        let total = Runs.total(steps)
         let el = min(run?.elapsed(runs.now) ?? 0, max(0, total - 0.001))
-        let idx = run == nil ? 0 : runs.stepAt(steps, el)
+        let idx = run == nil ? 0 : Runs.stepAt(steps, el)
         // Already marked and not running again: it steps back and offers a repeat.
         let rest = run == nil && done
-        let clock = run == nil ? Int(total) : Int((runs.stepStart(steps, idx) + steps[idx].secs - el).rounded(.up))
+        let clock = run == nil ? Int(total) : Int((Runs.stepStart(steps, idx) + steps[idx].secs - el).rounded(.up))
 
         return TimerPanel(
             title: rest ? "Hecho" : run == nil ? "Cierra los ojos y escucha" : "Pregunta \(idx + 1) de \(steps.count)",
@@ -27,15 +27,15 @@ struct VisualizationTimer: View {
             progress: run == nil || total == 0 ? 0 : el / total
         ) {
             Button(run?.running == true ? "Pausar" : run != nil ? "Seguir" : rest ? "Repetir" : "Empezar") {
-                if run?.running == true { runs.pauseVis() } else { runs.startVis() }
+                if run?.running == true { runs.pause(.visualizacion) } else { runs.start(.visualizacion) }
             }
             .buttonStyle(TimerButton(prominent: !rest || run != nil))
             if !rest {
-                Button("Siguiente") { runs.skipVis() }
+                Button("Siguiente") { runs.skip(.visualizacion) }
                     .buttonStyle(TimerButton())
             }
             if run != nil {
-                Button("Reiniciar", systemImage: "arrow.counterclockwise") { runs.resetVis() }
+                Button("Reiniciar", systemImage: "arrow.counterclockwise") { runs.reset(.visualizacion) }
                     .labelStyle(.iconOnly)
                     .buttonStyle(TimerButton(round: true))
             }

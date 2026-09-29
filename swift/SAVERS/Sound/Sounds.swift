@@ -17,8 +17,8 @@ enum Sounds {
     }
 
     /// A short beep: a timer starting (880 Hz) or its last seconds.
-    static func beep(_ freq: Double, _ duration: Double) {
-        ToneEngine.shared.tone(freq, duration, peak: 0.16)
+    static func beep(_ freq: Double, _ duration: Double, delay: Double = 0) {
+        ToneEngine.shared.tone(freq, duration, peak: 0.16, delay: delay)
     }
 
     /// A soft bell: a new question, a timer that ends.

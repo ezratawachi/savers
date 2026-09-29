@@ -35,11 +35,20 @@ struct RunStep {
     var text: String
 }
 
+/// The two guided timers.
+enum RunKind: CaseIterable {
+    case ejercicio, visualizacion
+
+    var letter: Letter { self == .ejercicio ? .ejercicio : .visualizacion }
+    var storeKey: String { self == .ejercicio ? "timer" : "timer:vis" }
+}
+
 /// The guided timers and the reading. Only one timer runs at a time; the screen stays on while it does.
 @Observable
 final class Runs {
     /// Moves every quarter second while something runs, so the views follow the clock.
     private(set) var now = Date.now
+    private(set) var ex: GuidedRun?
     private(set) var vis: GuidedRun?
     private(set) var reading: ReadingRun?
 
@@ -47,10 +56,14 @@ final class Runs {
     @ObservationIgnored private let toast: Toast
     @ObservationIgnored private let prefs: LocalPrefs
     @ObservationIgnored private var ticker: Task<Void, Never>?
-    @ObservationIgnored private var lastIdx = 0
-    @ObservationIgnored private var lastRemain: Int?
+    @ObservationIgnored private var lastIdx: [RunKind: Int] = [:]
+    @ObservationIgnored private var lastRemain: [RunKind: Int] = [:]
+    /// Where the exercise guide has queued its sounds up to, in routine seconds.
+    @ObservationIgnored private var guideFrom: Double?
 
     static let visSecs = 60.0
+    /// Guide sounds are queued this far ahead on the audio clock, so the rhythm doesn't depend on the ticker.
+    private static let guideAhead = 0.6
 
     init(store: AppStore, toast: Toast, prefs: LocalPrefs = .standard) {
         self.store = store
@@ -59,17 +72,25 @@ final class Runs {
         restore()
     }
 
-    // MARK: Visualización
+    // MARK: Steps
 
     var visSteps: [RunStep] {
         store.settings.visualization.items.filled.map { RunStep(secs: Self.visSecs, text: $0.text.trimmingCharacters(in: .whitespacesAndNewlines)) }
     }
 
-    func total(_ steps: [RunStep]) -> Double { steps.reduce(0) { $0 + $1.secs } }
+    func steps(_ k: RunKind) -> [RunStep] { k == .ejercicio ? Exercise.runSteps : visSteps }
 
-    func stepStart(_ steps: [RunStep], _ i: Int) -> Double { steps.prefix(i).reduce(0) { $0 + $1.secs } }
+    func run(_ k: RunKind) -> GuidedRun? { k == .ejercicio ? ex : vis }
 
-    func stepAt(_ steps: [RunStep], _ el: Double) -> Int {
+    private func set(_ k: RunKind, _ r: GuidedRun?) {
+        if k == .ejercicio { ex = r } else { vis = r }
+    }
+
+    static func total(_ steps: [RunStep]) -> Double { steps.reduce(0) { $0 + $1.secs } }
+
+    static func stepStart(_ steps: [RunStep], _ i: Int) -> Double { steps.prefix(i).reduce(0) { $0 + $1.secs } }
+
+    static func stepAt(_ steps: [RunStep], _ el: Double) -> Int {
         var i = 0, t = 0.0
         while i < steps.count - 1 && el >= t + steps[i].secs {
             t += steps[i].secs
@@ -78,103 +99,193 @@ final class Runs {
         return i
     }
 
+    // MARK: Buttons
+
     /// Empezar / Seguir / Repetir.
-    func startVis() {
-        let steps = visSteps
+    func start(_ k: RunKind) {
+        let steps = steps(k)
         guard !steps.isEmpty else { return }
-        let fresh = vis == nil
-        var r = vis ?? GuidedRun(day: store.today)
+        for other in RunKind.allCases where other != k && run(other)?.running == true { pause(other) }
+        let fresh = run(k) == nil
+        var r = run(k) ?? GuidedRun(day: store.today)
         r.running = true
         r.runStart = Date.now.timeIntervalSince1970 * 1000
-        vis = r
-        lastRemain = nil
+        set(k, r)
+        lastRemain[k] = nil
+        if k == .ejercicio { guideStop(from: nil) }
+        ToneEngine.shared.timerRunning = true
         if fresh {
-            lastIdx = 0
-            enterVis(0, start: true)
+            lastIdx[k] = 0
+            enter(k, 0, .start)
         } else {
             Sounds.beep(880, 0.15)
         }
         changed()
     }
 
-    func pauseVis() {
-        guard var r = vis else { return }
+    func pause(_ k: RunKind) {
+        guard var r = run(k) else { return }
         r.base = r.elapsed(.now)
         r.running = false
-        vis = r
+        set(k, r)
+        if k == .ejercicio { guideStop(from: nil) }
         Voice.shared.stop()
         changed()
     }
 
-    func resetVis() {
-        vis = nil
-        lastIdx = 0
-        lastRemain = nil
+    func reset(_ k: RunKind) {
+        set(k, nil)
+        lastIdx[k] = 0
+        lastRemain[k] = nil
+        if k == .ejercicio { guideStop(from: nil) }
         Voice.shared.stop()
         changed()
     }
 
-    /// Siguiente: straight to the next question, or the end from the last one.
-    func skipVis() {
-        let steps = visSteps
+    /// Siguiente: straight to the next step, or the end from the last one.
+    func skip(_ k: RunKind) {
+        let steps = steps(k)
         guard !steps.isEmpty else { return }
-        // Before starting it moves to the next question and waits there, paused.
-        var r = vis ?? GuidedRun(day: store.today)
-        let idx = stepAt(steps, r.elapsed(.now))
+        // Before starting it moves to the next step and waits there, paused.
+        var r = run(k) ?? GuidedRun(day: store.today)
+        let idx = Self.stepAt(steps, r.elapsed(.now))
         guard idx < steps.count - 1 else {
-            vis = r
-            finishVis()
+            set(k, r)
+            finish(k)
             return
         }
-        r.base = stepStart(steps, idx + 1)
+        r.base = Self.stepStart(steps, idx + 1)
         r.runStart = Date.now.timeIntervalSince1970 * 1000
-        vis = r
-        lastIdx = idx + 1
-        lastRemain = nil
-        enterVis(idx + 1, start: false)
-        changed()
-    }
-
-    private func enterVis(_ i: Int, start: Bool) {
-        let steps = visSteps
-        guard steps.indices.contains(i) else { return }
-        if start { Sounds.beep(880, 0.15) } else { Sounds.bell() }
-        Voice.shared.say(steps[i].text, .calm)
-    }
-
-    private func finishVis() {
-        let day = vis?.day ?? store.today
-        vis = nil
-        lastIdx = 0
-        lastRemain = nil
-        changed()
-        Sounds.bell()
-        Task {
-            try? await Task.sleep(for: .milliseconds(700))
-            Voice.shared.say("Visualización lista.", .notice)
+        set(k, r)
+        lastIdx[k] = idx + 1
+        lastRemain[k] = nil
+        if k == .ejercicio {
+            // From where the skip lands, so the drill's first word isn't missed.
+            guideStop(from: r.base)
+            if r.running { guidePump(r.base) }
         }
-        store.mark(.visualizacion, on: day)
-        toast.show("Visualización lista y marcada")
+        enter(k, idx + 1, .skip)
+        changed()
     }
 
-    private func tickVis() {
-        guard let r = vis, r.running else { return }
-        let steps = visSteps
-        guard !steps.isEmpty else { resetVis(); return }
-        let el = r.elapsed(now)
-        if el >= total(steps) { finishVis(); return }
-        let idx = stepAt(steps, el)
-        if idx != lastIdx {
-            lastIdx = idx
-            lastRemain = nil
-            enterVis(idx, start: false)
-        } else {
-            let remain = Int((stepStart(steps, idx) + steps[idx].secs - el).rounded(.up))
-            if remain != lastRemain {
-                lastRemain = remain
-                if remain == 10 { Sounds.softTone() }
+    // MARK: What each timer does
+
+    private enum Entry { case start, skip, auto }
+
+    private func enter(_ k: RunKind, _ i: Int, _ how: Entry) {
+        switch k {
+        case .visualizacion:
+            let steps = visSteps
+            guard steps.indices.contains(i) else { return }
+            if how == .start { Sounds.beep(880, 0.15) } else { Sounds.bell() }
+            Voice.shared.say(steps[i].text, .calm)
+        case .ejercicio:
+            // Drills are guided by their own sounds and a bell closes each one; a change's cue waits for the bell,
+            // and the breathing has 5 quiet seconds for its cue.
+            let steps = Exercise.steps
+            if i == 0 {
+                Sounds.beep(880, 0.15)
+                if how == .start { sayEx(0) }
+                return
+            }
+            guard steps[i].rest || i == steps.count - 1 else { return }
+            let next = steps[i].rest ? i + 1 : i
+            let seq = Voice.shared.seq
+            Task {
+                try? await Task.sleep(for: .milliseconds(700))
+                if Voice.shared.seq == seq && ex?.running == true { sayEx(next) }
             }
         }
+    }
+
+    private func second(_ k: RunKind, _ i: Int, _ remain: Int) {
+        switch k {
+        case .visualizacion:
+            if remain == 10 { Sounds.softTone() }
+        case .ejercicio:
+            guard GuidePlan(step: i) == nil else { return }
+            let steps = Exercise.steps
+            if remain > 0 && remain <= 3 { Sounds.beep(660, 0.08) }
+            // The marcha has no change after it, so the first drill is announced a few seconds early.
+            if remain == 6, let next = steps[safe: i + 1], !next.rest, !steps[i].rest { sayEx(i + 1) }
+        }
+    }
+
+    private func sayEx(_ i: Int) {
+        Voice.shared.say(full: Exercise.cueFull(i), short: Exercise.cue(i), .energetic)
+    }
+
+    private func finish(_ k: RunKind) {
+        let day = run(k)?.day ?? store.today
+        set(k, nil)
+        lastIdx[k] = 0
+        lastRemain[k] = nil
+        switch k {
+        case .visualizacion:
+            Sounds.bell()
+            Task {
+                try? await Task.sleep(for: .milliseconds(700))
+                Voice.shared.say("Visualización lista.", .notice)
+            }
+        case .ejercicio:
+            guideStop(from: nil)
+            Sounds.beep(988, 0.25)
+            Sounds.beep(1318, 0.35, delay: 0.26)
+            Voice.shared.say(Exercise.doneCue, .notice)
+        }
+        changed()
+        store.mark(k.letter, on: day)
+        toast.show(k == .ejercicio ? "Ejercicio terminado y marcado" : "Visualización lista y marcada")
+    }
+
+    private func tick(_ k: RunKind) {
+        guard let r = run(k), r.running else { return }
+        let steps = steps(k)
+        guard !steps.isEmpty else { reset(k); return }
+        let el = r.elapsed(now)
+        if el >= Self.total(steps) { finish(k); return }
+        let idx = Self.stepAt(steps, el)
+        if k == .ejercicio { guidePump(el) }
+        if idx != lastIdx[k] {
+            lastIdx[k] = idx
+            lastRemain[k] = nil
+            enter(k, idx, .auto)
+        } else {
+            let remain = Int((Self.stepStart(steps, idx) + steps[idx].secs - el).rounded(.up))
+            if remain != lastRemain[k] {
+                lastRemain[k] = remain
+                second(k, idx, remain)
+            }
+        }
+    }
+
+    // MARK: The exercise guide
+
+    private func guidePump(_ el: Double) {
+        let from = guideFrom ?? el, to = el + Self.guideAhead
+        let engine = ToneEngine.shared
+        // Anything that went by while the app was asleep is dropped, not played in a burst.
+        for e in GuideEvent.all where e.at >= from && e.at < to && e.at >= el - 0.5 {
+            let delay = max(0, e.at - el)
+            switch e.kind {
+            case let .glide(move, dur, under):
+                engine.glide(up: move == .up, duration: dur, level: under ? 0.09 : 0.2, delay: delay)
+            case .tick:
+                engine.tick(delay: delay)
+            case .end:
+                engine.drillBell(delay: delay)
+            case let .word(w, tone):
+                // Only Gemini's voice says the words; until they're made, the glides guide alone.
+                if let clip = GeminiVoice.shared.clip(w, tone) { engine.clip(clip, delay: delay, group: .guide) }
+            }
+        }
+        guideFrom = to
+    }
+
+    /// Pausing, skipping or starting again drops what was queued; the next pump starts from `from`.
+    private func guideStop(from: Double?) {
+        ToneEngine.shared.stop(.guide)
+        guideFrom = from
     }
 
     // MARK: Lectura
@@ -226,7 +337,7 @@ final class Runs {
     /// When the app comes back: a new day drops yesterday's timers; a finished reading gets marked.
     func resume() {
         now = .now
-        if let r = vis, r.day != store.today { resetVis() }
+        for k in RunKind.allCases { if let r = run(k), r.day != store.today { reset(k) } }
         if let r = reading, r.day != store.today { reading = nil; changed() }
         tick()
         syncTicker()
@@ -234,15 +345,22 @@ final class Runs {
 
     private func tick() {
         now = .now
-        tickVis()
+        for k in RunKind.allCases { tick(k) }
         if let r = reading, r.left(now) == 0 { finishReading() }
     }
 
-    private var active: Bool { vis?.running == true || reading != nil }
+    private var anyRunning: Bool { ex?.running == true || vis?.running == true }
 
     private func syncTicker() {
-        UIApplication.shared.isIdleTimerDisabled = vis?.running == true
-        if active {
+        UIApplication.shared.isIdleTimerDisabled = anyRunning
+        if !anyRunning {
+            // The last sounds (the finish, a cue) keep their session a little longer.
+            Task {
+                try? await Task.sleep(for: .seconds(4))
+                if !anyRunning { ToneEngine.shared.timerRunning = false }
+            }
+        }
+        if anyRunning || reading != nil {
             guard ticker == nil else { return }
             ticker = Task {
                 while !Task.isCancelled {
@@ -263,17 +381,20 @@ final class Runs {
     }
 
     private func save() {
-        prefs["timer:vis"] = vis.flatMap(Self.json)
+        for k in RunKind.allCases { prefs[k.storeKey] = run(k).flatMap(Self.json) }
         prefs["reading"] = reading.flatMap(Self.json)
     }
 
     private func restore() {
         let today = store.today
-        if let r: GuidedRun = Self.decode(prefs["timer:vis"]), r.day == today, !visSteps.isEmpty,
-           r.elapsed(.now) < total(visSteps) + 600 {
-            vis = r
-            lastIdx = stepAt(visSteps, min(r.elapsed(.now), total(visSteps) - 0.001))
+        for k in RunKind.allCases {
+            let steps = steps(k), total = Self.total(steps)
+            if let r: GuidedRun = Self.decode(prefs[k.storeKey]), r.day == today, !steps.isEmpty, r.elapsed(.now) < total + 600 {
+                set(k, r)
+                lastIdx[k] = Self.stepAt(steps, min(r.elapsed(.now), total - 0.001))
+            }
         }
+        if ex?.running == true || vis?.running == true { ToneEngine.shared.timerRunning = true }
         if let r: ReadingRun = Self.decode(prefs["reading"]), r.day == today { reading = r }
         save()
         syncTicker()

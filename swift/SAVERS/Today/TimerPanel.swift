@@ -24,14 +24,8 @@ struct TimerPanel<Buttons: View>: View {
                 .padding(.top, 2)
                 .fixedSize(horizontal: false, vertical: true)
             if let clock {
-                Text(Self.clockText(clock))
-                    .font(.display(46, relativeTo: .largeTitle, weight: .heavy))
-                    .monospacedDigit()
-                    .foregroundStyle(.ink)
-                    .contentTransition(.numericText(countsDown: true))
-                    .animation(.snappy, value: clock)
+                TimerClock(secs: clock)
                     .padding(.top, 8)
-                    .accessibilityLabel(Self.spoken(clock))
                 ProgressBar(value: progress)
                     .padding(.top, 6)
             }
@@ -41,19 +35,10 @@ struct TimerPanel<Buttons: View>: View {
             }
             .padding(.top, 12)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface2, in: .rect(cornerRadius: 14))
-        // Wider than the card's text: it lines up with the circle, so its buttons fit side by side.
-        .padding(.leading, -CardLayout.indent)
+        .timerBox()
     }
 
-    static func clockText(_ secs: Int) -> String { "\(secs / 60):" + String(format: "%02d", secs % 60) }
-
-    private static func spoken(_ secs: Int) -> String {
-        let m = secs / 60, s = secs % 60
-        return m > 0 ? "\(m) min \(s) s" : "\(s) segundos"
-    }
+    static func clockText(_ secs: Int) -> String { TimerClock.text(secs) }
 }
 
 private struct ProgressBar: View {
@@ -95,5 +80,37 @@ struct TimerButton: ButtonStyle {
             }
             .scaleEffect(configuration.isPressed ? 0.96 : 1)
             .animation(Motion.spring, value: configuration.isPressed)
+    }
+}
+
+extension View {
+    /// A timer's box. Wider than the card's text: it lines up with the circle, so its buttons fit side by side.
+    func timerBox() -> some View {
+        padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.surface2, in: .rect(cornerRadius: 14))
+            .padding(.leading, -CardLayout.indent)
+    }
+}
+
+/// A timer's big clock, "4:32".
+struct TimerClock: View {
+    let secs: Int
+
+    var body: some View {
+        Text(Self.text(secs))
+            .font(.display(46, relativeTo: .largeTitle, weight: .heavy))
+            .monospacedDigit()
+            .foregroundStyle(.ink)
+            .contentTransition(.numericText(countsDown: true))
+            .animation(.snappy, value: secs)
+            .accessibilityLabel(Self.spoken(secs))
+    }
+
+    static func text(_ secs: Int) -> String { "\(secs / 60):" + String(format: "%02d", secs % 60) }
+
+    private static func spoken(_ secs: Int) -> String {
+        let m = secs / 60, s = secs % 60
+        return m > 0 ? "\(m) min \(s) s" : "\(s) segundos"
     }
 }

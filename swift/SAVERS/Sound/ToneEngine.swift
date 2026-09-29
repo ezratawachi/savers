@@ -1,6 +1,6 @@
 import AVFoundation
 
-/// Plays the app's small synthesized sounds, mixed with your music and silent with the ring switch off.
+/// Plays the app's synthesized sounds, the exercise guide and Gemini's clips on one clock.
 /// The engine only runs while something is sounding.
 final class ToneEngine {
     static let shared = ToneEngine()
@@ -8,6 +8,11 @@ final class ToneEngine {
     private let engine = AVAudioEngine()
     private let bank: ToneBank
     private var stopTask: Task<Void, Never>?
+
+    /// A guided timer is running: with "Mantener mi música" off, its sounds and voice pause your music and ignore the ring switch.
+    var timerRunning = false {
+        didSet { if timerRunning != oldValue { applySession() } }
+    }
 
     private init() {
         let rate = engine.outputNode.outputFormat(forBus: 0).sampleRate
@@ -30,17 +35,60 @@ final class ToneEngine {
         }
     }
 
+    // MARK: Playing
+
     func tone(_ freq: Double, _ duration: Double, peak: Double, delay: Double = 0) {
+        play(.sine(freq: freq, peak: peak), duration, delay, .ui)
+    }
+
+    /// A move of the exercise guide, from G4 up to D5 or back.
+    func glide(up: Bool, duration: Double, level: Double, delay: Double) {
+        let lo = 392.0, hi = 587.3
+        play(.glide(from: up ? lo : hi, to: up ? hi : lo, level: level), max(0.3, duration - 0.06), delay, .guide)
+    }
+
+    func tick(delay: Double) { play(.tick, 0.07, delay, .guide) }
+
+    /// The end of a drill: E5, then B5.
+    func drillBell(delay: Double) {
+        play(.bell(freq: 659.3, level: 0.2), 1.4, delay, .guide)
+        play(.bell(freq: 987.8, level: 0.16), 1.4, delay + 0.22, .guide)
+    }
+
+    /// Speech: a cue (`.voice`) or a guide word (`.guide`, which cuts the cue it lands on).
+    func clip(_ clip: VoiceClip, delay: Double = 0, group: ToneBank.Group = .voice) {
         guard start() else { return }
-        bank.add(freq: freq, duration: duration, peak: peak, delay: delay)
-        stopWhenQuiet(after: delay + duration + 0.5)
+        bank.addClip(clip.samples, rate: clip.rate, delay: delay, group: group)
+        stopWhenQuiet()
+    }
+
+    func stop(_ group: ToneBank.Group) { bank.stop(group) }
+
+    private func play(_ kind: ToneBank.Kind, _ duration: Double, _ delay: Double, _ group: ToneBank.Group) {
+        guard start() else { return }
+        bank.add(kind, duration: duration, delay: delay, group: group)
+        stopWhenQuiet()
+    }
+
+    // MARK: The session
+
+    static var keepMusic: Bool {
+        get { LocalPrefs.standard["keepMusic"] != "false" }
+        set { LocalPrefs.standard["keepMusic"] = newValue ? "true" : "false"; shared.applySession() }
+    }
+
+    /// Ambient mixes with your music and follows the ring switch; playback pauses other apps and always sounds.
+    func applySession() {
+        let s = AVAudioSession.sharedInstance()
+        let category: AVAudioSession.Category = timerRunning && !Self.keepMusic ? .playback : .ambient
+        if s.category != category { try? s.setCategory(category) }
+        try? s.setActive(true)
     }
 
     private func start() -> Bool {
         if engine.isRunning { return true }
+        applySession()
         do {
-            try AVAudioSession.sharedInstance().setCategory(.ambient)
-            try AVAudioSession.sharedInstance().setActive(true)
             try engine.start()
             return true
         } catch {
@@ -48,12 +96,18 @@ final class ToneEngine {
         }
     }
 
-    private func stopWhenQuiet(after seconds: Double) {
+    private func stopWhenQuiet() {
         stopTask?.cancel()
         stopTask = Task {
-            try? await Task.sleep(for: .seconds(seconds))
-            guard !Task.isCancelled, bank.isIdle else { return }
-            engine.pause()
+            while !Task.isCancelled {
+                let left = bank.remaining
+                try? await Task.sleep(for: .seconds(left + 0.5))
+                guard !Task.isCancelled else { return }
+                if bank.remaining == 0 {
+                    engine.pause()
+                    return
+                }
+            }
         }
     }
 }

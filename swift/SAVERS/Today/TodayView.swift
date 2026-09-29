@@ -183,7 +183,9 @@ struct TodayView: View {
                 focus = nil
                 if !store.routine.day(ds).isDone(.escritura) { toggle(.escritura, ds: ds) }
             }
-        case .silencio, .ejercicio:
+        case .ejercicio:
+            if kind != .gym { ExerciseTimer(done: day.isDone(.ejercicio)) }
+        case .silencio:
             EmptyView()
         }
     }
