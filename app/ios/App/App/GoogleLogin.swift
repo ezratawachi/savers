@@ -16,6 +16,15 @@ class MainViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(GoogleLoginPlugin())
     }
+
+    // GitHub Pages lets a page be cached for 10 minutes, so a fresh publish could wait that long. Capacitor
+    // has already started the normal load; load again asking the server whether the page changed.
+    override open func viewDidLoad() {
+        super.viewDidLoad()
+        guard let url = bridge?.config.appStartServerURL else { return }
+        webView?.stopLoading()
+        webView?.load(URLRequest(url: url, cachePolicy: .reloadRevalidatingCacheData))
+    }
 }
 
 @objc(GoogleLoginPlugin)

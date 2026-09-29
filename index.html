@@ -1005,9 +1005,12 @@ function loadCloud(){
   return cloud.loading;
 }
 
+// The app injects Capacitor's bridge but this page doesn't load @capacitor/core, so the plugin is called
+// through the bridge directly.
 function nativeGoogleLogin(){
   const C = window.Capacitor;
-  return C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.GoogleLogin || null;
+  const has = C && C.nativePromise && (C.PluginHeaders || []).some(function(h){ return h.name === "GoogleLogin"; });
+  return has ? {signIn: function(){ return C.nativePromise("GoogleLogin", "signIn", {}); }} : null;
 }
 function cloudSignIn(){
   const fb = cloud.fb;
