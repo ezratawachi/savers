@@ -1,4 +1,4 @@
-const CACHE = "savers-v42";
+const CACHE = "savers-v43";
 // The Gemini voice clips live in their own cache and survive every update.
 const KEEP = [CACHE, "savers-voz"];
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png", "./vendor/gsap.min.js"];
@@ -27,14 +27,16 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
       if (req.mode === "navigate") {
+        // Only the app itself is kept as index.html; any other page (a test page) must not replace it.
+        const isApp = url.pathname.endsWith("/") || url.pathname.endsWith("/index.html");
         // Network first for the page so fixes arrive on the next open; cached copy when offline.
         try {
           // Skip the HTTP cache (GitHub Pages sets max-age=600) so updates show up on the next open.
           const res = await fetch(req, { cache: "no-store" });
-          if (res && res.ok) cache.put("./index.html", res.clone());
+          if (res && res.ok && isApp) cache.put("./index.html", res.clone());
           return res;
         } catch (err) {
-          return (await cache.match("./index.html")) || Response.error();
+          return (await cache.match(isApp ? "./index.html" : req)) || Response.error();
         }
       }
       const key = req;

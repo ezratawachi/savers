@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Prueba de sonido</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F2EE; --surface:#FFFFFF; --ink:#1B2538; --muted:#5E6677; --line:#E0DDD6; --sky:#3B5A8C; --press:rgba(16,21,31,.05);
+  --display:"Bricolage Grotesque", system-ui, sans-serif; --body:"Atkinson Hyperlegible", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#10151F; --surface:#1B2538; --ink:#E6E9F0; --muted:#9AA3B5; --line:#3A4660; --sky:#9DB4DB; --press:rgba(255,255,255,.06); color-scheme: dark; }
+}
+:root[data-theme="dark"]{ --bg:#10151F; --surface:#1B2538; --ink:#E6E9F0; --muted:#9AA3B5; --line:#3A4660; --sky:#9DB4DB; --press:rgba(255,255,255,.06); color-scheme: dark; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 var(--body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+main{max-width:440px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 32px)}
+h1{font:800 1.6rem/1.15 var(--display);margin:0 0 6px}
+h2{font:800 1.15rem/1.2 var(--display);margin:0 0 4px}
+p{margin:0 0 10px;color:var(--muted)}
+section{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px}
+button{display:flex;width:100%;align-items:baseline;gap:10px;text-align:left;font:700 1.05rem/1.3 var(--body);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;cursor:pointer}
+button:active{background:var(--press)}
+button b{font-family:var(--display);color:var(--sky);min-width:1.2em}
+button span small{display:block;font-weight:400;font-size:.88rem;color:var(--muted)}
+button.on{border-color:var(--sky)}
+#status{position:sticky;top:0;margin:16px -16px 0;padding:10px 16px;background:var(--bg);font:700 1rem var(--body);color:var(--sky);min-height:1.45em}
+.info{font-size:.8rem;color:var(--muted);margin-top:14px;word-break:break-word}
+</style>
+</head>
+<body>
+<main>
+  <h1>Prueba de sonido</h1>
+  <p>1. Pon música en 24six con buen volumen.<br>2. Apaga el silencio (interruptor del costado).<br>3. Vuelve aquí y toca cada botón.</p>
+
+  <div id="status" aria-live="polite"></div>
+
+  <section>
+    <h2>¿Baja tu música?</h2>
+    <p>Cada botón suena unos 10 segundos. Fíjate si la música baja mientras suena y si vuelve sola.</p>
+    <button data-mode="ambient"><b>A</b><span>Como hoy<small>Se mezcla con tu música</small></span></button>
+    <button data-mode="transient"><b>B</b><span>Bajar la música<small>La música debería bajar un momento</small></span></button>
+    <button data-mode="transient-solo"><b>C</b><span>Solo la app<small>Puede pausar tu música; si pasa, vuelve a darle play</small></span></button>
+  </section>
+
+  <section>
+    <h2>¿Cuál se escucha mejor?</h2>
+    <p>Con la música sonando, ¿cuál distingues más fácil?</p>
+    <button data-sound="pitido"><b>1</b><span>Pitido de hoy</span></button>
+    <button data-sound="madera"><b>2</b><span>Clac de madera</span></button>
+    <button data-sound="clic"><b>3</b><span>Clic agudo</span></button>
+  </section>
+
+  <p class="info" id="info"></p>
+</main>
+<script>
+// One rhythm, like a slow bridge: go (2 s), hold with ticks (2 s), come back (2 s), twice.
+// Then 3 s of silence with the audio still open, one last sound, and the audio is closed.
+var SOUNDS = {
+  // What the app plays today: soft sines at 0.16.
+  pitido: {go: function(c, t){ sine(c, t, 880, .18, .16); }, back: function(c, t){ sine(c, t, 660, .18, .16); }, tick: function(c, t){ sine(c, t, 660, .08, .16); }},
+  // A woodblock: a pitched knock that drops a little, plus a short noise click for the attack.
+  madera: {go: function(c, t){ knock(c, t, 1250, .9); }, back: function(c, t){ knock(c, t, 820, .9); }, tick: function(c, t){ knock(c, t, 1900, .38, .035); }},
+  // A dry high click, above most of the music.
+  clic: {go: function(c, t){ click(c, t, 2600, .75); }, back: function(c, t){ click(c, t, 1900, .75); }, tick: function(c, t){ click(c, t, 3300, .32, .02); }}
+};
+var ctx = null, out = null, busy = false, soundNow = "madera", modeNow = "ambient", timers = [];
+
+function sine(c, t, f, dur, peak){
+  var o = c.createOscillator(), g = c.createGain();
+  o.frequency.value = f; o.connect(g); g.connect(out);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.start(t); o.stop(t + dur + .02);
+}
+var noise = null;
+function noiseBuf(c){
+  if(noise && noise.sampleRate === c.sampleRate) return noise;
+  noise = c.createBuffer(1, c.sampleRate * .05, c.sampleRate);
+  var d = noise.getChannelData(0); for(var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return noise;
+}
+function knock(c, t, f, peak, dur){
+  dur = dur || .09;
+  var o = c.createOscillator(), g = c.createGain();
+  o.type = "triangle";
+  o.frequency.setValueAtTime(f * 1.25, t); o.frequency.exponentialRampToValueAtTime(f, t + .015);
+  o.connect(g); g.connect(out);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .002); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.start(t); o.stop(t + dur + .02);
+  var n = c.createBufferSource(), bp = c.createBiquadFilter(), ng = c.createGain();
+  n.buffer = noiseBuf(c); bp.type = "bandpass"; bp.frequency.value = f * 2; bp.Q.value = 1.5;
+  n.connect(bp); bp.connect(ng); ng.connect(out);
+  ng.gain.setValueAtTime(peak * .7, t); ng.gain.exponentialRampToValueAtTime(.0001, t + .02);
+  n.start(t); n.stop(t + .03);
+}
+function click(c, t, f, peak, dur){
+  dur = dur || .045;
+  var o = c.createOscillator(), hp = c.createBiquadFilter(), g = c.createGain();
+  o.type = "square"; o.frequency.value = f; hp.type = "highpass"; hp.frequency.value = 1200;
+  o.connect(hp); hp.connect(g); g.connect(out);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak * .5, t + .002); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.start(t); o.stop(t + dur + .02);
+}
+
+function say(s){ document.getElementById("status").textContent = s; }
+function later(ms, fn){ timers.push(setTimeout(fn, ms)); }
+function setType(mode){
+  try { if(navigator.audioSession) navigator.audioSession.type = mode; } catch(e){}
+}
+function info(){
+  var real = navigator.audioSession ? navigator.audioSession.type : "no disponible";
+  document.getElementById("info").textContent = "Modo pedido: " + modeNow + " · modo real: " + real + " · " + navigator.userAgent;
+}
+
+// A fresh AudioContext each time, created after the mode is set, so iOS applies the mode from the start.
+function run(mode, sound, btn){
+  if(busy) return;
+  busy = true; modeNow = mode;
+  document.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b === btn); });
+  setType(mode); info();
+  var C = window.AudioContext || window.webkitAudioContext;
+  ctx = new C();
+  var lim = ctx.createDynamicsCompressor();          // keeps the loud sounds from clipping
+  lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = .001; lim.release.value = .05;
+  lim.connect(ctx.destination); out = lim;
+  ctx.resume();
+  var S = SOUNDS[sound], t0 = ctx.currentTime + .15;
+  var plan = [];
+  for(var r = 0; r < 2; r++){
+    var b = t0 + r * 6;
+    plan.push([b, "go", "Sube"], [b + 2, "tick", "Sostén"], [b + 3, "tick"], [b + 4, "back", "Baja"]);
+  }
+  plan.forEach(function(p){
+    S[p[1]](ctx, p[0]);
+    if(p[2]) later((p[0] - ctx.currentTime) * 1000, function(){ say("Sonando: " + p[2]); });
+  });
+  var end = (t0 + 12 - ctx.currentTime) * 1000;
+  later(end, function(){ say("Silencio (la app sigue abierta)…"); info(); });
+  later(end + 3000, function(){ S.go(ctx, ctx.currentTime + .02); say("Un sonido más"); });
+  later(end + 4000, function(){
+    var c = ctx; ctx = null;
+    c.close().catch(function(){});
+    say("Listo. ¿Bajó la música? ¿Volvió sola?");
+    busy = false; info();
+  });
+}
+
+document.querySelectorAll("[data-mode]").forEach(function(b){
+  b.addEventListener("click", function(){ run(b.dataset.mode, soundNow, b); });
+});
+document.querySelectorAll("[data-sound]").forEach(function(b){
+  b.addEventListener("click", function(){ soundNow = b.dataset.sound; run("ambient", soundNow, b); });
+});
+info();
+</script>
+</body>
+</html>
