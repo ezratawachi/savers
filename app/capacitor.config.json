@@ -8,5 +8,6 @@
   "ios": {
     "contentInset": "never",
     "backgroundColor": "#F3F2EE"
-  }
+  },
+  "loggingBehavior": "none"
 }

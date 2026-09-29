@@ -11,7 +11,7 @@ import CryptoKit
 private let googleClientId = "22715050591-3jb2l7vk50k1an2vg1a46snc0f4jdo02.apps.googleusercontent.com"
 private let googleScheme = "com.googleusercontent.apps.22715050591-3jb2l7vk50k1an2vg1a46snc0f4jdo02"
 
-// Registers the app's own plugins; Main.storyboard points at this class.
+// Registers the app's own plugins; SceneDelegate makes this the root screen.
 class MainViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(GoogleLoginPlugin())
