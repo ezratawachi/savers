@@ -1328,12 +1328,12 @@ const TONES = {
   ejercicio: "Mexican Spanish accent. Energetic, clear and encouraging, like a coach. Brisk pace.",
   aviso: "Mexican Spanish accent. Neutral, warm and clear."
 };
-// The free tier allows about 3 voice requests a minute and a handful a day, so phrases are asked for slowly
-// and a new voice only takes over once all its phrases are here: one routine never mixes two Gemini voices.
-const ASK_GAP = 21000;
+// Phrases are asked for back to back: a paid key makes them all in a minute or two. A free key allows only about
+// 3 a minute and a handful a day; its 429s pause the queue (see noteVoiceError) instead of a fixed gap.
+// A new voice only takes over once all its phrases are here: one routine never mixes two Gemini voices.
 const clips = new Map();   // clipKey -> {raw: wav bytes, buf: decoded AudioBuffer or null, url, voice}; only the voice that speaks
 const voiceStatus = {total: 0, ready: 0, nextReady: 0, error: "", daily: false};
-let voiceSrc = null, preparing = null, prepareAgain = false, minuteHold = 0, minuteMisses = 0, lastAsk = 0, resetT = null;
+let voiceSrc = null, preparing = null, prepareAgain = false, minuteHold = 0, minuteMisses = 0, resetT = null;
 
 function ttsKey(){ return store.get("savers:geminiKey") || ""; }
 function knownVoice(v){ return VOICES.some(function(x){ return x.id === v; }) ? v : ""; }
@@ -1440,8 +1440,6 @@ async function ensureClip(cache, text, tone, voice, opts){
     raw = await hit.arrayBuffer();
   } else {
     if(!opts.ask) return null;
-    if(opts.pace){ const w = lastAsk + ASK_GAP - Date.now(); if(w > 0) await new Promise(function(r){ setTimeout(r, w); }); }
-    lastAsk = Date.now();
     const bytes = await synth(text, tone, voice);
     clearVoiceHolds();
     await cache.put(url, new Response(bytes, {headers: {"Content-Type": "audio/wav"}}));
@@ -1500,7 +1498,7 @@ async function makeClips(){
   if(s.daily) resetT = setTimeout(prepareVoice, dailyHold() - Date.now() + 1000);
   async function pass(v, load, field){
     for(const p of list){
-      try { if(await ensureClip(cache, p[0], p[1], v, {ask: ask, load: load, pace: true})) s[field]++; }
+      try { if(await ensureClip(cache, p[0], p[1], v, {ask: ask, load: load})) s[field]++; }
       catch(err){ ask = false; noteVoiceError(err); }
       showVoiceStatus();
     }
