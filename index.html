@@ -3086,7 +3086,7 @@ function readMinutes(){ const ds = todayStr(); return minutesOn(schedTypeOf(ds),
 // A reading stopped before its time takes its notification with it.
 function clearReading(){
   const r = readingState();
-  if(r && r.notify && readLeft(r) > 0) pushPost("/cancel", {id: "lectura"}).catch(function(){});
+  if(r && r.notify && readLeft(r) > 0) cancelNote("lectura");
   try { localStorage.removeItem("savers:reading"); } catch(e){}
   syncReading();
 }
@@ -3184,7 +3184,19 @@ const NOTES = [
   {id: "lectura", name: "Fin de la lectura", about: "Te llega cuando terminan tus minutos de lectura, aunque SAVERS esté cerrada."}
 ];
 const noteStatus = {msg: "", busy: ""};
-function pushCan(){ return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+// Inside the iPhone app (app/ in this repo) there's no web push: the app schedules local notifications itself
+// through its Avisos plugin, so the worker isn't used and iOS's answer is asked through the app.
+const appNotes = (function(){
+  const C = window.Capacitor;
+  return C && C.nativePromise && (C.PluginHeaders || []).some(function(h){ return h.name === "Avisos"; }) ? C : null;
+})();
+let appPerm = "default";
+function appNote(method, opts){ return appNotes.nativePromise("Avisos", method, opts || {}); }
+function readAppPerm(){
+  return appNote("permission").then(function(r){ appPerm = r.permission; return appPerm; });
+}
+function notePerm(){ return appNotes ? appPerm : Notification.permission; }
+function pushCan(){ return !!appNotes || "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
 function pushDevice(){
   let d = store.get("savers:pushDevice");
   if(!/^[0-9a-f]{32}$/.test(d || "")){
@@ -3194,7 +3206,7 @@ function pushDevice(){
   return d;
 }
 function notesOn(){ return store.get("savers:avisos") || {}; }
-function noteOn(id){ return !!notesOn()[id] && pushCan() && Notification.permission === "granted"; }
+function noteOn(id){ return !!notesOn()[id] && pushCan() && notePerm() === "granted"; }
 function anyNoteOn(){ return NOTES.some(function(n){ return noteOn(n.id); }); }
 function setNote(id, on){ const a = notesOn(); if(on) a[id] = true; else delete a[id]; store.set("savers:avisos", a); }
 // text/plain needs no preflight, and keepalive lets the request finish while Libros opens.
@@ -3213,19 +3225,22 @@ function unb64u(str){
 let permAsk = null, permTap = "";
 function askPermission(){
   permTap = navigator.userActivation ? (navigator.userActivation.isActive ? "sí" : "no") : "?";
-  if(Notification.permission === "default") permAsk = Promise.resolve(Notification.requestPermission());
+  if(notePerm() === "default") permAsk = appNotes ? appNote("ask").then(function(r){ return appPerm = r.permission; })
+    : Promise.resolve(Notification.requestPermission());
 }
 // The answer to the question the click asked, or a new question if there was no click (a keyboard).
 function permissionAnswer(){
   const a = permAsk;
   permAsk = null;
   if(a) return a;
+  if(appNotes) return appPerm === "default" ? appNote("ask").then(function(r){ return appPerm = r.permission; }) : Promise.resolve(appPerm);
   return Notification.permission === "default" ? Promise.resolve(Notification.requestPermission()) : Promise.resolve(Notification.permission);
 }
 // Asks iOS the first time, then hands the push address to the worker.
 async function pushSubscribe(ask){
-  const perm = ask ? await permissionAnswer() : Notification.permission;
+  const perm = ask ? await permissionAnswer() : notePerm();
   if(perm !== "granted") throw new Error(perm);
+  if(appNotes) return;
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
   if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: unb64u(PUSH_KEY)});
@@ -3233,17 +3248,19 @@ async function pushSubscribe(ask){
 }
 // If the worker lost this iPhone's push address (the push service dropped it), hand it over again and retry once.
 function pushNote(body){
+  if(appNotes) return appNote("schedule", body.note);
   return pushPost("/schedule", body).catch(function(e){
     if(String(e && e.message) !== "no-sub") throw e;
     return pushSubscribe(false).then(function(){ return pushPost("/schedule", body); });
   });
 }
 // iOS can renew the push address; each open hands the current one to the worker.
-function refreshPush(){ if(anyNoteOn()) pushSubscribe(false).catch(function(){}); }
+function refreshPush(){ if(!appNotes && anyNoteOn()) pushSubscribe(false).catch(function(){}); }
+function cancelNote(id){ (appNotes ? appNote("cancel", {id: id}) : pushPost("/cancel", {id: id})).catch(function(){}); }
 function turnNote(id, on){
   if(!on){
     setNote(id, false);
-    if(id === "lectura"){ const r = readingState(); if(r && r.notify){ r.notify = false; store.set("savers:reading", r); pushPost("/cancel", {id: id}).catch(function(){}); } }
+    if(id === "lectura"){ const r = readingState(); if(r && r.notify){ r.notify = false; store.set("savers:reading", r); cancelNote(id); } }
     noteStatus.msg = "";
     syncReading();
     return rerenderSettingsKeepScroll();
@@ -3256,7 +3273,7 @@ function turnNote(id, on){
   }).catch(function(e){
     const m = String(e && e.message || e);
     // Denied while iOS still says "not asked yet" means it never showed the question.
-    noteStatus.msg = m === "denied" && Notification.permission === "default" ? "El iPhone no mostró la pregunta (toque: " + permTap + "). Vuelve a tocar el interruptor."
+    noteStatus.msg = m === "denied" && notePerm() === "default" ? "El iPhone no mostró la pregunta (toque: " + permTap + "). Vuelve a tocar el interruptor."
       : m === "denied" ? "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS."
       : m === "default" ? "No se activaron. Vuelve a intentarlo."
       : "No se pudo conectar. Revisa tu internet y vuelve a intentarlo.";
@@ -3272,10 +3289,10 @@ function testNote(){
 }
 function avisosPageHTML(){
   if(!pushCan()) return '<p class="sfoot" style="margin-top:14px">Para recibir avisos, abre SAVERS desde su ícono en la pantalla de inicio.</p>';
-  const blocked = Notification.permission === "denied";
+  const blocked = notePerm() === "denied";
   return '<div class="slist" style="margin-top:14px">' + NOTES.map(function(n){
       const on = noteOn(n.id) || noteStatus.busy === n.id;
-      if(Notification.permission === "default" && !noteStatus.busy){
+      if(notePerm() === "default" && !noteStatus.busy){
         return '<div class="srow asks"><b>' + n.name + '</b><input type="checkbox" switch tabindex="-1" aria-hidden="true">' +
           '<button class="cover" data-act="note-ask" data-id="' + n.id + '" role="switch" aria-checked="false" aria-label="' + n.name + '"></button></div>';
       }
@@ -4452,6 +4469,7 @@ setInterval(checkRollover, 30000);
 document.addEventListener("visibilitychange", function(){
   if(document.visibilityState === "hidden"){ flushSave(); return; }
   checkRollover();
+  if(appNotes) readAppPerm().then(afterAppPerm);
   syncReading();
   resendReadingNote();
   updateSun();
@@ -4473,13 +4491,25 @@ switchTab("today");
 prepareVoice();
 window.addEventListener("online", prepareVoice);
 
+// In the app: read iOS's answer once, and a tapped notification comes in as a window event.
+function afterAppPerm(){
+  syncReading();
+  if(state.tab === "settings" && state.page === "avisos") rerenderSettingsKeepScroll();
+}
+function openFromNote(){
+  if(state.edit) return;
+  syncReading();
+  if(state.tab !== "today"){ state.from = null; state.page = null; switchTab("today"); }
+}
+if(appNotes){
+  readAppPerm().then(afterAppPerm).catch(function(){});
+  window.addEventListener("saversnote", openFromNote);
+}
 if("serviceWorker" in navigator && location.protocol === "https:"){
   window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").then(refreshPush).catch(function(){}); });
   // Tapping a notification brings you to Hoy, unless you're in the middle of editing.
   navigator.serviceWorker.addEventListener("message", function(e){
-    if(!e.data || e.data.go !== "today" || state.edit) return;
-    syncReading();
-    if(state.tab !== "today"){ state.from = null; state.page = null; switchTab("today"); }
+    if(e.data && e.data.go === "today") openFromNote();
   });
 }
 

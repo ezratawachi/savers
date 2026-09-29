@@ -15,6 +15,7 @@ private let googleScheme = "com.googleusercontent.apps.22715050591-3jb2l7vk50k1a
 class MainViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(GoogleLoginPlugin())
+        bridge?.registerPluginInstance(AvisosPlugin())
     }
 
     // GitHub Pages lets a page be cached for 10 minutes, so a fresh publish could wait that long. Capacitor
