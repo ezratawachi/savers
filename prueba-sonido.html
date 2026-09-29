@@ -20,177 +20,175 @@
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 var(--body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 main{max-width:440px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 32px)}
 h1{font:800 1.6rem/1.15 var(--display);margin:0 0 6px}
-h2{font:800 1.15rem/1.2 var(--display);margin:0 0 4px}
 p{margin:0 0 10px;color:var(--muted)}
-section{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px}
-button{display:flex;width:100%;align-items:baseline;gap:10px;text-align:left;font:700 1.05rem/1.3 var(--body);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;cursor:pointer}
-button:active{background:var(--press)}
-button b{font-family:var(--display);color:var(--sky);min-width:1.2em}
-button span small{display:block;font-weight:400;font-size:.88rem;color:var(--muted)}
-button.on{border-color:var(--sky)}
-#status{position:sticky;top:0;margin:16px -16px 0;padding:10px 16px;background:var(--bg);font:700 1rem var(--body);color:var(--sky);min-height:1.45em}
-#big{font:800 2.1rem/1.15 var(--display);text-align:center;padding:28px 0 18px;min-height:3.6em;display:flex;align-items:center;justify-content:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px}
+.step{font:700 .9rem var(--body);color:var(--muted);margin:0}
+#big{font:800 2rem/1.15 var(--display);text-align:center;padding:26px 0 18px;min-height:3.8em;display:flex;align-items:center;justify-content:center}
 #big.now{color:var(--sky)}
-.later{display:none}
-.info{font-size:.8rem;color:var(--muted);margin-top:14px;word-break:break-word}
+button{display:block;width:100%;text-align:left;font:700 1.05rem/1.3 var(--body);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;cursor:pointer}
+button:active{background:var(--press)}
+button.main{background:var(--sky);color:var(--bg);border-color:var(--sky);text-align:center}
+#answers[hidden], #run[hidden]{display:none}
+.info{font-size:.78rem;color:var(--muted);margin-top:14px;word-break:break-word}
 </style>
 </head>
 <body>
 <main>
   <h1>Prueba de sonido</h1>
-  <p>1. Pon música en 24six con buen volumen.<br>2. Apaga el silencio (interruptor del costado).<br>3. Vuelve aquí y toca Empezar.</p>
+  <p>Pon música en 24six con buen volumen y apaga el silencio (interruptor del costado). Son 3 pruebas cortas, una a la vez.</p>
 
-  <section id="obvia">
-    <div id="big" aria-live="polite">Listo</div>
-    <button id="go"><b>▶</b><span>Empezar<small>Dura 12 segundos. Solo mira esta pantalla y escucha tu música.</small></span></button>
-  </section>
-
-  <div class="later">
-  <div id="status" aria-live="polite"></div>
-
-  <section>
-    <h2>¿Baja tu música?</h2>
-    <p>Cada botón suena unos 10 segundos. Fíjate si la música baja mientras suena y si vuelve sola.</p>
-    <button data-mode="ambient"><b>A</b><span>Como hoy<small>Se mezcla con tu música</small></span></button>
-    <button data-mode="transient"><b>B</b><span>Bajar la música<small>La música debería bajar un momento</small></span></button>
-    <button data-mode="transient-solo"><b>C</b><span>Solo la app<small>Puede pausar tu música; si pasa, vuelve a darle play</small></span></button>
-  </section>
-
-  <section>
-    <h2>¿Cuál se escucha mejor?</h2>
-    <p>Con la música sonando, ¿cuál distingues más fácil?</p>
-    <button data-sound="pitido"><b>1</b><span>Pitido de hoy</span></button>
-    <button data-sound="madera"><b>2</b><span>Clac de madera</span></button>
-    <button data-sound="clic"><b>3</b><span>Clic agudo</span></button>
-  </section>
+  <div class="card">
+    <p class="step" id="step"></p>
+    <div id="big" aria-live="polite"></div>
+    <button class="main" id="run">Empezar</button>
+    <div id="answers" hidden></div>
   </div>
 
   <p class="info" id="info"></p>
 </main>
 <script>
-// One rhythm, like a slow bridge: go (2 s), hold with ticks (2 s), come back (2 s), twice.
-// Then 3 s of silence with the audio still open, one last sound, and the audio is closed.
-var SOUNDS = {
-  // What the app plays today: soft sines at 0.16.
-  pitido: {go: function(c, t){ sine(c, t, 880, .18, .16); }, back: function(c, t){ sine(c, t, 660, .18, .16); }, tick: function(c, t){ sine(c, t, 660, .08, .16); }},
-  // A woodblock: a pitched knock that drops a little, plus a short noise click for the attack.
-  madera: {go: function(c, t){ knock(c, t, 1250, .9); }, back: function(c, t){ knock(c, t, 820, .9); }, tick: function(c, t){ knock(c, t, 1900, .38, .035); }},
-  // A dry high click, above most of the music.
-  clic: {go: function(c, t){ click(c, t, 2600, .75); }, back: function(c, t){ click(c, t, 1900, .75); }, tick: function(c, t){ click(c, t, 3300, .32, .02); }}
-};
-var ctx = null, out = null, busy = false, soundNow = "madera", modeNow = "ambient", timers = [];
-
-function sine(c, t, f, dur, peak){
-  var o = c.createOscillator(), g = c.createGain();
-  o.frequency.value = f; o.connect(g); g.connect(out);
-  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-  o.start(t); o.stop(t + dur + .02);
+var busy = false, done = [], ctx = null;
+function $(id){ return document.getElementById(id); }
+function show(t, now){ $("big").textContent = t; $("big").classList.toggle("now", !!now); }
+function setType(mode){ try { if(navigator.audioSession) navigator.audioSession.type = mode; } catch(e){} }
+function info(){
+  $("info").textContent = "Modo real: " + (navigator.audioSession ? navigator.audioSession.type : "no disponible") + " · " + navigator.userAgent;
 }
-var noise = null;
-function noiseBuf(c){
-  if(noise && noise.sampleRate === c.sampleRate) return noise;
-  noise = c.createBuffer(1, c.sampleRate * .05, c.sampleRate);
-  var d = noise.getChannelData(0); for(var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  return noise;
+function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+async function countdown(){
+  for(var n = 3; n >= 1; n--){ show("Escucha tu música… " + n); await wait(1000); }
 }
+function newCtx(){
+  var C = window.AudioContext || window.webkitAudioContext, c = new C();
+  var lim = c.createDynamicsCompressor();           // keeps the loud sounds from clipping
+  lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = .001; lim.release.value = .05;
+  lim.connect(c.destination); c.out = lim; c.resume();
+  return c;
+}
+// A woodblock: a pitched knock that drops a little, plus a short noise click for the attack.
 function knock(c, t, f, peak, dur){
   dur = dur || .09;
   var o = c.createOscillator(), g = c.createGain();
   o.type = "triangle";
   o.frequency.setValueAtTime(f * 1.25, t); o.frequency.exponentialRampToValueAtTime(f, t + .015);
-  o.connect(g); g.connect(out);
+  o.connect(g); g.connect(c.out);
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .002); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   o.start(t); o.stop(t + dur + .02);
+  var len = Math.floor(c.sampleRate * .03), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+  for(var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
   var n = c.createBufferSource(), bp = c.createBiquadFilter(), ng = c.createGain();
-  n.buffer = noiseBuf(c); bp.type = "bandpass"; bp.frequency.value = f * 2; bp.Q.value = 1.5;
-  n.connect(bp); bp.connect(ng); ng.connect(out);
+  n.buffer = buf; bp.type = "bandpass"; bp.frequency.value = f * 2; bp.Q.value = 1.5;
+  n.connect(bp); bp.connect(ng); ng.connect(c.out);
   ng.gain.setValueAtTime(peak * .7, t); ng.gain.exponentialRampToValueAtTime(.0001, t + .02);
   n.start(t); n.stop(t + .03);
 }
-function click(c, t, f, peak, dur){
-  dur = dur || .045;
-  var o = c.createOscillator(), hp = c.createBiquadFilter(), g = c.createGain();
-  o.type = "square"; o.frequency.value = f; hp.type = "highpass"; hp.frequency.value = 1200;
-  o.connect(hp); hp.connect(g); g.connect(out);
-  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak * .5, t + .002); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+function tone(c, t, f, dur, peak){
+  var o = c.createOscillator(), g = c.createGain();
+  o.frequency.value = f; o.connect(g); g.connect(c.out);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .05);
+  g.gain.setValueAtTime(peak, t + dur - .1); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   o.start(t); o.stop(t + dur + .02);
 }
-
-function say(s){ document.getElementById("status").textContent = s; }
-function later(ms, fn){ timers.push(setTimeout(fn, ms)); }
-function setType(mode){
-  try { if(navigator.audioSession) navigator.audioSession.type = mode; } catch(e){}
-}
-function info(){
-  var real = navigator.audioSession ? navigator.audioSession.type : "no disponible";
-  document.getElementById("info").textContent = "Modo pedido: " + modeNow + " · modo real: " + real + " · " + navigator.userAgent;
+function spanishVoice(){
+  var vs = speechSynthesis.getVoices();
+  return vs.filter(function(v){ return /^es[-_]MX/i.test(v.lang); })[0] || vs.filter(function(v){ return /^es/i.test(v.lang); })[0] || null;
 }
 
-// A fresh AudioContext each time, created after the mode is set, so iOS applies the mode from the start.
-function run(mode, sound, btn){
-  if(busy) return;
-  busy = true; modeNow = mode;
-  document.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b === btn); });
-  setType(mode); info();
-  var C = window.AudioContext || window.webkitAudioContext;
-  ctx = new C();
-  var lim = ctx.createDynamicsCompressor();          // keeps the loud sounds from clipping
-  lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = .001; lim.release.value = .05;
-  lim.connect(ctx.destination); out = lim;
-  ctx.resume();
-  var S = SOUNDS[sound], t0 = ctx.currentTime + .15;
-  var plan = [];
-  for(var r = 0; r < 2; r++){
-    var b = t0 + r * 6;
-    plan.push([b, "go", "Sube"], [b + 2, "tick", "Sostén"], [b + 3, "tick"], [b + 4, "back", "Baja"]);
+var TESTS = [
+  {
+    title: "Prueba 1 de 3 · ¿La música se pausa y vuelve sola?",
+    // "transient-solo" should pause other audio; closing the context lets iOS tell 24six it may resume.
+    run: async function(){
+      setType("transient-solo"); info();
+      await countdown();
+      ctx = newCtx();
+      var t = ctx.currentTime + .05;
+      show("AHORA", true); info();
+      knock(ctx, t, 1250, .9); tone(ctx, t + .3, 523, 1.6, .25); knock(ctx, t + 2, 820, .9);
+      await wait(2400);
+      var c = ctx; ctx = null; await c.close().catch(function(){});
+      setType("ambient");
+      for(var n = 6; n >= 1; n--){ show("¿Vuelve tu música sola? " + n); await wait(1000); }
+      show("¿Qué pasó con tu música?"); info();
+    },
+    answers: ["Se pausó y volvió sola", "Se pausó y NO volvió", "No se pausó, siguió igual", "Bajó un poco y volvió"],
+    after: "Si tu música se quedó pausada, dale play en 24six antes de seguir."
+  },
+  {
+    title: "Prueba 2 de 3 · La voz del iPhone",
+    run: async function(){
+      setType("ambient"); info();
+      await countdown();
+      show("AHORA: escucha la voz", true);
+      await new Promise(function(res){
+        var u = new SpeechSynthesisUtterance("Baja. Sube. Baja. Sube. Sostén.");
+        var v = spanishVoice(); if(v) u.voice = v;
+        u.lang = v ? v.lang : "es-MX"; u.rate = .95;
+        u.onend = res; u.onerror = res;
+        speechSynthesis.cancel(); speechSynthesis.speak(u);
+        setTimeout(res, 9000);
+      });
+      await wait(1500);
+      show("Mientras hablaba, ¿tu música…?"); info();
+    },
+    answers: ["Bajó y volvió", "Siguió igual", "Se pausó", "No escuché la voz"]
+  },
+  {
+    title: "Prueba 3 de 3 · ¿Se escuchan los clacs sobre tu música?",
+    run: async function(){
+      setType("ambient"); info();
+      await countdown();
+      ctx = newCtx();
+      var t0 = ctx.currentTime + .05;
+      for(var r = 0; r < 2; r++){
+        var b = t0 + r * 6;
+        knock(ctx, b, 1250, .9);                                    // sube
+        knock(ctx, b + 2, 1900, .38, .035); knock(ctx, b + 3, 1900, .38, .035);   // sostén: tics
+        knock(ctx, b + 4, 820, .9);                                 // baja
+      }
+      var labels = [[0, "Clac: sube"], [2000, "Tic… tic…"], [4000, "Clac: baja"], [6000, "Clac: sube"], [8000, "Tic… tic…"], [10000, "Clac: baja"]];
+      var start = Date.now();
+      for(var i = 0; i < labels.length; i++){ await wait(Math.max(0, labels[i][0] - (Date.now() - start))); show(labels[i][1], true); }
+      await wait(2200);
+      var c = ctx; ctx = null; c.close().catch(function(){});
+      show("¿Se escuchaban bien?"); info();
+    },
+    answers: ["Claros, se escuchan bien", "Se escuchan, pero bajito", "Se pierden en la música"]
   }
-  plan.forEach(function(p){
-    S[p[1]](ctx, p[0]);
-    if(p[2]) later((p[0] - ctx.currentTime) * 1000, function(){ say("Sonando: " + p[2]); });
-  });
-  var end = (t0 + 12 - ctx.currentTime) * 1000;
-  later(end, function(){ say("Silencio (la app sigue abierta)…"); info(); });
-  later(end + 3000, function(){ S.go(ctx, ctx.currentTime + .02); say("Un sonido más"); });
-  later(end + 4000, function(){
-    var c = ctx; ctx = null;
-    c.close().catch(function(){});
-    say("Listo. ¿Bajó la música? ¿Volvió sola?");
-    busy = false; info();
-  });
-}
+];
 
-document.querySelectorAll("[data-mode]").forEach(function(b){
-  b.addEventListener("click", function(){ run(b.dataset.mode, soundNow, b); });
-});
-document.querySelectorAll("[data-sound]").forEach(function(b){
-  b.addEventListener("click", function(){ soundNow = b.dataset.sound; run("ambient", soundNow, b); });
-});
-// The obvious test: 3 s of your music alone, then 6 s of a quiet steady tone in "transient",
-// long enough to hear whether the music drops, then the audio closes and the music should come back.
-document.getElementById("go").addEventListener("click", function(){
+var at = 0;
+function load(){
+  if(at >= TESTS.length){
+    $("step").textContent = "Listo, dile esto a Claude:";
+    show(done.join(" · "));
+    $("big").style.fontSize = "1.25rem";
+    $("run").hidden = true; $("answers").hidden = true;
+    return;
+  }
+  $("step").textContent = TESTS[at].title;
+  show("Listo");
+  $("run").hidden = false; $("answers").hidden = true;
+}
+$("run").addEventListener("click", async function(){
   if(busy) return;
-  busy = true; modeNow = "transient";
-  var big = document.getElementById("big");
-  function show(t, now){ big.textContent = t; big.classList.toggle("now", !!now); }
-  setType("transient"); info();
-  var C = window.AudioContext || window.webkitAudioContext, c = new C();
-  c.resume();
-  show("Escucha tu música… 3");
-  later(1000, function(){ show("Escucha tu música… 2"); });
-  later(2000, function(){ show("Escucha tu música… 1"); });
-  later(3000, function(){
-    var o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
-    o.frequency.value = 523; o.connect(g); g.connect(c.destination);
-    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.05, t + .3);
-    g.gain.setValueAtTime(.05, t + 5.6); g.gain.exponentialRampToValueAtTime(.0001, t + 6);
-    o.start(t); o.stop(t + 6.05);
-    show("AHORA: ¿bajó tu música?", true); info();
+  busy = true; $("run").hidden = true;
+  try { await TESTS[at].run(); } catch(e){ show("Error: " + e.message); }
+  busy = false;
+  var box = $("answers"); box.innerHTML = "";
+  if(TESTS[at].after){ var p = document.createElement("p"); p.textContent = TESTS[at].after; p.style.margin = "0"; box.appendChild(p); }
+  TESTS[at].answers.forEach(function(a){
+    var b = document.createElement("button"); b.textContent = a;
+    b.addEventListener("click", function(){ done.push((at + 1) + ": " + a); at++; load(); });
+    box.appendChild(b);
   });
-  later(9200, function(){ c.close().catch(function(){}); show("¿Volvió a su volumen normal?"); });
-  later(12000, function(){ show("Listo"); busy = false; info(); });
+  var again = document.createElement("button"); again.textContent = "Repetir esta prueba";
+  again.addEventListener("click", function(){ load(); });
+  box.appendChild(again);
+  box.hidden = false;
 });
-if(location.hash === "#sonidos"){ document.getElementById("obvia").style.display = "none"; document.querySelector(".later").style.display = "block"; }
-info();
+if(window.speechSynthesis) speechSynthesis.getVoices();
+load(); info();
 </script>
 </body>
 </html>
