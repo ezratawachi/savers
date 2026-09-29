@@ -4,3 +4,5 @@ privado/
 .DS_Store
 avisos/node_modules/
 avisos/.wrangler/
+swift-build/
+swift/.sim-id

@@ -1,0 +1,19 @@
+import SwiftUI
+
+/// "**5:50** · SAVERS" above a block's letters.
+struct BlockHeader: View {
+    let head: [String]
+
+    var body: some View {
+        let parts = head.filter { !$0.isEmpty }
+        if let first = parts.first {
+            let rest = parts.dropFirst().joined(separator: " · ")
+            Text(rest.isEmpty ? "\(Text(first).bold())" : "\(Text(first).bold()) · \(rest)")
+                .font(.reading(15, relativeTo: .subheadline))
+                .foregroundStyle(.muted)
+                .padding(.top, 10)
+                .padding(.leading, 4)
+                .accessibilityAddTraits(.isHeader)
+        }
+    }
+}

@@ -12,10 +12,16 @@ Claude lee esta guía, ve cuál es la primera sesión sin marcar y la hace. Al t
 
 ## Las sesiones
 
-- [ ] **1. Base y Hoy**: la app nueva, tus datos en el iPhone, la pantalla Hoy y marcar letras.
+- [x] **1. Base y Hoy**: la app nueva, tus datos en el iPhone, la pantalla Hoy y marcar letras.
   *Tú pruebas:* abrir la app, marcar y desmarcar letras, cerrarla y ver que se guardó.
-- [ ] **2. Nube y temporizadores**: entrar con Google, Firebase, visualización y lectura.
+  *Hecho (29 sept):* proyecto en `swift/`, probado en el simulador "iPhone 13 mini". Todavía no va al iPhone
+  (reemplazaría la app actual; eso es la sesión 5). Quedan para su sesión: temporizadores de Visualización y
+  Lectura (2), Ejercicio guiado (3), hoja del día, "Ver horario", revisión de afirmaciones y recordatorio de copia (4).
+- [x] **2. Nube y temporizadores**: entrar con Google, Firebase, visualización y lectura.
   *Tú pruebas:* entrar con Google, ver que aparecen tus registros de la Mac, hacer una visualización y una lectura.
+  *Hecho (29 sept):* la nube va sin el SDK de Firebase (más liviano): sube cada cambio y cada 15 s pregunta qué
+  cambió en la Mac mientras la app está abierta. Visualización (con la voz del iPhone; la de Gemini llega en la 3)
+  y Lectura (aviso "Lectura terminada" y se marca sola) probadas en el simulador. Entraste con Google y tus datos de la Mac bajaron bien.
 - [ ] **3. Ejercicio y voz**: dibujos, guía con sonidos, voz de Gemini.
   *Tú pruebas:* pegar tu clave de Gemini en Ajustes › Voz y hacer la rutina de ejercicio completa.
 - [ ] **4. Historial, Ajustes y Horario**.
