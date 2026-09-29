@@ -1270,6 +1270,7 @@ try { if(window.speechSynthesis) speechSynthesis.addEventListener("voiceschanged
 function sayIphone(text){
   try {
     if(!window.speechSynthesis || !text) return;
+    duckDrop();   // the iPhone voice lowers the music by itself
     const u = new SpeechSynthesisUtterance(text);
     const v = spanishVoice();
     if(v){ u.voice = v; u.lang = v.lang; } else u.lang = "es-MX";
@@ -1293,8 +1294,46 @@ function say(text, tone){
 function stopVoice(){
   try { if(voiceSrc) voiceSrc.stop(); } catch(e){}
   voiceSrc = null;
+  duckDrop();
   try { if(window.speechSynthesis) speechSynthesis.cancel(); } catch(e){}
 }
+
+// Safari's own sounds can't lower another app's music, but the iPhone voice does, and lets it come back
+// when it stops (tested on the iPhone with 24six). So a silent iPhone voice runs under every Gemini clip.
+const DUCK_TEXT = "uno dos tres cuatro cinco seis siete ocho nueve diez once doce trece catorce quince";
+const DUCK_LEAD = 0.35;   // seconds for the music to go down before the clip starts
+const duck = {u: null, until: 0, t: null};
+function duckUntil(ctxEnd){
+  if(!keepMusic() || !window.speechSynthesis || !audio.ctx) return;
+  duck.until = Math.max(duck.until, ctxEnd);
+  if(!duck.u) duckSpeak();
+  clearTimeout(duck.t);
+  duck.t = setTimeout(duckEnd, Math.max(0, (duck.until - audio.ctx.currentTime) * 1000));
+}
+function duckSpeak(){
+  try {
+    const u = new SpeechSynthesisUtterance(DUCK_TEXT), v = spanishVoice();
+    if(v){ u.voice = v; u.lang = v.lang; } else u.lang = "es-MX";
+    u.volume = 0; u.rate = 0.6;
+    // A long clip outlasts one pass: the silent voice starts again until the clip is over
+    // (but not if iOS cut it right away, so a refusal can't turn into a loop).
+    const born = Date.now();
+    u.onend = u.onerror = function(){
+      if(duck.u !== u) return;
+      duck.u = null;
+      if(Date.now() - born > 500 && audio.ctx && audio.ctx.currentTime < duck.until - 0.1) duckSpeak();
+    };
+    duck.u = u;
+    speechSynthesis.speak(u);
+  } catch(e){ duck.u = null; }
+}
+function duckEnd(){
+  if(audio.ctx && audio.ctx.currentTime < duck.until - 0.05){ duck.t = setTimeout(duckEnd, (duck.until - audio.ctx.currentTime) * 1000); return; }
+  const was = duck.u;
+  duckDrop();
+  if(was) try { speechSynthesis.cancel(); } catch(e){}
+}
+function duckDrop(){ clearTimeout(duck.t); duck.u = null; duck.until = 0; duck.t = null; }
 
 /* ---------- gemini voice: each phrase is made once and kept on this iPhone ---------- */
 // The key and the chosen voice live only in localStorage: never in the backup, the export or the repo.
@@ -1346,6 +1385,7 @@ function spokenPhrases(){
   const out = [["Marchar en el sitio, un minuto.", "ejercicio"], ["Listo. Ejercicio marcado.", "aviso"], ["Visualización lista.", "aviso"]];
   STEPS.forEach(function(s, i){ if(i > 0 && !s.rest) out.push([exCue(i), "ejercicio"]); });
   STEPS.forEach(function(s, i){ if(!s.rest) out.push([exCueFull(i), "ejercicio"]); });
+  guideWords().forEach(function(w){ out.push(w); });
   visSteps().forEach(function(s){ out.push([s.text, "visualizacion"]); });
   const seen = {};
   return out.filter(function(p){ const k = p[1] + "|" + p[0]; if(!p[0] || seen[k]) return false; seen[k] = true; return true; });
@@ -1460,7 +1500,10 @@ function playClip(buf, onEnd){
   src.buffer = buf;
   src.connect(ctx.destination);
   src.onended = function(){ if(voiceSrc === src) voiceSrc = null; if(onEnd) onEnd(); };
-  src.start();
+  // With the music kept, it goes down first and the clip starts once it has.
+  const at = ctx.currentTime + (keepMusic() ? DUCK_LEAD : 0);
+  duckUntil(at + buf.duration + 0.15);
+  src.start(at);
   voiceSrc = src;
 }
 
@@ -2336,6 +2379,147 @@ function visSteps(){
   });
 }
 
+/* ---------- move guide: what to do in each moment of a drill, by ear ---------- */
+// Each drill repeats its phases to fill the step, stretched a little so the last rep ends with it.
+// "go" and "back" are the two beeps, a hold ticks once a second. In round 1 (and the breathing) the first two reps
+// say the words instead; on the other side, the first word is "Otro lado". A bell closes each drill.
+const GUIDE = {
+  birddog: {sides: true, phases: [["go", 2, "Estira"], ["hold", 3, "Sostén"], ["back", 2, "Vuelve"]]},
+  deadbug: {sides: true, phases: [["go", 3, "Baja despacio"], ["back", 2, "Vuelve"]]},
+  puente: {phases: [["go", 2, "Sube"], ["hold", 2, "Sostén"], ["back", 2, "Baja"]]},
+  sentadilla: {phases: [["go", 3, "Baja"], ["hold", 0.5, "Toca"], ["back", 2, "Sube"]]},
+  // The breathing waits 5 s for "Último: piernas en la silla…", is said calmly and beeps softer.
+  descanso: {lead: 5, tone: "visualizacion", soft: true, phases: [["go", 4, "Inhala"], ["back", 6, "Exhala"]]}
+};
+const GUIDE_WORD_REPS = 2, OTHER_SIDE = "Otro lado";
+function guidePlan(i){
+  const s = STEPS[i], key = stepFig(i), g = key && GUIDE[key];
+  if(!g) return null;
+  const lead = g.lead || 0, span = s.secs - lead;
+  const cycle = g.phases.reduce(function(a, ph){ return a + ph[1]; }, 0);
+  // Sides come in pairs, so both sides get the same number of reps.
+  const n = g.sides ? Math.max(2, 2 * Math.round(span / (2 * cycle))) : Math.max(1, Math.round(span / cycle));
+  const k = span / (n * cycle);
+  return {key: key, g: g, lead: lead, n: n, D: g.phases.map(function(ph){ return ph[1] * k; }), words: s.round !== 2, tone: g.tone || "ejercicio"};
+}
+// Every sound of the routine, in routine seconds.
+let guideList = null;
+function guideEvents(){
+  if(guideList) return guideList;
+  const out = [];
+  STEPS.forEach(function(s, i){
+    const plan = guidePlan(i); if(!plan) return;
+    let t = stepStart(runs.ejercicio, i) + plan.lead;
+    for(let rep = 0; rep < plan.n; rep++){
+      plan.g.phases.forEach(function(ph, j){
+        const d = plan.D[j], talk = plan.words && rep < GUIDE_WORD_REPS;
+        const word = !talk ? null : j === 0 && plan.g.sides && rep % 2 ? OTHER_SIDE : ph[2];
+        if(ph[0] === "hold"){
+          const ticks = Math.max(1, Math.round(ph[1]));
+          for(let q = 0; q < ticks; q++) out.push(q === 0 && word ? {at: t, word: word, tone: plan.tone} : {at: t + d * q / ticks, kind: "tick", soft: plan.g.soft});
+        } else out.push(word ? {at: t, word: word, tone: plan.tone} : {at: t + 0, kind: ph[0], soft: plan.g.soft});
+        t += d;
+      });
+    }
+    // The last step ends with the routine's own sound.
+    if(i < STEPS.length - 1) out.push({at: stepStart(runs.ejercicio, i) + s.secs, kind: "end"});
+  });
+  guideList = out.sort(function(a, b){ return a.at - b.at; });
+  return guideList;
+}
+function guideWords(){
+  const seen = {}, out = [];
+  STEPS.forEach(function(s, i){
+    const plan = guidePlan(i); if(!plan) return;
+    plan.g.phases.map(function(ph){ return ph[2]; }).concat(plan.g.sides ? [OTHER_SIDE] : []).forEach(function(w){
+      if(!seen[plan.tone + w]){ seen[plan.tone + w] = true; out.push([w, plan.tone]); }
+    });
+  });
+  return out;
+}
+
+// Loud enough to be heard over music: a third of a second (the ear judges loudness over ~0.2 s), bright, at full level.
+function guideOut(){
+  const ctx = audio.ctx;
+  if(!ctx.guideOut){
+    const lim = ctx.createDynamicsCompressor();   // keeps the full-level sounds from clipping
+    lim.threshold.value = -1; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.001; lim.release.value = 0.05;
+    lim.connect(ctx.destination);
+    ctx.guideOut = lim;
+  }
+  return ctx.guideOut;
+}
+// "Pitido de gimnasio": a filtered square wave.
+function gymBeep(when, f, dur, peak){
+  const ctx = audio.ctx, o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+  o.type = "square"; o.frequency.value = f; lp.type = "lowpass"; lp.frequency.value = 6000;
+  o.connect(lp); lp.connect(g); g.connect(guideOut());
+  g.gain.setValueAtTime(0.0001, when); g.gain.exponentialRampToValueAtTime(peak, when + 0.005);
+  g.gain.setValueAtTime(peak, when + dur - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  o.start(when); o.stop(when + dur + 0.02);
+  return [o];
+}
+// "Campana": a bright FM bell that rings for half a second.
+function bellTone(when, f, dur, peak){
+  const ctx = audio.ctx, car = ctx.createOscillator(), mod = ctx.createOscillator(), mg = ctx.createGain(), g = ctx.createGain();
+  car.frequency.value = f; mod.frequency.value = f * 3.5;
+  mg.gain.setValueAtTime(f * 2.5, when); mg.gain.exponentialRampToValueAtTime(f * 0.2, when + dur);
+  mod.connect(mg); mg.connect(car.frequency); car.connect(g); g.connect(guideOut());
+  g.gain.setValueAtTime(0.0001, when); g.gain.exponentialRampToValueAtTime(peak, when + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  car.start(when); mod.start(when); car.stop(when + dur + 0.02); mod.stop(when + dur + 0.02);
+  return [car, mod];
+}
+function guideClip(e){ const k = ttsKey() ? clipKey(e.word, e.tone, ttsVoice()) : null; return k ? clips.get(k) : null; }
+
+// Sounds are queued on the audio clock a little ahead, so the rhythm doesn't depend on the 250 ms timer.
+const GUIDE_AHEAD = 0.6;
+const guide = {from: null, nodes: [], timers: []};
+function guidePump(el){
+  const ctx = audio.ctx; if(!ctx) return;
+  if(guide.from == null) guide.from = el;
+  const to = el + GUIDE_AHEAD;
+  guideEvents().forEach(function(e){
+    // Words coming up soon get decoded now, so they're ready on time.
+    if(e.word && e.at >= el && e.at < el + 6){ const c = guideClip(e); if(c && !c.buf && !c.decoding){ c.decoding = true; clipBuffer(c).catch(function(){}); } }
+    // Anything that went by while the page was asleep is dropped, not played in a burst.
+    if(e.at < guide.from || e.at >= to || e.at < el - 0.5) return;
+    guidePlay(e, ctx.currentTime + Math.max(0, e.at - el));
+  });
+  guide.from = to;
+}
+function guidePlay(e, when){
+  const ctx = audio.ctx, soft = e.soft ? 0.45 : 1;
+  let made = [];
+  if(e.kind === "go") made = gymBeep(when, 1100, 0.3, soft);
+  else if(e.kind === "back") made = gymBeep(when, 760, 0.3, soft);
+  else if(e.kind === "tick") made = gymBeep(when, 1500, 0.08, 0.7 * soft);
+  else if(e.kind === "end") made = bellTone(when, 880, 0.5, 1).concat(bellTone(when + 0.16, 1320, 0.7, 1));
+  else if(e.word){
+    const clip = guideClip(e);
+    if(clip && clip.buf){
+      const src = ctx.createBufferSource();
+      src.buffer = clip.buf; src.connect(ctx.destination);
+      try { if(voiceSrc) voiceSrc.stop(when); } catch(err){}   // the step's cue gives way to the move
+      duckUntil(when + clip.buf.duration + 0.15);
+      src.start(when);
+      made = [src];
+    } else {
+      // Not made yet: the iPhone says it, and lowers the music by itself.
+      const t = setTimeout(function(){ sayIphone(e.word); }, Math.max(0, (when - ctx.currentTime) * 1000));
+      guide.timers.push(t);
+    }
+  }
+  guide.nodes = guide.nodes.filter(function(n){ return n.endAt > ctx.currentTime; });
+  made.forEach(function(n){ n.endAt = when + 2; guide.nodes.push(n); });
+}
+// Pausing, skipping or starting again drops what was queued; the next pump starts from the new moment
+// (from: where a skip lands, so the drill's first word isn't missed by the few ms until the next tick).
+function guideStop(from){
+  guide.nodes.forEach(function(n){ try { n.stop(); } catch(e){} });
+  guide.timers.forEach(clearTimeout);
+  guide.nodes = []; guide.timers = []; guide.from = from == null ? null : from;
+}
+
 /* ---------- exercise drawings: a jointed pictogram per step, moved by GSAP ---------- */
 // Round strokes only. Blue is what moves, dots show where it goes, the near side gets a ring in the card colour.
 // Angles are degrees from straight up, clockwise; every joint position comes from the one before it.
@@ -2387,7 +2571,8 @@ const EX_FIGS = {
         nearArm: farm(S, a ? bk : fw, a ? 10 * p.lift : -80 * p.lift), farArm: farm(S, a ? fw : bk, a ? -80 * p.lift : 10 * p.lift),
         nearLeg: a ? up() : stand(), farLeg: a ? stand() : up(), moving: a ? ["nearLeg", "farArm"] : ["farLeg", "nearArm"]};
     },
-    build: function(tl, p, ui){
+    // The marcha isn't guided: it loops on its own.
+    loop: function(tl, p, ui){
       ui("Sube una rodilla, luego la otra");
       [1, -1].forEach(function(side){
         tl.call(function(){ p.side = side; })
@@ -2409,20 +2594,13 @@ const EX_FIGS = {
         nearLeg: a ? legRest : legMove, farLeg: a ? legMove : legRest, moving: a ? ["nearArm", "farLeg"] : ["farArm", "nearLeg"],
         trails: [function(k){ return farm(S, flerp(180, 86, k), 0)[2]; }, function(k){ return flegFK(H, flerp(180, 270, k), 270).pts[2]; }]};
     },
-    build: function(tl, p, ui, trail){
-      [1, -1].forEach(function(side){
-        tl.call(function(){ p.side = side; ui("Así empiezas"); })
-          .to(trail, {o: 1, duration: .5}).to({}, {duration: .4})
-          .call(function(){ ui("Estira"); })
-          .to(p, {arm: 86, duration: 1.6, ease: "sine.inOut"})
-          .to(p, {thigh: 270, duration: 1.6, ease: "sine.inOut"}, "<0.1")
-          .call(function(){ ui("Sostén 2–3 s"); })
-          .to({}, {duration: 2.4})
-          .call(function(){ ui("Vuelve"); })
-          .to(p, {arm: 180, duration: 1.4, ease: "sine.inOut"})
-          .to(p, {thigh: 180, duration: 1.4, ease: "sine.inOut"}, "<0.08")
-          .to(trail, {o: 0, duration: .5}, "<0.7");
-      });
+    // One rep of one side, phase by phase (estira · sostén · vuelve); the guide picks the side.
+    build: function(tl, p, D){
+      tl.to(p, {arm: 86, duration: D[0], ease: "sine.inOut"})
+        .to(p, {thigh: 270, duration: D[0] - .1, ease: "sine.inOut"}, "<0.1")
+        .to({}, {duration: D[1]})
+        .to(p, {arm: 180, duration: D[2], ease: "sine.inOut"})
+        .to(p, {thigh: 180, duration: D[2] - .08, ease: "sine.inOut"}, "<0.08");
     },
     still: {arm: 86, thigh: 270, side: 1}
   },
@@ -2436,20 +2614,12 @@ const EX_FIGS = {
         nearLeg: a ? up : down, farLeg: a ? down : up, moving: a ? ["nearArm", "farLeg"] : ["farArm", "nearLeg"],
         trails: [function(k){ return farm(S, -86 * k)[2]; }, function(k){ return flegFK(H, 80 * k, 90 - 10 * k).pts[2]; }]};
     },
-    build: function(tl, p, ui, trail){
-      [1, -1].forEach(function(side){
-        tl.call(function(){ p.side = side; ui("Así empiezas"); })
-          .to(trail, {o: 1, duration: .5}).to({}, {duration: .5})
-          .call(function(){ ui("Baja despacio"); })
-          .to(p, {arm: -86, duration: 2.4, ease: "sine.inOut"})
-          .to(p, {thigh: 80, shin: -90, duration: 2.4, ease: "sine.inOut"}, "<0.12")
-          .call(function(){ ui("Así terminas"); })
-          .to({}, {duration: 1})
-          .call(function(){ ui("Vuelve"); })
-          .to(p, {arm: 0, duration: 1.8, ease: "sine.inOut"})
-          .to(p, {thigh: 0, shin: 0, duration: 1.8, ease: "sine.inOut"}, "<0.1")
-          .to(trail, {o: 0, duration: .6}, "<0.9");
-      });
+    // One rep of one side: baja despacio · vuelve.
+    build: function(tl, p, D){
+      tl.to(p, {arm: -86, duration: D[0], ease: "sine.inOut"})
+        .to(p, {thigh: 80, shin: -90, duration: D[0] - .12, ease: "sine.inOut"}, "<0.12")
+        .to(p, {arm: 0, duration: D[1], ease: "sine.inOut"})
+        .to(p, {thigh: 0, shin: 0, duration: D[1] - .1, ease: "sine.inOut"}, "<0.1");
     },
     still: {arm: -86, thigh: 80, shin: -90, side: 1}
   },
@@ -2463,16 +2633,11 @@ const EX_FIGS = {
         nearLeg: flegIK(H, A, T), farLeg: flegIK(H, A, T), moving: [],
         trails: [function(k){ return fpt(S, FL.torso, 90 - BRIDGE_TOP * k); }]};
     },
-    build: function(tl, p, ui, trail){
-      tl.call(function(){ ui("Así empiezas"); })
-        .to(trail, {o: 1, duration: .5}).to({}, {duration: .3})
-        .call(function(){ ui("Sube la cadera"); })
-        .to(p, {lift: 1, duration: 1.6, ease: "sine.inOut"})
-        .call(function(){ ui("Sostén arriba"); })
-        .to({}, {duration: 1.2})
-        .call(function(){ ui("Baja despacio"); })
-        .to(p, {lift: 0, duration: 1.6, ease: "sine.inOut"})
-        .to(trail, {o: 0, duration: .5}, "<1");
+    // sube · sostén arriba · baja.
+    build: function(tl, p, D){
+      tl.to(p, {lift: 1, duration: D[0], ease: "sine.inOut"})
+        .to({}, {duration: D[1]})
+        .to(p, {lift: 0, duration: D[2], ease: "sine.inOut"});
     },
     still: {lift: 1}
   },
@@ -2486,17 +2651,13 @@ const EX_FIGS = {
       return {S: S, H: H, head: fpt(S, FL.neck, lean), nearArm: farm(S, a, 0), farArm: farm(S, a, 0),
         nearLeg: flegIK(H, A, T), farLeg: flegIK(H, A, T), moving: [], seatOn: p.touch, trails: [squatHip]};
     },
-    build: function(tl, p, ui, trail){
-      tl.call(function(){ ui("De pie"); })
-        .to(trail, {o: 1, duration: .5}).to({}, {duration: .2})
-        .call(function(){ ui("Baja"); })
-        .to(p, {down: 1, duration: 1.8, ease: "sine.inOut"})
-        .call(function(){ ui("Toca la silla"); })
-        .to(p, {touch: 1, duration: .15}).to({}, {duration: .45})
-        .call(function(){ ui("Sube"); })
+    // baja · toca la silla · sube.
+    build: function(tl, p, D){
+      const tap = Math.min(.15, D[1] / 2);
+      tl.to(p, {down: 1, duration: D[0], ease: "sine.inOut"})
+        .to(p, {touch: 1, duration: tap}).to({}, {duration: D[1] - tap})
         .to(p, {touch: 0, duration: .3})
-        .to(p, {down: 0, duration: 1.4, ease: "sine.inOut"}, "<")
-        .to(trail, {o: 0, duration: .5}, "<0.8");
+        .to(p, {down: 0, duration: D[2], ease: "sine.inOut"}, "<");
     },
     still: {down: 1, touch: 1}
   },
@@ -2508,11 +2669,10 @@ const EX_FIGS = {
       const S = [92, ON_FLOOR.torso], H = [158, ON_FLOOR.torso], leg = flegFK(H, 0, 90, 22);
       return {S: S, H: H, head: [S[0] - FL.neck, ON_FLOOR.head], nearArm: null, farArm: armOnFloor(S), nearLeg: leg, farLeg: leg, moving: [], breath: p.breath};
     },
-    build: function(tl, p, ui){
-      tl.call(function(){ ui("Inhala"); })
-        .to(p, {breath: 1, duration: 4, ease: "sine.inOut"})
-        .call(function(){ ui("Exhala"); })
-        .to(p, {breath: 0, duration: 5, ease: "sine.inOut"});
+    // inhala · exhala.
+    build: function(tl, p, D){
+      tl.to(p, {breath: 1, duration: D[0], ease: "sine.inOut"})
+        .to(p, {breath: 0, duration: D[1], ease: "sine.inOut"});
     },
     still: {breath: 1}
   }
@@ -2535,8 +2695,9 @@ function loadGsap(){
 function svgEl(parent, tag, attrs){ const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for(const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
 function ptsAttr(ps){ return ps ? ps.map(function(p){ return p[0].toFixed(2) + "," + p[1].toFixed(2); }).join(" ") : ""; }
 
-// Draws one step into slot. "ready" holds the starting pose (during the 5-second change); "play" loops the movement.
-function mountExFig(slot, key, mode){
+// Draws one step into slot. "ready" holds the starting pose (during the 5-second change). In "play", a drill
+// follows the guide's clock (plan: its phase lengths), so the drawing moves with the beeps; the marcha loops.
+function mountExFig(slot, key, mode, plan){
   const fig = EX_FIGS[key], v = fig.view;
   slot.innerHTML = '<div class="ph"><b></b></div>' +
     '<svg viewBox="' + v[0] + ' ' + v[1] + ' ' + v[2] + ' ' + v[2] / 2 + '" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" fill="none"></svg>' +
@@ -2604,12 +2765,36 @@ function mountExFig(slot, key, mode){
   if(mode === "ready"){ render(); ui("Prepárate"); return null; }
   const still = function(){ Object.assign(p, fig.still); trail.o = 1; render(); ui("Así se hace"); };
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){ still(); return null; }
+  if(!fig.loop && !plan){ still(); return null; }
   render(); ui("");
-  const handle = {tl: null, io: null, dead: false};
+  const handle = {tl: null, io: null, dead: false, drive: null};
   loadGsap().then(function(gsap){
     if(handle.dead) return;
+    if(!fig.loop){
+      // One rep (one side), seeked to wherever the drill is: t is seconds into the drill's rhythm.
+      trail.o = 1;
+      handle.tl = gsap.timeline({paused: true});
+      fig.build(handle.tl, p, plan.D);
+      const cyc = plan.D.reduce(function(a, d){ return a + d; }, 0);
+      handle.drive = function(t){
+        let label;
+        if(t < 0){ p.side = 1; handle.tl.time(0); label = "Prepárate"; }
+        else {
+          const rep = Math.floor(t / cyc), tc = t - rep * cyc;
+          if(plan.g.sides) p.side = rep % 2 ? -1 : 1;
+          handle.tl.time(Math.min(tc, handle.tl.duration()));
+          let j = 0, acc = plan.D[0];
+          while(j < plan.D.length - 1 && tc >= acc){ j++; acc += plan.D[j]; }
+          label = plan.g.phases[j][2];
+        }
+        render();
+        if(phB.textContent !== label) ui(label);
+      };
+      exFigDrive();
+      return;
+    }
     handle.tl = gsap.timeline({repeat: -1, onUpdate: render});
-    fig.build(handle.tl, p, ui, trail);
+    fig.loop(handle.tl, p, ui, trail);
     // Only moves while it's on screen (a closed card or a scrolled-away timer rests).
     if("IntersectionObserver" in window){
       handle.io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(handle.tl) e.isIntersecting ? handle.tl.play() : handle.tl.pause(); }); });
@@ -2636,23 +2821,40 @@ function exFigFor(box, idx, started){
   if(exFig.slot === slot && exFig.key === key && exFig.mode === mode) return;
   stopExFig();
   slot.innerHTML = "";
-  exFig = {slot: slot, key: key, mode: mode, handle: key ? mountExFig(slot, key, mode) : null};
+  exFig = {slot: slot, key: key, mode: mode, handle: key ? mountExFig(slot, key, mode, started && mode === "play" ? guidePlan(idx) : null) : null};
+}
+// Moves a guided drawing to the drill's moment; while the timer runs, once a frame.
+function exFigDrive(){
+  const r = runs.ejercicio, h = exFig.handle;
+  if(!h || !h.drive || !r.started) return;
+  const el = Math.min(elapsedSecs(r), runTotal(r) - 0.001), idx = stepAt(r, el), plan = guidePlan(idx);
+  if(plan && plan.key === exFig.key && exFig.mode === "play") h.drive(el - stepStart(r, idx) - plan.lead);
+}
+let exDriveRaf = 0;
+function exDriveLoop(){
+  exDriveRaf = 0;
+  exFigDrive();
+  if(runs.ejercicio.running && exFig.handle && exFig.handle.drive) exDriveRaf = requestAnimationFrame(exDriveLoop);
 }
 
 const runs = {
   ejercicio: {
     storeKey: "savers:timer",
     steps: function(){ return STEPS; },
+    // Drills are guided by their own words and beeps (guidePump), and a bell closes each one;
+    // the change's cue waits for the bell, and the breathing has 5 quiet seconds for its cue.
     enter: function(i, how){
       const s = STEPS[i];
-      beep(s.rest ? 520 : 880, how === "start" ? .15 : .18);
-      if(how === "start" && i === 0) sayEx(0);
-      else if(s.rest) sayEx(i + 1);
-      else if(how === "skip") sayEx(i);
+      if(i === 0){ beep(880, .15); if(how === "start") sayEx(0); return; }
+      if(s.rest || i === STEPS.length - 1){
+        const seq = saySeq, k = s.rest ? i + 1 : i;
+        setTimeout(function(){ if(seq === saySeq && runs.ejercicio.running) sayEx(k); }, 700);
+      }
     },
     second: function(i, remain){
+      if(guidePlan(i)) return;
       if(remain > 0 && remain <= 3) beep(660, .08);
-      // Steps with no 5-second change before them get announced a few seconds early.
+      // The marcha has no change after it, so the first drill is announced a few seconds early.
       const next = STEPS[i + 1];
       if(remain === 6 && next && !next.rest && !STEPS[i].rest) sayEx(i + 1);
     },
@@ -2748,6 +2950,7 @@ function startRun(r){
   const fresh = !r.started;
   if(fresh){ r.base = 0; r.lastIdx = 0; r.day = todayStr(); }
   r.running = true; r.started = true; r.runStart = Date.now(); r.lastRemain = null;
+  if(r.key === "ejercicio") guideStop();
   if(fresh) r.enter(0, "start"); else beep(880, .15);
   persistRun(r);
   syncRunLoop();
@@ -2756,6 +2959,7 @@ function startRun(r){
 function pauseRun(r, keepAudioMode){
   if(r.running) r.base = elapsedSecs(r);
   r.running = false;
+  if(r.key === "ejercicio") guideStop();
   syncRunLoop();
   if(keepAudioMode !== true && !anyRunning()) setAudioMode("ambient");
   persistRun(r);
@@ -2774,6 +2978,7 @@ function skipStep(r){
   if(idx >= r.steps().length - 1){ finishRun(r); return; }
   r.base = stepStart(r, idx + 1); r.runStart = Date.now();
   r.lastIdx = idx + 1; r.lastRemain = null;
+  if(r.key === "ejercicio"){ guideStop(r.base); guidePump(r.base); }
   r.enter(idx + 1, "skip");
   persistRun(r);
   updateRunUI(r);
@@ -2786,6 +2991,7 @@ function tickRuns(){
     if(!st.length){ resetRun(r); return; }
     if(el >= runTotal(r)){ finishRun(r); return; }
     const idx = stepAt(r, el);
+    if(k === "ejercicio") guidePump(el);
     if(idx !== r.lastIdx){
       r.lastIdx = idx; r.lastRemain = null;
       r.enter(idx, "auto");
@@ -2872,7 +3078,10 @@ function updateRunUI(r){
   else updateExMap(box, r, idx, el);
   $('[data-act="go"]', box).textContent = r.running ? "Pausar" : r.started ? "Seguir" : rest ? "Repetir" : "Empezar";
   $('[data-act="reset"]', box).hidden = !r.started;
-  if(r.key === "ejercicio") exFigFor(box, rest ? null : idx, r.started);
+  if(r.key === "ejercicio"){
+    exFigFor(box, rest ? null : idx, r.started);
+    if(!exDriveRaf) exDriveLoop();
+  }
 }
 function updateAllRunUI(){ Object.keys(runs).forEach(function(k){ updateRunUI(runs[k]); }); }
 
