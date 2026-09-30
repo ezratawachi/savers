@@ -1,12 +1,5 @@
 import SwiftUI
 
-enum CardLayout {
-    /// Where a card's text starts, past its circle.
-    static let indent: CGFloat = 54
-    /// Room on the right of a card's content.
-    static let trailing: CGFloat = 6
-}
-
 /// One letter of the guide. Pending: a card. Now: a sky edge and the sun. Done: a quiet row.
 struct LetterCard<Content: View>: View {
     let letter: Letter
@@ -19,6 +12,8 @@ struct LetterCard<Content: View>: View {
     let sunNext: String
     let onToggle: () -> Void
     let onOpen: () -> Void
+    /// Inside another card ("hechas"): no card of its own, on that card's line.
+    var nested = false
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -33,33 +28,38 @@ struct LetterCard<Content: View>: View {
                     rowText
                 }
             }
+            // The circle's drawing, not its target, sits on the card's line.
+            .padding(EdgeInsets(top: -CardLayout.circleSlack, leading: -CardLayout.circleSlack,
+                                bottom: -CardLayout.circleSlack, trailing: 0))
             if let sun, isNow, !done {
                 SunLine(start: sun.start, length: sun.length, next: sunNext)
-                    .padding(.leading, CardLayout.indent)
-                    .padding(.trailing, 4)
-                    .padding(.top, 2)
+                    .padding(.leading, CardLayout.titleIndent)
+                    .padding(.top, 6)
                     .transition(.opacity)
             }
             if isOpen {
                 content
-                    .padding(.top, 10)
-                    .padding(.leading, CardLayout.indent)
-                    .padding(.trailing, CardLayout.trailing)
+                    .padding(.top, CardLayout.inset)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .transition(.opacity)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, done && !isOpen ? 0 : 8)
+        .padding(.horizontal, nested ? 0 : CardLayout.inset)
+        // Without a card around it: just room for the circle's target.
+        .padding(.vertical, bare ? CardLayout.circleSlack : CardLayout.inset)
         .background {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: CardLayout.radius)
                 .fill(Color.surface)
                 .stroke(isNow ? Color.sky : Color.line, lineWidth: isNow ? 1.5 : 1)
                 .shadow(color: .black.opacity(0.04), radius: 2, y: 1)
-                .opacity(done && !isOpen ? 0 : 1)
+                .opacity(bare ? 0 : 1)
         }
-        .clipShape(.rect(cornerRadius: 16))
+        // Nested, the circle's target reaches past the edge; don't cut its drawing.
+        .clipShape(.rect(cornerRadius: CardLayout.radius).inset(by: nested ? -CardLayout.circleSlack : 0))
     }
+
+    /// No card drawn: a done row that's closed, or any letter inside another card.
+    private var bare: Bool { nested || (done && !isOpen) }
 
     private var rowText: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {

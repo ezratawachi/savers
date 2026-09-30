@@ -33,19 +33,22 @@ struct FoldCard<Content: View>: View {
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
+            // The circle's drawing, not its target, sits on the card's line.
+            .padding(EdgeInsets(top: -CardLayout.circleSlack, leading: -CardLayout.circleSlack,
+                                bottom: -CardLayout.circleSlack, trailing: 0))
             .accessibilityHint(isOpen ? "Oculta lo hecho" : "Muestra lo hecho")
             if isOpen {
                 content
-                    .padding(.top, 4)
+                    .padding(.top, CardLayout.inset)
                     .transition(.opacity)
             }
         }
-        .padding(8)
+        .padding(CardLayout.inset)
         .background {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: CardLayout.radius)
                 .fill(Color.surface)
                 .stroke(Color.line, lineWidth: 1)
         }
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: CardLayout.radius))
     }
 }

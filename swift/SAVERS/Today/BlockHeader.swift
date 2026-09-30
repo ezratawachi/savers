@@ -3,6 +3,8 @@ import SwiftUI
 /// "**5:50** · SAVERS" above a block's letters.
 struct BlockHeader: View {
     let head: [String]
+    /// Inside a card ("hechas"), on that card's line.
+    var nested = false
 
     var body: some View {
         let parts = head.filter { !$0.isEmpty }
@@ -12,7 +14,7 @@ struct BlockHeader: View {
                 .font(.reading(15, relativeTo: .subheadline))
                 .foregroundStyle(.muted)
                 .padding(.top, 10)
-                .padding(.leading, 4)
+                .padding(.leading, nested ? 0 : 4)
                 .accessibilityAddTraits(.isHeader)
         }
     }

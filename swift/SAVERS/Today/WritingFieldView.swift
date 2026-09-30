@@ -34,7 +34,7 @@ struct WritingFieldView: View {
                 .focused(focus, equals: field)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(Color.surface2.opacity(editing || text.isEmpty ? 1 : 0.5), in: .rect(cornerRadius: 12))
+                .background(Color.surface2.opacity(editing || text.isEmpty ? 1 : 0.5), in: .rect(cornerRadius: CardLayout.innerRadius))
                 .accessibilityLabel("\(field.label), \(hint)")
         }
         .onAppear {

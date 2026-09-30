@@ -150,12 +150,12 @@ private struct MonthEntries: View {
         }
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
+        .padding(CardLayout.inset)
         .background {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: CardLayout.radius)
                 .fill(Color.surface)
                 .stroke(Color.line, lineWidth: 1)
         }
-        .contentShape(.rect(cornerRadius: 16))
+        .contentShape(.rect(cornerRadius: CardLayout.radius))
     }
 }

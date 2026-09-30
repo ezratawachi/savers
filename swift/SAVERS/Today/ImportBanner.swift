@@ -29,8 +29,7 @@ struct ImportBanner: View {
             .buttonStyle(.borderless)
             .frame(minHeight: 44)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(.surface2, in: .rect(cornerRadius: 14))
+        .padding(CardLayout.inset)
+        .background(.surface2, in: .rect(cornerRadius: CardLayout.radius))
     }
 }

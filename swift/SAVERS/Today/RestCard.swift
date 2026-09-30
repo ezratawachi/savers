@@ -22,9 +22,9 @@ struct RestCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
+        .padding(CardLayout.inset)
         .background {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: CardLayout.radius)
                 .fill(Color.surface)
                 .stroke(Color.line, lineWidth: 1)
         }

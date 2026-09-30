@@ -44,9 +44,8 @@ struct FinishCard: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
-        .padding(.horizontal, 16)
-        .background(.dawnSoft, in: .rect(cornerRadius: 20))
+        .padding(CardLayout.inset)
+        .background(.dawnSoft, in: .rect(cornerRadius: CardLayout.radius))
         .accessibilityElement(children: .contain)
     }
 }

@@ -84,14 +84,11 @@ struct TimerButton: ButtonStyle {
 }
 
 extension View {
-    /// A timer's box. Wider than the card's text: it lines up with the circle, so its buttons fit side by side,
-    /// with the same margin on both sides of the card.
+    /// A timer's box, across the card's body like everything else in it.
     func timerBox() -> some View {
-        padding(14)
+        padding(CardLayout.inset)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.surface2, in: .rect(cornerRadius: 14))
-            .padding(.leading, -CardLayout.indent)
-            .padding(.trailing, -CardLayout.trailing)
+            .background(.surface2, in: .rect(cornerRadius: CardLayout.innerRadius))
     }
 }
 

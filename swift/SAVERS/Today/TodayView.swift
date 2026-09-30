@@ -127,7 +127,7 @@ struct TodayView: View {
             if !folded.isEmpty {
                 let label = fin == .day && blocks.contains(where: \.isLater) ? "Todo el día" : "Mañana"
                 FoldCard(label: label, count: folded.reduce(0) { $0 + $1.letters.count }, isOpen: $foldOpen) {
-                    blockList(folded, routine, ds: ds, day: day)
+                    blockList(folded, routine, ds: ds, day: day, nested: true)
                 }
                 .transition(.opacity)
             }
@@ -135,12 +135,12 @@ struct TodayView: View {
         }
     }
 
-    private func blockList(_ blocks: [Block], _ routine: Routine, ds: String, day: Day) -> some View {
+    private func blockList(_ blocks: [Block], _ routine: Routine, ds: String, day: Day, nested: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(blocks) { block in
-                if let head = block.head { BlockHeader(head: head) }
+                if let head = block.head { BlockHeader(head: head, nested: nested) }
                 ForEach(block.letters) { letter in
-                    card(letter, routine, ds: ds, day: day)
+                    card(letter, routine, ds: ds, day: day, nested: nested)
                         .id(letter)
                         .onScrollVisibilityChange(threshold: 0.98) { visible in
                             if visible { fullyVisible.insert(letter) } else { fullyVisible.remove(letter) }
@@ -150,7 +150,7 @@ struct TodayView: View {
         }
     }
 
-    private func card(_ letter: Letter, _ routine: Routine, ds: String, day: Day) -> some View {
+    private func card(_ letter: Letter, _ routine: Routine, ds: String, day: Day, nested: Bool = false) -> some View {
         let reviewDue = routine.affirmationReviewDue(reviewed: store.affReviewed)
         let info = routine.info(letter, on: ds, reviewDue: reviewDue)
         let isNow = letter == shownNow
@@ -167,7 +167,8 @@ struct TodayView: View {
                 withAnimation(motion(Motion.height)) {
                     if openCards.contains(letter) { openCards.remove(letter) } else { openCards.insert(letter) }
                 }
-            }
+            },
+            nested: nested
         ) {
             cardBody(letter, routine, ds: ds, day: day, reviewDue: reviewDue)
         }

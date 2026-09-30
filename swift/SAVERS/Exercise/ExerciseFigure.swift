@@ -47,7 +47,7 @@ struct ExerciseFigure: View {
         .padding(.horizontal, 10)
         .padding(.top, 10)
         .padding(.bottom, 12)
-        .background(.surface, in: .rect(cornerRadius: 12))
+        .background(.surface, in: .rect(cornerRadius: CardLayout.innerRadius))
         .accessibilityElement(children: .combine)
     }
 
