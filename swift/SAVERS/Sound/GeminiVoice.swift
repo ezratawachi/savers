@@ -213,6 +213,13 @@ final class GeminiVoice {
 
     /// A full day's quota waits for its reset; a busy minute tries again in a minute (three in a row count as the day).
     private func note(_ e: TTSError?) {
+        // Google busy for a moment (500, 503): try again soon, without a word about it.
+        if let e, let s = e.status, s >= 500 {
+            minuteHold = .now.addingTimeInterval(30)
+            wait(until: minuteHold)
+            error = ""
+            return
+        }
         guard let e, e.status == 429 else {
             error = message(e)
             return
