@@ -6,18 +6,23 @@ struct RootView: View {
     @Environment(CloudSync.self) private var cloud
     @Environment(Runs.self) private var runs
     @Environment(\.scenePhase) private var scenePhase
+    @State private var tab = AppTab.today
+    @State private var historyOpened = 0
 
     var body: some View {
-        TabView {
-            Tab("Hoy", systemImage: "sun.horizon") {
+        TabView(selection: $tab) {
+            Tab("Hoy", systemImage: "sun.horizon", value: .today) {
                 TodayView()
             }
-            Tab("Historial", systemImage: "calendar") {
-                HistoryPlaceholder()
+            Tab("Historial", systemImage: "calendar", value: .history) {
+                HistoryView(opened: historyOpened)
             }
-            Tab("Ajustes", systemImage: "gearshape") {
-                SettingsPlaceholder()
+            Tab("Ajustes", systemImage: "gearshape", value: .settings) {
+                SettingsView()
             }
+        }
+        .onChange(of: tab) { _, new in
+            if new == .history { historyOpened += 1 }
         }
         .tint(.sky)
         .overlay { ToastOverlay() }
@@ -48,4 +53,8 @@ struct RootView: View {
             runs.resume()
         }
     }
+}
+
+enum AppTab: Hashable {
+    case today, history, settings
 }

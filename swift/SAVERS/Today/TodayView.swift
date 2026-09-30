@@ -25,6 +25,9 @@ struct TodayView: View {
     /// The cards shown whole on screen, to scroll only when the next one isn't.
     @State private var fullyVisible: Set<Letter> = []
     @FocusState private var focus: WritingField?
+    @State private var sheetDay: String?
+    @State private var editingItems: ItemsSheet.Mode?
+    @State private var exporting = false
 
     var body: some View {
         let routine = store.routine
@@ -38,7 +41,7 @@ struct TodayView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    TodayHeader(ds: ds, name: store.settings.name, type: type, status: store.saveError)
+                    TodayHeader(ds: ds, name: store.settings.name, type: type, status: store.saveError) { sheetDay = ds }
                     if !store.settings.hasPersonalData && !cloud.linked {
                         ImportBanner(busy: cloud.busy, error: cloud.error) {
                             Task { await cloud.signIn(using: webAuth) }
@@ -83,6 +86,9 @@ struct TodayView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: checkTick)
         .sensoryFeedback(.success, trigger: finishTick)
         .backupImporter(isPresented: $importing)
+        .backupExporter(isPresented: $exporting)
+        .daySheet($sheetDay)
+        .sheet(item: $editingItems) { ItemsSheet(mode: $0, settings: store.settings) }
         .onChange(of: store.today) {
             // A new day starts like the app does: everything closed, nothing animated.
             let fresh = store.routine
@@ -108,10 +114,13 @@ struct TodayView: View {
         let rest = blocks.filter { b in !folded.contains(b) }
 
         if fin != .none {
-            FinishCard(finish: fin, pending: pending(blocks, day), streak: routine.streak())
+            FinishCard(finish: fin, pending: pending(blocks, day), streak: routine.streak(), backupReminder: backupReminder) {
+                exporting = true
+            }
                 .transition(.scale(scale: 0.96, anchor: .top).combined(with: .opacity))
         }
-        HeroLetters(day: day, streak: routine.streak(), showStreak: fin != .day)
+        HeroLetters(day: day, streak: routine.streak(), showStreak: fin != .day,
+                    onSchedule: routine.hasSchedule(routine.scheduleKind(ds)) ? { sheetDay = ds } : nil)
         VStack(alignment: .leading, spacing: 8) {
             if !folded.isEmpty {
                 let label = fin == .day && blocks.contains(where: \.isLater) ? "Todo el día" : "Mañana"
@@ -167,9 +176,13 @@ struct TodayView: View {
         let kind = routine.scheduleKind(ds)
         switch letter {
         case .afirmaciones:
-            AffirmationsBody(items: routine.settings.affirmations.filled, reviewDue: reviewDue)
+            AffirmationsBody(items: routine.settings.affirmations.filled, reviewDue: reviewDue) { review in
+                editingItems = review ? .review : .affirmations
+            }
         case .visualizacion:
-            VisualizationBody(visualization: routine.settings.visualization, done: day.isDone(.visualizacion))
+            VisualizationBody(visualization: routine.settings.visualization, done: day.isDone(.visualizacion)) {
+                editingItems = .visualization
+            }
         case .lectura:
             ReadingBody(
                 minutes: routine.letterMinutes(.lectura, kind, on: ds),
@@ -188,6 +201,12 @@ struct TodayView: View {
         case .silencio:
             EmptyView()
         }
+    }
+
+    /// "Hace 20 días sin copia" / "Todavía no exportas una copia", without the cloud and past two weeks.
+    private var backupReminder: String? {
+        guard store.backupOverdue(cloudLinked: cloud.linked) else { return nil }
+        return store.lastExport == nil ? "Todavía no exportas una copia" : "Hace \(store.backupAge) días sin copia"
     }
 
     /// "Lectura a las 8:50 pm": what "Más tarde" still holds.

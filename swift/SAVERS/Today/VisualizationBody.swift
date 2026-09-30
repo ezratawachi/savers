@@ -4,12 +4,16 @@ import SwiftUI
 struct VisualizationBody: View {
     let visualization: Visualization
     let done: Bool
+    /// "Agregar preguntas" when there are none.
+    let onAdd: () -> Void
 
     var body: some View {
         let items = visualization.items.filled
         VStack(alignment: .leading, spacing: 10) {
             if items.isEmpty {
                 Text("Todavía no tienes preguntas.")
+                Button("Agregar preguntas", action: onAdd)
+                    .buttonStyle(PrimaryButton())
             } else {
                 VisualizationTimer(done: done)
                     .padding(.bottom, 4)

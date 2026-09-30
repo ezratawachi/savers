@@ -26,6 +26,14 @@ struct Backup {
         }
     }
 
+    /// What the copy's "paraLaIA" says, word for word as the web writes it.
+    static let summaryNote = "\"resumen\" es solo para leer: la app lo calcula y al importar no lo usa. La hora de cada letra es la hora de su bloque más los minutos de las letras que van antes. " +
+        "Para ajustar la rutina, cambia settings.schedule. En types.normal y types.gym, cada bloque tiene \"time\" (su hora todos los días de ese tipo), \"times\" (otra hora solo un día de la semana, como {\"jue\": \"5:10\"}) " +
+        "y \"letters\" (qué letras van en ese bloque y en qué orden: silencio, afirmaciones, visualizacion, ejercicio, lectura, escritura). " +
+        "Los minutos de Silencio y Lectura van en \"minutes\" ({\"silencio\": 10, \"lectura\": 4}) y \"minutesDays\" ({\"lectura\": {\"jue\": 10}}); los de Afirmaciones, Visualización, Ejercicio y Escritura no se pueden cambiar. " +
+        "\"week\" dice qué es cada día (0 domingo … 5 viernes): \"normal\", \"gym\" u \"off\" (sin SAVERS); el sábado es Shabbat. " +
+        "Las horas se escriben \"5:20\" (de mañana) o \"8:50 pm\". Un cambio solo para una fecha va en days[\"AAAA-MM-DD\"]: \"times\" (por id de bloque) y \"mins\"."
+
     let settings: AppSettings
     /// Only what the file brings is replaced, so a schedule-only file never touches the affirmations.
     let parts: [Part]

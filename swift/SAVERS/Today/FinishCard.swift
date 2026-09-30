@@ -6,6 +6,9 @@ struct FinishCard: View {
     /// "Lectura a las 8:50 pm"
     let pending: String
     let streak: Int
+    /// "Hace 20 días sin copia", when the copy is overdue.
+    var backupReminder: String?
+    var onExport: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 8) {
@@ -29,11 +32,21 @@ struct FinishCard: View {
             .font(.reading())
             .foregroundStyle(.ink)
             .multilineTextAlignment(.center)
+            if let backupReminder {
+                HStack(spacing: 4) {
+                    Text("\(backupReminder) ·").foregroundStyle(.warn)
+                    Button("Exportar", action: onExport)
+                        .bold()
+                        .foregroundStyle(.sky)
+                        .frame(minHeight: 44)
+                }
+                .font(.reading(15, relativeTo: .subheadline))
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
         .padding(.horizontal, 16)
         .background(.dawnSoft, in: .rect(cornerRadius: 20))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }

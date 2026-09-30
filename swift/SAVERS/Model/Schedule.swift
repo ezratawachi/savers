@@ -12,6 +12,15 @@ struct Schedule: Codable, Equatable, Sendable {
 
     private static let known: Set<String> = ["week", "gymTime", "gymReading", "types"]
 
+    /// A schedule that only says what each weekday is (the web's `migrateSchedule({})`).
+    static var blank: Schedule {
+        var s = Schedule()
+        s.migrate()
+        return s
+    }
+
+    private init() {}
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: AnyKey.self)
         week = c.lenient([String: String].self, "week") ?? [:]

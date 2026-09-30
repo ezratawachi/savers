@@ -46,4 +46,42 @@ enum DayKey {
         let s = formatter("EEEE d MMM").string(from: date(key)).replacingOccurrences(of: ".", with: "")
         return s.prefix(1).uppercased() + s.dropFirst()
     }
+
+    /// "Martes 29 de septiembre"
+    static func long(_ key: String) -> String {
+        formatter("EEEE d 'de' MMMM").string(from: date(key)).capitalizedFirst
+    }
+
+    /// "Mar 29 sept"
+    static func short(_ key: String) -> String {
+        formatter("EEE d MMM").string(from: date(key)).replacingOccurrences(of: ".", with: "").capitalizedFirst
+    }
+
+    /// "Septiembre de 2026"
+    static func monthName(_ month: MonthIndex) -> String {
+        formatter("LLLL 'de' y").string(from: date(month.first)).capitalizedFirst
+    }
+}
+
+/// A month as one number (year × 12 + month − 1), so months line up in a pager.
+struct MonthIndex: Hashable, Comparable, Strideable {
+    let value: Int
+
+    init(_ value: Int) { self.value = value }
+    init(of key: String) {
+        let p = key.split(separator: "-").compactMap { Int($0) }
+        value = p.count >= 2 ? p[0] * 12 + p[1] - 1 : 0
+    }
+
+    var year: Int { value / 12 }
+    var month: Int { value % 12 + 1 }
+    /// "AAAA-MM-01"
+    var first: String { String(format: "%04d-%02d-01", year, month) }
+    var dayCount: Int { DayKey.calendar.range(of: .day, in: .month, for: DayKey.date(first))?.count ?? 30 }
+    /// Every date of the month, "AAAA-MM-DD".
+    var dates: [String] { (1...dayCount).map { String(format: "%04d-%02d-%02d", year, month, $0) } }
+
+    static func < (a: Self, b: Self) -> Bool { a.value < b.value }
+    func distance(to other: Self) -> Int { other.value - value }
+    func advanced(by n: Int) -> Self { Self(value + n) }
 }

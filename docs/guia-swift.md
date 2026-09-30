@@ -29,8 +29,16 @@ Claude lee esta guía, ve cuál es la primera sesión sin marcar y la hace. Al t
   Ajustes › Voz tiene las 4 voces con Probar y el campo de la clave (se guarda en el llavero del iPhone, aparte de la web),
   y "Mantener mi música". Probado en el simulador todo el recorrido sin terminarlo (terminarlo marcaría tu día real).
   Falta que tú: pegues la clave (las frases se crean solas) y hagas la rutina completa escuchando.
-- [ ] **4. Historial, Ajustes y Horario**.
+- [x] **4. Historial, Ajustes y Horario**.
   *Tú pruebas:* ver meses pasados, abrir un día, cambiar una hora solo para mañana, editar una afirmación.
+  *Hecho (29 sept):* Historial con el calendario que se desliza entre meses, los registros del mes y el día abierto
+  (marcar, Escritura, o preparar un día que viene). El chip del día y "Ver horario" abren la hoja del día: tocas una
+  hora y se abre la rueda del iPhone debajo. Ajustes completo: nombre, Horario (días, horas por día, minutos),
+  Afirmaciones y Visualización (editar como cualquier lista de iOS: arrastrar para ordenar, círculo rojo para borrar),
+  Leer en, Voz, música y Copia de seguridad (exportar a Archivos, importar, nube). La revisión del mes se abre desde
+  Hoy como una hoja: Afirmaciones › Siguiente › Visualización › Listo, y vuelves al mismo punto. Probado en el
+  simulador con la nube desconectada y tus datos restaurados al final (nada de mis pruebas subió).
+  Quedan para la 5: la fila de Notificaciones en Ajustes.
 - [ ] **5. Avisos y cambio de app**: notificaciones, renovación semanal, la nueva reemplaza a la vieja.
   *Tú pruebas:* tocar "Permitir", mandar un aviso de prueba, usar solo la app nueva unos días.
 - [ ] **6. Pulido**: todo lo anotado abajo, en una sola ronda.

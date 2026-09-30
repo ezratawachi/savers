@@ -48,7 +48,7 @@ struct Routine {
         return time(of: step, on: ds)
     }
 
-    private static func valid(_ v: JSONValue?) -> Int? {
+    static func valid(_ v: JSONValue?) -> Int? {
         guard let n = v?.number, n >= 1, n <= 240, n.rounded() == n else { return nil }
         return Int(n)
     }
@@ -64,10 +64,20 @@ struct Routine {
         Self.valid(days[ds]?.mins?[letter.rawValue]) ?? usualMinutes(kind, letter, weekday: DayKey.weekday(ds))
     }
 
-    /// How long a letter takes; 0 when it isn't known.
+    /// How long a letter takes on a date; 0 when it isn't known.
     func letterMinutes(_ letter: Letter, _ kind: DayType, on ds: String) -> Int {
+        letter.usualMinutes != nil ? minutesOn(kind, letter, on: ds) : fixedMinutes(letter, kind)
+    }
+
+    /// How long a letter usually takes on a weekday (nil: on all the days of its kind).
+    func letterMinutes(_ letter: Letter, _ kind: DayType, weekday w: Int?) -> Int {
+        letter.usualMinutes != nil ? usualMinutes(kind, letter, weekday: w) : fixedMinutes(letter, kind)
+    }
+
+    /// The letters whose minutes come from what's in them, not from a setting.
+    private func fixedMinutes(_ letter: Letter, _ kind: DayType) -> Int {
         switch letter {
-        case .silencio, .lectura: minutesOn(kind, letter, on: ds)
+        case .silencio, .lectura: letter.usualMinutes ?? 0
         case .afirmaciones: max(1, Int((Double(settings.affirmations.filled.count * 25) / 60).rounded(.up)))
         case .visualizacion: max(1, settings.visualization.items.filled.count)
         case .ejercicio: kind == .gym ? TimeText.span(settings.schedule?.gymTime) ?? 0 : 8

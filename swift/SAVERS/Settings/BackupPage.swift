@@ -1,34 +1,26 @@
 import AuthenticationServices
 import SwiftUI
 
-/// Ajustes arrives in session 4; for now: the cloud and bringing a copy in.
-struct SettingsPlaceholder: View {
+/// Ajustes › Copia de seguridad: the cloud, and a copy in a file.
+struct BackupPage: View {
+    @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
     @Environment(\.webAuthenticationSession) private var webAuth
     @State private var importing = false
+    @State private var exporting = false
     @State private var askingSignOut = false
-    @State private var keepMusic = ToneEngine.keepMusic
-    private var gemini: GeminiVoice { .shared }
 
     var body: some View {
-        NavigationStack {
-            List {
-                soundSection
-                cloudSection
-                Section {
-                    Button("Importar copia") { importing = true }
-                        .foregroundStyle(.sky)
-                } header: {
-                    Text("Copia en archivo")
-                } footer: {
-                    Text(cloud.linked ? "Tus registros se guardan en este aparato y en la nube." : "Tus registros viven solo en este aparato.")
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .background(.bg)
-            .navigationTitle("Ajustes")
+        List {
+            cloudSection
+            fileSection
         }
+        .scrollContentBackground(.hidden)
+        .background(.bg)
+        .navigationTitle("Copia de seguridad")
+        .navigationBarTitleDisplayMode(.inline)
         .backupImporter(isPresented: $importing)
+        .backupExporter(isPresented: $exporting)
         .confirmationDialog("¿Cerrar sesión?", isPresented: $askingSignOut, titleVisibility: .visible) {
             Button("Cerrar sesión", role: .destructive) { cloud.signOut() }
         } message: {
@@ -36,19 +28,36 @@ struct SettingsPlaceholder: View {
         }
     }
 
-    private var soundSection: some View {
+    private var fileSection: some View {
         Section {
-            NavigationLink {
-                VoiceSettings()
-            } label: {
-                LabeledContent("Voz", value: gemini.hasKey ? gemini.voice : "Del iPhone")
+            LabeledContent("Última copia") {
+                Text(lastCopy)
+                    .foregroundStyle(store.backupOverdue(cloudLinked: cloud.linked) ? Color.warn : Color.muted)
             }
-            Toggle("Mantener mi música", isOn: $keepMusic)
-                .tint(.sky)
-                .onChange(of: keepMusic) { _, on in ToneEngine.keepMusic = on }
+            Button("Exportar copia") { exporting = true }
+                .foregroundStyle(.sky)
+                .fontWeight(cloud.linked ? .regular : .bold)
+            Button("Importar copia") { importing = true }
+                .foregroundStyle(.sky)
+        } header: {
+            Text("Copia en archivo")
         } footer: {
-            Text("En los temporizadores tu música sigue sonando, pero la voz solo se oye si el iPhone no está en silencio. Apagado, la voz pausa tu música y suena siempre.")
+            Text(cloud.linked
+                 ? "Un JSON con todo, para guardarlo en Archivos o dárselo a una IA."
+                 : "Tus registros viven solo en este aparato. Exporta una copia de vez en cuando y guárdala en Archivos o iCloud.")
         }
+    }
+
+    /// "29 de septiembre de 2026 (hoy)" or "Nunca".
+    private var lastCopy: String {
+        guard let last = store.lastExport else { return "Nunca" }
+        let date = last.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "es")))
+        return "\(date) (\(Self.ageLabel(store.backupAge).lowercased()))"
+    }
+
+    /// "Hoy", "Ayer", "Hace 5 días"
+    static func ageLabel(_ days: Int) -> String {
+        days == 0 ? "Hoy" : days == 1 ? "Ayer" : "Hace \(days) días"
     }
 
     @ViewBuilder

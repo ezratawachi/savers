@@ -6,6 +6,7 @@ struct TodayHeader: View {
     let name: String
     let type: DayType
     let status: String?
+    let onChip: () -> Void
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 12) {
@@ -28,12 +29,7 @@ struct TodayHeader: View {
                     .accessibilityAddTraits(.isHeader)
             }
             Spacer(minLength: 0)
-            Text(type.chipName)
-                .font(.reading(15, relativeTo: .subheadline).bold())
-                .foregroundStyle(.ink)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(.surface2, in: .capsule)
+            DayChip(type: type, action: onChip)
                 .padding(.bottom, 6)
         }
     }

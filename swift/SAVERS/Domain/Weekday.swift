@@ -22,4 +22,16 @@ enum Weekday {
         let p = plain(keys[w])
         return dict.keys.first { plain($0) == p }
     }
+
+    /// "los jueves", "los domingos"
+    static func plural(_ w: Int) -> String {
+        let n = names[w]
+        return "los " + n + (n.hasSuffix("s") ? "" : "s")
+    }
+
+    /// "los lunes y los jueves"
+    static func plurals(_ ws: [Int]) -> String { ws.map(plural).joined(separator: " y ") }
+
+    /// "lun, mar, jue"
+    static func list(_ ws: [Int]) -> String { ws.map { keys[$0] }.joined(separator: ", ") }
 }
