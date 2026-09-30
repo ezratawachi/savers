@@ -105,6 +105,10 @@ final class Notices {
 
     /// A beat after a change, so a run of edits plans once.
     func planSoon() {
+        #if DEBUG
+        // A scenario's made-up days never touch the real notices.
+        if Scenario.current != nil { return }
+        #endif
         planTask?.cancel()
         planTask = Task {
             try? await Task.sleep(for: .seconds(1.5))

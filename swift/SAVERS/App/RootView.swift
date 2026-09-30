@@ -7,7 +7,11 @@ struct RootView: View {
     @Environment(Runs.self) private var runs
     @Environment(Notices.self) private var notices
     @Environment(\.scenePhase) private var scenePhase
+    #if DEBUG
+    @State private var tab = Scenario.current?.tab ?? .today
+    #else
     @State private var tab = AppTab.today
+    #endif
     @State private var historyOpened = 0
 
     var body: some View {

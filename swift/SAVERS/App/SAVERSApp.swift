@@ -11,14 +11,21 @@ struct SAVERSApp: App {
     init() {
         ToneEngine.mixFromLaunch()
         BarAppearance.apply()
-        let store = AppStore()
+        var store = AppStore()
+        var prefs = LocalPrefs.standard
+        #if DEBUG
+        if let scenario = Scenario.current {
+            store = scenario.makeStore()
+            prefs = Scenario.prefs
+        }
+        #endif
         let toast = Toast()
         _store = State(initialValue: store)
         _toast = State(initialValue: toast)
-        _cloud = State(initialValue: CloudSync(store: store))
-        let notices = Notices(store: store)
+        _cloud = State(initialValue: CloudSync(store: store, prefs: prefs))
+        let notices = Notices(store: store, prefs: prefs)
         _notices = State(initialValue: notices)
-        _runs = State(initialValue: Runs(store: store, toast: toast, notices: notices))
+        _runs = State(initialValue: Runs(store: store, toast: toast, notices: notices, prefs: prefs))
         GeminiVoice.shared.phrases = { [store] in Self.spokenPhrases(store.settings) }
     }
 

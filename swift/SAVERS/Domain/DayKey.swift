@@ -13,7 +13,13 @@ enum DayKey {
         return String(format: "%04d-%02d-%02d", p.year ?? 0, p.month ?? 0, p.day ?? 0)
     }
 
+    #if DEBUG
+    /// Days a scenario moves "today" by.
+    nonisolated(unsafe) static var shift = 0
+    static var today: String { of(.now.addingTimeInterval(Double(shift) * 86400)) }
+    #else
     static var today: String { of(.now) }
+    #endif
 
     static func date(_ key: String) -> Date {
         let p = key.split(separator: "-").compactMap { Int($0) }

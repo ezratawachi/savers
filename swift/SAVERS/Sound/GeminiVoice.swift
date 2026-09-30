@@ -133,6 +133,10 @@ final class GeminiVoice {
 
     /// Makes whatever is missing, one phrase at a time, and forgets clips nothing says anymore.
     func prepare() {
+        #if DEBUG
+        // A scenario's made-up phrases don't go to Gemini or the real cache.
+        if Scenario.current != nil { return }
+        #endif
         if preparing { again = true; return }
         preparing = true
         Task {

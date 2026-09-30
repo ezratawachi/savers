@@ -10,12 +10,20 @@ struct TodayView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Every card starts closed; this remembers the ones opened while the app stays open.
+    #if DEBUG
+    @State private var openCards: Set<Letter> = Scenario.current?.openCards ?? []
+    #else
     @State private var openCards: Set<Letter> = []
+    #endif
     /// "Ahora" and the finish move a beat after a letter is marked, so each change is seen on its own.
     @State private var shownNow: Letter?
     @State private var shownFinish: Finish = .none
     @State private var settled = false
+    #if DEBUG
+    @State private var foldOpen = Scenario.current?.foldOpen ?? false
+    #else
     @State private var foldOpen = false
+    #endif
     @State private var isScrolling = false
     @State private var importing = false
     @State private var checkTick = 0
