@@ -129,8 +129,7 @@ struct TodayView: View {
             }
                 .transition(.scale(scale: 0.96, anchor: .top).combined(with: .opacity))
         }
-        HeroLetters(day: day, streak: routine.streak(), showStreak: fin != .day,
-                    onSchedule: routine.hasSchedule(routine.scheduleKind(ds)) ? { sheetDay = ds } : nil)
+        HeroLetters(day: day, streak: routine.streak(), showStreak: fin != .day)
         VStack(alignment: .leading, spacing: 8) {
             if !folded.isEmpty {
                 let label = fin == .day && blocks.contains(where: \.isLater) ? "Todo el día" : "Mañana"

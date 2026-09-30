@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The chip and "Ver horario" open this: what the day is and its hours.
+/// The day chip opens this: what the day is and its hours.
 struct DaySheet: View {
     @Environment(AppStore.self) private var store
     @Environment(\.dismiss) private var dismiss

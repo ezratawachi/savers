@@ -5,8 +5,6 @@ struct HeroLetters: View {
     let day: Day
     let streak: Int
     let showStreak: Bool
-    /// "Ver horario ›", when there's a schedule to see.
-    var onSchedule: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -19,23 +17,10 @@ struct HeroLetters: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(day.doneCount) de 6")
-            HStack {
-                if showStreak {
-                    Text("Racha: \(Text(streakLabel).bold())")
-                        .font(.reading(16, relativeTo: .subheadline))
-                        .foregroundStyle(.muted)
-                }
-                Spacer(minLength: 8)
-                if let onSchedule {
-                    Button(action: onSchedule) {
-                        Text("Ver horario ›")
-                            .font(.reading(16, relativeTo: .subheadline).bold())
-                            .foregroundStyle(.sky)
-                            .frame(minHeight: 44)
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(PressScale())
-                }
+            if showStreak {
+                Text("Racha: \(Text(streakLabel).bold())")
+                    .font(.reading(16, relativeTo: .subheadline))
+                    .foregroundStyle(.muted)
             }
         }
     }

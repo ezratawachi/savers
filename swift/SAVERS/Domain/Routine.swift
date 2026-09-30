@@ -175,9 +175,4 @@ struct Routine {
     // MARK: Other
 
     func affirmationReviewDue(reviewed: String?) -> Bool { reviewed != DayKey.month(today) }
-
-    func hasSchedule(_ kind: DayType) -> Bool {
-        guard let sc = settings.schedule else { return false }
-        return sc.type(kind) != nil || sc.extras[kind == .gym ? "timelineGym" : "timelineNormal"].map { if case .array = $0 { true } else { false } } == true
-    }
 }
