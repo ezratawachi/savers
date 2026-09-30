@@ -1,15 +1,17 @@
 #!/bin/bash
 # Keeps the SAVERS iPhone app opening. A free Apple ID signs apps for only 7 days, so launchd runs this every hour
 # (~/Library/LaunchAgents/com.ezratawachi.savers-renovar.plist) and, once 2 days or less are left, it builds with a
-# fresh signature and installs it on the iPhone, over Wi-Fi or the cable. The web inside doesn't change: only the
-# signature. If the iPhone can't be reached for a day, it keeps trying every hour and the Mac shows a notice.
+# fresh signature and installs it on the iPhone, over Wi-Fi or the cable. It's the Swift app in swift/ (since
+# 2026-09-30; before, the Capacitor shell in app/ios, with the same bundle ID). If the iPhone can't be reached for a
+# day, it keeps trying every hour and the Mac shows a notice.
 # `renovar.sh ya` renews right away.
 set -u
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 HERE=$(cd "$(dirname "$0")" && pwd)
 DEVICE=00008110-000155E002C2801E
 APP_ID=YQ4GUVW7H7.com.ezratawachi.savers
-APP="$HERE/ios/DerivedData/Build/Products/Debug-iphoneos/App.app"
+SWIFT="$HERE/../swift"
+APP="$HERE/../swift-build/Build/Products/Debug-iphoneos/SAVERS.app"
 PROFILES="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
 STATE="$HOME/Library/Application Support/savers-renovar"
 DAY=86400
@@ -33,9 +35,9 @@ for p in "$PROFILES"/*.mobileprovision; do
   if [ $(( $(epoch "$(expiry "$p")") - now )) -le $((2 * DAY)) ]; then rm -f "$p"; fi
 done
 
-cd "$HERE/ios/App" || exit 1
-if ! xcodebuild -project App.xcodeproj -scheme App -configuration Debug -destination "id=$DEVICE" \
-     -derivedDataPath ../DerivedData -allowProvisioningUpdates -quiet build; then
+cd "$SWIFT" || exit 1
+if ! xcodebuild -project SAVERS.xcodeproj -scheme SAVERS -configuration Debug -destination "id=$DEVICE" \
+     -derivedDataPath ../swift-build -allowProvisioningUpdates -quiet build; then
   echo "falló la compilación"
   notify "No se pudo firmar SAVERS. Abre Xcode y revisa tu Apple ID en Settings › Accounts."
   exit 1

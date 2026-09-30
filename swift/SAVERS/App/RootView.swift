@@ -5,6 +5,7 @@ struct RootView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
     @Environment(Runs.self) private var runs
+    @Environment(Notices.self) private var notices
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab = AppTab.today
     @State private var historyOpened = 0
@@ -32,14 +33,25 @@ struct RootView: View {
                 runs.resume()
                 cloud.resume()
                 GeminiVoice.shared.prepare()
+                notices.planSoon()
             } else if phase == .background {
                 store.flush()
                 cloud.pause()
             }
         }
         .onChange(of: store.settings.visualization) { GeminiVoice.shared.prepare() }
+        // A changed hour, a marked Lectura, a reviewed month or a new day moves the notices.
+        .onChange(of: store.settings) { notices.planSoon() }
+        .onChange(of: store.days) { notices.planSoon() }
+        .onChange(of: store.affReviewed) { notices.planSoon() }
+        .onChange(of: store.today) { notices.planSoon() }
+        // A tapped notice opens Hoy, which opens what it's about.
+        .onChange(of: notices.tapped, initial: true) { _, id in
+            if id != nil { tab = .today }
+        }
         .task {
             GeminiVoice.shared.prepare()
+            notices.planSoon()
             await watchMidnight()
         }
     }

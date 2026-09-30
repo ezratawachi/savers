@@ -1,6 +1,6 @@
 import UserNotifications
 
-/// A notification from this same iPhone, with SAVERS' bell. Session 5 adds the rest of the notices.
+/// A notification from this same iPhone, with SAVERS' bell. Scheduling an id again replaces it.
 enum LocalNote {
     /// Asks the first time; afterwards answers what you chose.
     static func allowed() async -> Bool {
@@ -12,13 +12,15 @@ enum LocalNote {
         }
     }
 
+    /// At that hour on the clock: a notice for 9:30 pm stays at 9:30 pm.
     static func schedule(id: String, at date: Date, title: String, body: String) async {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = UNNotificationSound(named: UNNotificationSoundName("campana.caf"))
         content.threadIdentifier = id
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, date.timeIntervalSinceNow), repeats: false)
+        let when = DayKey.calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: max(date, .now.addingTimeInterval(1)))
+        let trigger = UNCalendarNotificationTrigger(dateMatching: when, repeats: false)
         try? await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
     }
 

@@ -54,6 +54,7 @@ final class Runs {
 
     @ObservationIgnored private let store: AppStore
     @ObservationIgnored private let toast: Toast
+    @ObservationIgnored private let notices: Notices
     @ObservationIgnored private let prefs: LocalPrefs
     @ObservationIgnored private var ticker: Task<Void, Never>?
     @ObservationIgnored private var lastIdx: [RunKind: Int] = [:]
@@ -65,9 +66,10 @@ final class Runs {
     /// Guide sounds are queued this far ahead on the audio clock, so the rhythm doesn't depend on the ticker.
     private static let guideAhead = 0.6
 
-    init(store: AppStore, toast: Toast, prefs: LocalPrefs = .standard) {
+    init(store: AppStore, toast: Toast, notices: Notices, prefs: LocalPrefs = .standard) {
         self.store = store
         self.toast = toast
+        self.notices = notices
         self.prefs = prefs
         restore()
     }
@@ -301,17 +303,31 @@ final class Runs {
         reading = run
         changed()
         Task {
-            guard await LocalNote.allowed() else { return }
-            let min = run.min
-            await LocalNote.schedule(
-                id: "lectura",
-                at: Date(timeIntervalSince1970: run.start / 1000 + Double(min) * 60),
-                title: "Lectura terminada",
-                body: "Leíste \(min) \(min == 1 ? "minuto" : "minutos"). Se marca sola al volver a SAVERS."
-            )
-            if reading?.start == run.start { reading?.sent = true; save() }
+            // The first time, iOS's question comes before leaving for the book.
+            if notices.wants(.lectura) {
+                let ok = await LocalNote.allowed()
+                await notices.readPermission()
+                if ok { await scheduleReadingNote(run) }
+            }
+            if let url = ReadApp(store.settings.readApp).url { await UIApplication.shared.open(url) }
         }
-        if let url = ReadApp(store.settings.readApp).url { UIApplication.shared.open(url) }
+    }
+
+    private func scheduleReadingNote(_ run: ReadingRun) async {
+        let min = run.min
+        await LocalNote.schedule(
+            id: "lectura",
+            at: Date(timeIntervalSince1970: run.start / 1000 + Double(min) * 60),
+            title: "Lectura terminada",
+            body: "Leíste \(min) \(min == 1 ? "minuto" : "minutos"). Se marca sola al volver a SAVERS."
+        )
+        if reading?.start == run.start { reading?.sent = true; save() }
+    }
+
+    /// The "Fin de la lectura" switch changed while a reading runs.
+    func readingNoteChanged() {
+        guard let r = reading, r.left(.now) > 0 else { return }
+        if notices.isOn(.lectura) { Task { await scheduleReadingNote(r) } } else { LocalNote.cancel("lectura") }
     }
 
     /// Cancelar: the notice goes with it.

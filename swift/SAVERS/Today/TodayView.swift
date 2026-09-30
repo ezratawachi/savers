@@ -5,6 +5,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
+    @Environment(Notices.self) private var notices
     @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -73,6 +74,7 @@ struct TodayView: View {
             .scrollDismissesKeyboard(.interactively)
             .onScrollPhaseChange { _, phase in isScrolling = phase != .idle }
             .task(id: now) { await moveNow(to: now, routine: routine, proxy: proxy) }
+            .task(id: notices.tapped) { await openTapped(proxy: proxy) }
             .task(id: FinishKey(finish: finish, writing: focus != nil)) { await moveFinish(to: finish) }
             .onChange(of: focus) { _, new in
                 guard let new else { return }
@@ -265,6 +267,21 @@ struct TodayView: View {
         try? await Task.sleep(for: .milliseconds(350))
         guard !Task.isCancelled, !isScrolling, !fullyVisible.contains(now) else { return }
         withAnimation(motion(Motion.spring)) { proxy.scrollTo(now, anchor: UnitPoint(x: 0.5, y: 0.04)) }
+    }
+
+    /// "Hora de leer" opens Lectura ready to start; the monthly review opens Afirmaciones to edit.
+    private func openTapped(proxy: ScrollViewProxy) async {
+        guard let id = notices.tapped else { return }
+        notices.tapped = nil
+        guard editingItems == nil, sheetDay == nil else { return }
+        if id == "revision" {
+            editingItems = .review
+        } else if id.hasPrefix("leer-"), !store.routine.day(store.today).isDone(.lectura) {
+            try? await Task.sleep(for: .milliseconds(300))
+            withAnimation(motion(Motion.height)) { _ = openCards.insert(.lectura) }
+            try? await Task.sleep(for: .milliseconds(350))
+            withAnimation(motion(Motion.spring)) { proxy.scrollTo(Letter.lectura, anchor: UnitPoint(x: 0.5, y: 0.04)) }
+        }
     }
 
     /// Reaching a finish: 400 ms later, what's done folds into one row and the finish card grows.

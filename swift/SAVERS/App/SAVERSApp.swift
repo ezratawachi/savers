@@ -6,6 +6,7 @@ struct SAVERSApp: App {
     @State private var toast: Toast
     @State private var cloud: CloudSync
     @State private var runs: Runs
+    @State private var notices: Notices
 
     init() {
         let store = AppStore()
@@ -13,7 +14,9 @@ struct SAVERSApp: App {
         _store = State(initialValue: store)
         _toast = State(initialValue: toast)
         _cloud = State(initialValue: CloudSync(store: store))
-        _runs = State(initialValue: Runs(store: store, toast: toast))
+        let notices = Notices(store: store)
+        _notices = State(initialValue: notices)
+        _runs = State(initialValue: Runs(store: store, toast: toast, notices: notices))
         GeminiVoice.shared.phrases = { [store] in Self.spokenPhrases(store.settings) }
     }
 
@@ -34,6 +37,7 @@ struct SAVERSApp: App {
                 .environment(toast)
                 .environment(cloud)
                 .environment(runs)
+                .environment(notices)
         }
     }
 }

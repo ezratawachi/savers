@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
+    @Environment(Notices.self) private var notices
     @State private var name = ""
     @State private var keepMusic = ToneEngine.keepMusic
     @FocusState private var nameFocused: Bool
@@ -49,6 +50,11 @@ struct SettingsView: View {
                     .tint(.muted)
                 }
                 Section {
+                    NavigationLink {
+                        NoticesSettings()
+                    } label: {
+                        LabeledContent("Notificaciones", value: notices.anyOn ? "Activadas" : "Apagadas")
+                    }
                     NavigationLink {
                         VoiceSettings()
                     } label: {
