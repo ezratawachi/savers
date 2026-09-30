@@ -39,8 +39,14 @@ Claude lee esta guía, ve cuál es la primera sesión sin marcar y la hace. Al t
   Hoy como una hoja: Afirmaciones › Siguiente › Visualización › Listo, y vuelves al mismo punto. Probado en el
   simulador con la nube desconectada y tus datos restaurados al final (nada de mis pruebas subió).
   Quedan para la 5: la fila de Notificaciones en Ajustes.
-- [ ] **5. Avisos y cambio de app**: notificaciones, renovación semanal, la nueva reemplaza a la vieja.
+- [x] **5. Avisos y cambio de app**: notificaciones, renovación semanal, la nueva reemplaza a la vieja.
   *Tú pruebas:* tocar "Permitir", mandar un aviso de prueba, usar solo la app nueva unos días.
+  *Hecho (30 sept):* Ajustes › Notificaciones con los 4 avisos (Fin de la lectura, Hora de leer, Prepararte para dormir,
+  Revisión del mes), todos encendidos; se planean 2 semanas adelante cada vez que abres la app o cambias algo, y nada
+  desde el viernes a las 3 pm hasta que termina Shabbat. Tocar "Hora de leer" abre Lectura lista para empezar; tocar
+  "Revisión del mes" abre la revisión. La renovación semanal de la Mac ahora firma la app Swift, y ya está instalada en
+  tu iPhone en lugar de la vieja (misma app para TAG). Falta que tú: entres con Google, pegues otra vez la clave de
+  Gemini en Ajustes › Voz, y mandes un aviso de prueba.
 - [ ] **6. Pulido**: todo lo anotado abajo, en una sola ronda.
   *Tú pruebas:* que ya no quede nada raro.
 
