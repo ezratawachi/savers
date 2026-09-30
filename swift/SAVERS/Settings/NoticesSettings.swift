@@ -4,6 +4,7 @@ import SwiftUI
 struct NoticesSettings: View {
     @Environment(Notices.self) private var notices
     @Environment(Runs.self) private var runs
+    @Environment(Toast.self) private var toast
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
@@ -46,10 +47,13 @@ struct NoticesSettings: View {
             } else if notices.anyOn {
                 Section {
                     Button("Mandar un aviso de prueba") {
-                        Task { await notices.test() }
+                        Task {
+                            await notices.test()
+                            toast.show("Aviso de prueba enviado")
+                        }
                     }
                 } footer: {
-                    Text("Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › SAVERS.")
+                    Text("Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › SAVERS. Con el modo Dormir u otra concentración llegan sin sonido y sin mostrarse, salvo que SAVERS esté entre sus apps permitidas.")
                 }
             }
         }

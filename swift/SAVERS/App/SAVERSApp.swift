@@ -9,6 +9,7 @@ struct SAVERSApp: App {
     @State private var notices: Notices
 
     init() {
+        ToneEngine.mixFromLaunch()
         let store = AppStore()
         let toast = Toast()
         _store = State(initialValue: store)

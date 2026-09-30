@@ -77,6 +77,11 @@ final class ToneEngine {
         set { LocalPrefs.standard["keepMusic"] = newValue ? "true" : "false"; shared.applySession() }
     }
 
+    /// From launch: iOS's default would stop your music the first time anything sounds here, even a notice's bell.
+    static func mixFromLaunch() {
+        try? AVAudioSession.sharedInstance().setCategory(.ambient)
+    }
+
     /// Ambient mixes with your music and follows the ring switch; playback pauses other apps and always sounds.
     func applySession() {
         let s = AVAudioSession.sharedInstance()
