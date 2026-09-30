@@ -16,7 +16,7 @@ struct SettingsView: View {
         let s = store.settings
         let r = store.routine
         NavigationStack {
-            List {
+            AppList {
                 Section {
                     LabeledContent("Tu nombre") {
                         TextField("Para el saludo", text: $name)
@@ -79,8 +79,6 @@ struct SettingsView: View {
                     Text(cloud.linked ? "Tus registros se guardan en este aparato y en la nube." : "Tus registros viven solo en este aparato.")
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(.bg)
             .navigationTitle("Ajustes")
         }
         .onAppear { name = store.settings.name }

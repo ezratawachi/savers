@@ -10,6 +10,8 @@ struct DayRecordView: View {
     @State private var writingOpen = false
     @State private var sheetDay: String?
     @State private var checkTick = 0
+    /// The big date scrolled away: then the bar shows the short one, so the date is never there twice.
+    @State private var headerGone = false
     @FocusState private var focus: WritingField?
 
     var body: some View {
@@ -26,6 +28,7 @@ struct DayRecordView: View {
                         .font(.display(30, relativeTo: .largeTitle))
                         .foregroundStyle(.ink)
                         .accessibilityAddTraits(.isHeader)
+                        .onScrollVisibilityChange(threshold: 0.2) { visible in headerGone = !visible }
                     if !(future && type != .shabbat) {
                         HStack(spacing: 8) {
                             DayChip(type: type) { sheetDay = ds }
@@ -59,6 +62,16 @@ struct DayRecordView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle(DayKey.short(ds))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(DayKey.short(ds))
+                    .font(.display(18, relativeTo: .headline, weight: .bold))
+                    .foregroundStyle(.ink)
+                    .opacity(headerGone ? 1 : 0)
+                    .animation(motion(.easeOut(duration: 0.2)), value: headerGone)
+                    .accessibilityHidden(!headerGone)
+            }
+        }
         .sensoryFeedback(.impact(weight: .light), trigger: checkTick)
         .daySheet($sheetDay)
     }
@@ -138,5 +151,9 @@ struct DayChip: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
         .background(.surface2, in: .capsule)
+        // A 44-pt target without making the chip look bigger.
+        .padding(.vertical, 5)
+        .contentShape(.rect)
+        .padding(.vertical, -5)
     }
 }

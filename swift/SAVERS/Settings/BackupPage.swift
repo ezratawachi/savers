@@ -11,12 +11,10 @@ struct BackupPage: View {
     @State private var askingSignOut = false
 
     var body: some View {
-        List {
+        AppList {
             cloudSection
             fileSection
         }
-        .scrollContentBackground(.hidden)
-        .background(.bg)
         .navigationTitle("Copia de seguridad")
         .navigationBarTitleDisplayMode(.inline)
         .backupImporter(isPresented: $importing)

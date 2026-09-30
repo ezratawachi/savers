@@ -9,7 +9,7 @@ struct VoiceSettings: View {
     @FocusState private var keyFocused: Bool
 
     var body: some View {
-        List {
+        AppList {
             Section {
                 ForEach(GeminiVoice.voices) { v in
                     row(v)
@@ -37,8 +37,6 @@ struct VoiceSettings: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(.bg)
         .navigationTitle("Voz")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: keyFocused) { _, focused in if !focused { gemini.setKey(keyText) } }

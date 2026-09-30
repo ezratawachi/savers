@@ -23,7 +23,7 @@ struct BackupImporter: ViewModifier {
                     pending = nil
                 }
             } message: { backup in
-                Text(backup.summary)
+                Text(backup.summary(current: store.settings))
             }
     }
 

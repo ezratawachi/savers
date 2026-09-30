@@ -13,7 +13,7 @@ struct ScheduleSettings: View {
         let kinds = [DayType.normal, .gym].filter { r.settings.schedule?.type($0) != nil }
         let shown = kinds.contains(tab) ? tab : kinds.first ?? .normal
 
-        List {
+        AppList {
             Section {
                 ForEach(0..<6, id: \.self) { w in
                     Picker(Weekday.names[w].capitalizedFirst, selection: Binding { r.weekType(w) } set: { store.setWeekType(w, $0) }) {
@@ -65,8 +65,6 @@ struct ScheduleSettings: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(.bg)
         .navigationTitle("Horario")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {

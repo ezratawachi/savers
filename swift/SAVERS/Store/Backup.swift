@@ -38,6 +38,8 @@ struct Backup {
     /// Only what the file brings is replaced, so a schedule-only file never touches the affirmations.
     let parts: [Part]
     let days: [String: Day]
+    /// The file's "resumen", only to warn about hours or minutes in it that importing won't keep.
+    let resumen: [String: JSONValue]
 
     init(data: Data) throws(Problem) {
         guard let root = try? JSONDecoder().decode([String: JSONValue].self, from: data),
@@ -46,11 +48,12 @@ struct Backup {
         settings = (try? JSONDecoder().decode(AppSettings.self, from: encoded)) ?? AppSettings()
         parts = Part.allCases.filter { rawSettings[$0.rawValue] != nil }
         if case .object(let rawDays)? = root["days"] { days = Persistence.days(from: rawDays) } else { days = [:] }
+        if case .object(let r)? = root["resumen"] { resumen = r } else { resumen = [:] }
         if parts.isEmpty && days.isEmpty { throw .empty }
     }
 
-    /// "Se reemplaza solo tu horario." "Se agregan 12 días de registro; …"
-    var summary: String {
+    /// "Se reemplaza solo tu horario." "Se agregan 12 días de registro; …", and what the summary says that won't stay.
+    func summary(current: AppSettings) -> String {
         var lines: [String] = []
         let names = parts.map(\.spoken)
         if let last = names.last {
@@ -62,6 +65,12 @@ struct Backup {
         if !days.isEmpty {
             let n = days.count == 1 ? " 1 día" : "n \(days.count) días"
             lines.append("Se agrega\(n) de registro; si un día ya existe, se queda el más reciente.")
+        }
+        let changed = summaryChanges(current: current)
+        if !changed.isEmpty {
+            let shown = changed.prefix(3).joined(separator: ", ") + (changed.count > 3 ? " y \(changed.count - 3) más" : "")
+            lines.append("En el resumen cambió \(shown), y eso no se guarda: esas horas y minutos los calcula la app. " +
+                "Para moverlos, cambia la hora del bloque o los minutos de Silencio y Lectura.")
         }
         return lines.joined(separator: " ")
     }

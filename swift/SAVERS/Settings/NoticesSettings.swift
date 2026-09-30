@@ -10,7 +10,7 @@ struct NoticesSettings: View {
 
     var body: some View {
         let blocked = notices.permission == .blocked
-        List {
+        AppList {
             Section {
                 ForEach(NoteKind.allCases) { kind in
                     Toggle(isOn: Binding {
@@ -57,8 +57,6 @@ struct NoticesSettings: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(.bg)
         .navigationTitle("Notificaciones")
         .navigationBarTitleDisplayMode(.inline)
         .task { await notices.readPermission() }

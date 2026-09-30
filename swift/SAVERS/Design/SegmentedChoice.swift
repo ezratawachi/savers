@@ -15,6 +15,10 @@ struct SegmentedChoice<ID: Hashable>: View {
 
     @Namespace private var ns
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// The chosen segment stands out lighter than its track, like iOS's own: white in light, a lifted blue in dark.
+    private var chosenFill: Color { colorScheme == .dark ? .line : .surface }
 
     var body: some View {
         HStack(spacing: 2) {
@@ -42,7 +46,7 @@ struct SegmentedChoice<ID: Hashable>: View {
                     .background {
                         if on {
                             RoundedRectangle(cornerRadius: 9)
-                                .fill(Color.surface)
+                                .fill(chosenFill)
                                 .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
                                 .matchedGeometryEffect(id: "on", in: ns)
                         }

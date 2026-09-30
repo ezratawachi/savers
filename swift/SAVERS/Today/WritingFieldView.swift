@@ -45,6 +45,10 @@ struct WritingFieldView: View {
         .onChange(of: text) { _, new in
             store.setText(field, new, on: ds)
         }
+        // What the Mac wrote comes in while the card is open, unless you're writing in this field.
+        .onChange(of: store.routine.day(ds)[field]) { _, saved in
+            if !editing && saved != text { text = saved }
+        }
         .onChange(of: editing) { _, now in
             if !now { store.flush() }
         }

@@ -3,6 +3,8 @@ import SwiftUI
 enum CardLayout {
     /// Where a card's text starts, past its circle.
     static let indent: CGFloat = 54
+    /// Room on the right of a card's content.
+    static let trailing: CGFloat = 6
 }
 
 /// One letter of the guide. Pending: a card. Now: a sky edge and the sun. Done: a quiet row.
@@ -42,7 +44,7 @@ struct LetterCard<Content: View>: View {
                 content
                     .padding(.top, 10)
                     .padding(.leading, CardLayout.indent)
-                    .padding(.trailing, 6)
+                    .padding(.trailing, CardLayout.trailing)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .transition(.opacity)
             }

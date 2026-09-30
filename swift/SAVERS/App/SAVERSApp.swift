@@ -10,6 +10,7 @@ struct SAVERSApp: App {
 
     init() {
         ToneEngine.mixFromLaunch()
+        BarAppearance.apply()
         let store = AppStore()
         let toast = Toast()
         _store = State(initialValue: store)

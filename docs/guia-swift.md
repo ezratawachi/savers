@@ -47,8 +47,17 @@ Claude lee esta guía, ve cuál es la primera sesión sin marcar y la hace. Al t
   "Revisión del mes" abre la revisión. La renovación semanal de la Mac ahora firma la app Swift, y ya está instalada en
   tu iPhone en lugar de la vieja (misma app para TAG). Falta que tú: entres con Google, pegues otra vez la clave de
   Gemini en Ajustes › Voz, y mandes un aviso de prueba.
-- [ ] **6. Pulido**: todo lo anotado abajo, en una sola ronda.
+- [x] **6. Pulido**: todo lo anotado abajo, en una sola ronda.
   *Tú pruebas:* que ya no quede nada raro.
+  *Hecho (30 sept):* no anotaste nada, así que pulí con mi propio criterio (revisión con la skill `swiftui-pro` y
+  recorrido en el simulador, claro y oscuro). Arreglado: si escribes en la Mac mientras Escritura está abierta en el
+  iPhone, el campo ya se actualiza (antes lo del iPhone podía pisar lo de la Mac); al importar una copia avisa si su
+  "resumen" trae horas o minutos que no se guardan, como la web; Cancelar en Afirmaciones o Visualización pregunta
+  antes de descartar cambios; en un día de Historial la fecha ya no sale dos veces (la corta aparece arriba solo al
+  desplazar); títulos de Historial y Ajustes con la letra de la app; la app abre con el color del fondo en vez de
+  blanco; en modo oscuro la barra de pestañas, las filas de Ajustes y el selector Normal | Gym ya van con el azul
+  noche; la caja de los temporizadores queda con el mismo margen a los dos lados. **La migración termina aquí**: lo que
+  notes de ahora en adelante se pide como cualquier cambio, sin esta guía.
 
 ---
 

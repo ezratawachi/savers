@@ -81,7 +81,7 @@ struct ItemsEditor: View {
     @FocusState private var focused: UUID?
 
     var body: some View {
-        List {
+        AppList {
             Section {
                 ForEach($draft.rows) { $row in
                     VStack(alignment: .leading, spacing: 4) {
@@ -124,8 +124,6 @@ struct ItemsEditor: View {
             }
         }
         .environment(\.editMode, .constant(.active))
-        .scrollContentBackground(.hidden)
-        .background(.bg)
         .scrollDismissesKeyboard(.interactively)
     }
 
@@ -139,7 +137,7 @@ struct ItemsReader: View {
 
     var body: some View {
         let items = (kind == .affirmations ? settings.affirmations : settings.visualization.items).filled
-        List {
+        AppList {
             Section {
                 if items.isEmpty {
                     Text(kind == .affirmations ? "Todavía no tienes afirmaciones. Toca Editar para agregarlas." : "Toca Editar para agregar preguntas.")
@@ -166,7 +164,5 @@ struct ItemsReader: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(.bg)
     }
 }

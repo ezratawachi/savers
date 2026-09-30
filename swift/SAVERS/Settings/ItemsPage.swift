@@ -9,6 +9,7 @@ struct ItemsPage: View {
     @State private var editing = false
     /// Kept apart from `editing`: the list being edited can still read it while it goes away.
     @State private var draft = ItemsDraft(.affirmations, AppSettings())
+    @State private var askingDiscard = false
 
     var body: some View {
         Group {
@@ -24,7 +25,11 @@ struct ItemsPage: View {
         .toolbar {
             if editing {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { editing = false }
+                    Button("Cancelar", action: cancel)
+                        .confirmationDialog("¿Descartar los cambios?", isPresented: $askingDiscard, titleVisibility: .visible) {
+                            Button("Descartar cambios", role: .destructive) { editing = false }
+                            Button("Seguir editando", role: .cancel) {}
+                        }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Listo") {
@@ -41,6 +46,11 @@ struct ItemsPage: View {
                 }
             }
         }
+    }
+
+    /// Nothing changed: back to reading. Something did: ask first.
+    private func cancel() {
+        if draft.differs(from: store.settings, kind) { askingDiscard = true } else { editing = false }
     }
 }
 
@@ -60,6 +70,7 @@ struct ItemsSheet: View {
     @State private var path: [ItemsKind] = []
     @State private var aff: ItemsDraft
     @State private var vis: ItemsDraft
+    @State private var askingDiscard = false
 
     init(mode: Mode, settings: AppSettings) {
         self.mode = mode
@@ -73,7 +84,7 @@ struct ItemsSheet: View {
                 .navigationDestination(for: ItemsKind.self) { page($0) }
         }
         .tint(.sky)
-        .interactiveDismissDisabled(aff.differs(from: store.settings, .affirmations) || vis.differs(from: store.settings, .visualization))
+        .interactiveDismissDisabled(changed)
     }
 
     private func page(_ kind: ItemsKind) -> some View {
@@ -85,7 +96,11 @@ struct ItemsSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     // In the review, Cancelar ends it where it is.
-                    Button("Cancelar") { dismiss() }
+                    Button("Cancelar", action: cancel)
+                        .confirmationDialog("¿Descartar los cambios?", isPresented: $askingDiscard, titleVisibility: .visible) {
+                            Button("Descartar cambios", role: .destructive) { dismiss() }
+                            Button("Seguir editando", role: .cancel) {}
+                        }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(next ? "Siguiente" : "Listo") { done(kind, next: next) }
@@ -93,9 +108,19 @@ struct ItemsSheet: View {
             }
     }
 
+    private var changed: Bool {
+        aff.differs(from: store.settings, .affirmations) || vis.differs(from: store.settings, .visualization)
+    }
+
+    private func cancel() {
+        if changed { askingDiscard = true } else { dismiss() }
+    }
+
     private func done(_ kind: ItemsKind, next: Bool) {
         let message = store.save(kind == .affirmations ? aff : vis, kind, inReview: mode == .review)
         if next {
+            // What was saved, as saved (empty lines dropped), so going on doesn't count as a change.
+            aff = ItemsDraft(.affirmations, store.settings)
             vis = ItemsDraft(.visualization, store.settings)
             path.append(.visualization)
             return
