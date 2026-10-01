@@ -30,7 +30,7 @@ struct ScheduleSettings: View {
 
             if kinds.isEmpty {
                 Section("Horas") {
-                    Text("Tus horas se cargan al importar tu copia o al entrar con Google.")
+                    Text("Tus horas se cargan al entrar con Google.")
                         .foregroundStyle(.muted)
                 }
             } else {

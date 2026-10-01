@@ -134,38 +134,6 @@ extension Routine {
         guard let times = d.times, let t = settings.schedule?.type(dayType(ds)) else { return false }
         return TypeSchedule.Group.allCases.contains { g in t[g].contains { $0.id.flatMap { times[$0] }?.isEmpty == false } }
     }
-
-    // MARK: The copy's summary
-
-    /// The routine weekday by weekday, for whoever reads the copy (an AI helping to adjust it).
-    func weekSummary() -> [String: JSONValue] {
-        var out: [String: JSONValue] = [:]
-        for w in 0...6 {
-            let type = weekType(w)
-            guard type.hasSavers else {
-                out[Weekday.names[w]] = .object(["tipo": .string(type == .off ? type.name : "Shabbat")])
-                continue
-            }
-            var seen: Set<Letter> = []
-            var letras: [JSONValue] = []
-            let t = settings.schedule?.type(type)
-            for g in TypeSchedule.Group.allCases {
-                for st in t?[g] ?? [] {
-                    var at = TimeText.minutes(usualTime(st, weekday: w))
-                    for k in st.letterKeys where seen.insert(k).inserted {
-                        let min = letterMinutes(k, type, weekday: w)
-                        letras.append(.object([
-                            "letra": .string(k.name), "bloque": .string(st.title ?? ""),
-                            "hora": .string(at.map(TimeText.label) ?? ""), "minutos": .number(Double(min)),
-                        ]))
-                        if let a = at { at = a + min }
-                    }
-                }
-            }
-            out[Weekday.names[w]] = .object(["tipo": .string(type.name), "letras": .array(letras)])
-        }
-        return out
-    }
 }
 
 extension String {

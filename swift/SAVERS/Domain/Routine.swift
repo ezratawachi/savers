@@ -55,6 +55,10 @@ struct Routine {
     }
 
     static let usualWindDown = 45
+    /// What Prepararte's wheel offers: 15 to 90, by 5.
+    static let windDownChoices = Array(stride(from: 15, through: 90, by: 5))
+    /// What Silencio's and Lectura's wheels offer: 1…60, then quarter hours up to two hours.
+    static let minuteChoices = Array(1...60) + [75, 90, 105, 120]
 
     /// How many minutes before "Dormido" "Prepararte para dormir" arrives, the same every night.
     var windDown: Int {

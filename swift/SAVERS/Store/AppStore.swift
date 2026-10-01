@@ -10,8 +10,8 @@ final class AppStore {
     /// Today is a day without SAVERS and "Hacer mis SAVERS hoy" was tapped.
     var showOff = false
     private(set) var affReviewed: String
-    private(set) var lastExport: Date?
-    private(set) var since: Date
+    /// The last changes from an AI, until undone or replaced by the next ones.
+    private(set) var aiUndo: AIUndo?
     /// Set when saving to the phone fails, shown next to the greeting.
     private(set) var saveError: String?
 
@@ -38,10 +38,7 @@ final class AppStore {
         let reviewed = prefs["affReviewed"] ?? DayKey.month(now)
         prefs["affReviewed"] = reviewed
         affReviewed = reviewed
-        lastExport = Date(iso: prefs["lastExport"])
-        let first = Date(iso: prefs["since"]) ?? .now
-        prefs["since"] = first.iso
-        since = first
+        aiUndo = prefs["aiUndo"].flatMap { try? JSONDecoder().decode(AIUndo.self, from: Data($0.utf8)) }
     }
 
     /// After midnight or when the app comes back.
@@ -71,6 +68,9 @@ final class AppStore {
             if off { d.extra = true }
             on = !d.isDone(letter)
             d.checks[letter.rawValue] = on
+            var at = d.checkedAt ?? [:]
+            at[letter.rawValue] = on ? Date.now.iso : nil
+            d.checkedAt = at.isEmpty ? nil : at
         }
         return on
     }
@@ -142,6 +142,8 @@ final class AppStore {
     func setName(_ name: String) { changeSettings { $0.name = name } }
 
     func setReadApp(_ app: String) { changeSettings(delay: .zero) { $0.readApp = app } }
+
+    func setAINotes(_ notes: String) { changeSettings { $0.aiNotes = notes } }
 
     /// Empty ones are dropped; at least one (maybe empty) stays.
     func setAffirmations(_ items: [Item]) { changeSettings(delay: .zero) { $0.affirmations = Self.clean(items) } }
@@ -236,25 +238,43 @@ final class AppStore {
         changeSchedule { $0.windDown = minutes }
     }
 
-    // MARK: Import
+    // MARK: Changes from an AI
 
-    /// Replaces the parts of the settings the copy brings; days are added, the newest `updatedAt` wins.
-    func apply(_ backup: Backup) {
+    /// Applies the chosen changes at once and keeps how things were, for "Deshacer".
+    func applyAI(_ changes: [AIChange]) {
         var s = settings
-        let incoming = backup.settings
-        for part in backup.parts {
-            switch part {
-            case .name: s.name = incoming.name
-            case .affirmations: s.affirmations = incoming.affirmations
-            case .visualization: s.visualization = incoming.visualization
-            case .schedule: s.schedule = incoming.schedule
+        var ds = days
+        let dates = Set(changes.compactMap(\.date))
+        for c in changes.sorted(by: { ($0.order, $0.id) < ($1.order, $1.id) }) {
+            c.edit.apply(to: &s, days: &ds, today: today)
+        }
+        let now = Date.now.iso
+        for d in dates { ds[d]?.updatedAt = now }
+        let undo = AIUndo(before: settings, after: s,
+                          datesBefore: Dictionary(uniqueKeysWithValues: dates.map { ($0, AIUndo.DateFields(days[$0])) }),
+                          datesAfter: Dictionary(uniqueKeysWithValues: dates.map { ($0, AIUndo.DateFields(ds[$0])) }))
+        settings = s
+        days = ds
+        flush()
+        aiUndo = undo
+        prefs["aiUndo"] = (try? JSONEncoder().encode(undo)).flatMap { String(data: $0, encoding: .utf8) }
+    }
+
+    /// Back to just before the last changes from an AI. The notes for the AI stay as they are now.
+    func undoAI() {
+        guard let u = aiUndo else { return }
+        var s = u.before
+        s.aiNotes = settings.aiNotes
+        settings = s
+        for (ds, f) in u.datesBefore {
+            change(ds, delay: .zero) { d in
+                d.type = f.type
+                d.times = f.times
+                d.mins = f.mins
             }
         }
-        settings = s
-        for (ds, inc) in backup.days {
-            if let cur = days[ds], cur.hasContent, (inc.updatedAt ?? "") < (cur.updatedAt ?? "") { continue }
-            days[ds] = inc
-        }
+        aiUndo = nil
+        prefs["aiUndo"] = nil
         flush()
     }
 
@@ -322,34 +342,5 @@ final class AppStore {
             saveError = "No se pudo guardar"
         }
         onSave?()
-    }
-
-    // MARK: Backup reminder
-
-    /// Days since the last copy, or since the app started if there never was one.
-    var backupAge: Int { Int(Date.now.timeIntervalSince(lastExport ?? since) / 86_400) }
-
-    /// Only without the cloud: with it on, the cloud keeps the copy.
-    func backupOverdue(cloudLinked: Bool) -> Bool { !cloudLinked && backupAge > 14 }
-
-    func markBackedUp() {
-        let now = Date.now
-        prefs["lastExport"] = now.iso
-        lastExport = now
-    }
-
-    /// `savers-copia-AAAA-MM-DD.json`: everything, plus the routine day by day for an AI to read.
-    func backupData() -> Data? {
-        flush()
-        let enc = JSONEncoder()
-        enc.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        guard let s = try? JSONDecoder().decode(JSONValue.self, from: Persistence.encoder.encode(settings)),
-              let d = try? JSONDecoder().decode(JSONValue.self, from: Persistence.encoder.encode(days)) else { return nil }
-        let root: [String: JSONValue] = [
-            "app": .string("savers"), "version": .number(2), "exportedAt": .string(Date.now.iso),
-            "paraLaIA": .string(Backup.summaryNote), "resumen": .object(routine.weekSummary()),
-            "settings": s, "days": d,
-        ]
-        return try? enc.encode(root)
     }
 }

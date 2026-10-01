@@ -19,9 +19,5 @@
 		<key>UIColorName</key>
 		<string>Bg</string>
 	</dict>
-	<key>UIFileSharingEnabled</key>
-	<true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
 </dict>
 </plist>

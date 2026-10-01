@@ -50,6 +50,11 @@ struct SettingsView: View {
                     .tint(.muted)
                 }
                 Section {
+                    NavigationLink("Hablar con una IA") {
+                        AssistantPage()
+                    }
+                }
+                Section {
                     NavigationLink {
                         NoticesSettings()
                     } label: {
@@ -71,8 +76,8 @@ struct SettingsView: View {
                         BackupPage()
                     } label: {
                         LabeledContent("Copia de seguridad") {
-                            Text(cloud.linked ? "En la nube" : store.lastExport == nil ? "Nunca" : BackupPage.ageLabel(store.backupAge))
-                                .foregroundStyle(store.backupOverdue(cloudLinked: cloud.linked) ? Color.warn : Color.muted)
+                            Text(cloud.linked ? "En la nube" : "Apagada")
+                                .foregroundStyle(.muted)
                         }
                     }
                 } footer: {

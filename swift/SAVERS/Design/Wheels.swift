@@ -30,7 +30,7 @@ struct MinutesWheel: View {
     var choices = Self.letterChoices
     let onChange: (Int) -> Void
 
-    static let letterChoices = Array(1...60) + [75, 90, 105, 120]
+    static let letterChoices = Routine.minuteChoices
 
     var body: some View {
         let options = choices.contains(minutes) ? choices : (choices + [minutes]).sorted()

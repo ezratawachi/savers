@@ -12,6 +12,13 @@ enum Scenario: String, CaseIterable {
         return Scenario(rawValue: args[i + 1])
     }()
 
+    /// `-pegar archivo`: a reply from an AI, read as if it had been pasted in Hablar con una IA (once).
+    static var pasted: String? = {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-pegar"), i + 1 < args.count else { return nil }
+        return try? String(contentsOfFile: args[i + 1], encoding: .utf8)
+    }()
+
     /// The prefs every part of the app uses in a scenario, emptied at launch.
     static let prefs: LocalPrefs = {
         let d = UserDefaults(suiteName: "savers.escenario")!

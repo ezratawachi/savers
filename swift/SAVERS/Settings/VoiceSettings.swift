@@ -33,7 +33,7 @@ struct VoiceSettings: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(gemini.statusText)
                         .foregroundStyle(gemini.statusIsWarning ? Color.warn : Color.muted)
-                    Text("Sácala gratis en aistudio.google.com con Get API key. Se queda solo en este iPhone: no va en tu copia ni en la nube. Sin internet o sin límite, suena la voz del iPhone.")
+                    Text("Sácala gratis en aistudio.google.com con Get API key. Se queda solo en este iPhone: no va a la nube. Sin internet o sin límite, suena la voz del iPhone.")
                 }
             }
         }

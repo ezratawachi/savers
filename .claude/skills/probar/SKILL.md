@@ -37,6 +37,11 @@ swift/tools/probar.sh real                      # al terminar: vuelve a abrir la
 - `ui` lista también lo que está fuera de pantalla; para verlo en imagen usa `hoja escenario:2`.
 - Los toques van con `--tap-style physical` (el toque por defecto de AXe no llega a los botones de SwiftUI).
 - Si falta una etiqueta para tocar algo, agrégale `.accessibilityLabel` en el código: también ayuda a VoiceOver.
+- Los interruptores (Toggle) no cambian con toques simulados, y un botón de fila de lista a veces solo
+  responde si el toque cae en su parte de arriba (prueba y-10). No es un error de la app.
+- El botón Pegar de iOS (PasteButton) no acepta toques simulados. Para probar "Hablar con una IA" con una
+  respuesta de IA: `xcrun simctl launch "$(cat swift/.sim-id)" com.ezratawachi.savers -escenario ajustes -pegar /ruta/respuesta.txt`
+  y entra a la página: se lee como si se hubiera pegado.
 
 ## Reglas
 

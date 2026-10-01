@@ -26,7 +26,6 @@ struct TodayView: View {
     @State private var foldOpen = false
     #endif
     @State private var isScrolling = false
-    @State private var importing = false
     @State private var checkTick = 0
     @State private var finishTick = 0
     /// Set when a letter is marked here, so "Ahora" only opens and scrolls to the next card after that
@@ -37,7 +36,6 @@ struct TodayView: View {
     @FocusState private var focus: WritingField?
     @State private var sheetDay: String?
     @State private var editingItems: ItemsSheet.Mode?
-    @State private var exporting = false
 
     var body: some View {
         let routine = store.routine
@@ -60,10 +58,8 @@ struct TodayView: View {
                         sheetDay = ds
                     }
                     if !store.settings.hasPersonalData && !cloud.linked {
-                        ImportBanner(busy: cloud.busy, error: cloud.error) {
+                        SignInBanner(busy: cloud.busy, error: cloud.error) {
                             Task { await cloud.signIn(using: webAuth) }
-                        } onImport: {
-                            importing = true
                         }
                     }
                     switch title {
@@ -105,8 +101,6 @@ struct TodayView: View {
         }
         .sensoryFeedback(.impact(weight: .light), trigger: checkTick)
         .sensoryFeedback(.success, trigger: finishTick)
-        .backupImporter(isPresented: $importing)
-        .backupExporter(isPresented: $exporting)
         .daySheet($sheetDay)
         .sheet(item: $editingItems) { ItemsSheet(mode: $0, settings: store.settings) }
         .onChange(of: store.today) {
@@ -134,9 +128,7 @@ struct TodayView: View {
         let rest = blocks.filter { b in !folded.contains(b) }
 
         if fin != .none {
-            FinishCard(finish: fin, pending: pending(blocks, day), streak: routine.streak(), backupReminder: backupReminder) {
-                exporting = true
-            }
+            FinishCard(finish: fin, pending: pending(blocks, day), streak: routine.streak())
                 .transition(.scale(scale: 0.96, anchor: .top).combined(with: .opacity))
         }
         VStack(alignment: .leading, spacing: 8) {
@@ -231,12 +223,6 @@ struct TodayView: View {
             let streak = routine.streak()
             return streak >= 2 && shownFinish != .day ? "\(streak) días seguidos" : nil
         }
-    }
-
-    /// "Hace 20 días sin copia" / "Todavía no exportas una copia", without the cloud and past two weeks.
-    private var backupReminder: String? {
-        guard store.backupOverdue(cloudLinked: cloud.linked) else { return nil }
-        return store.lastExport == nil ? "Todavía no exportas una copia" : "Hace \(store.backupAge) días sin copia"
     }
 
     /// "Lectura a las 8:50 pm": what "Más tarde" still holds.

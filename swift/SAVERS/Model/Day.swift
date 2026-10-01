@@ -17,9 +17,11 @@ struct Day: Codable, Equatable, Sendable {
     var times: [String: String]?
     /// Minutes for this date only: `{"lectura": 30}`.
     var mins: [String: JSONValue]?
+    /// When each marked letter was marked: `{"lectura": "2026-10-01T01:40:00.000Z"}`.
+    var checkedAt: [String: String]?
     var extras: [String: JSONValue] = [:]
 
-    private static let known: Set<String> = ["date", "checks", "gratitude", "bookIdea", "notes", "extra", "updatedAt", "type", "times", "mins"]
+    private static let known: Set<String> = ["date", "checks", "gratitude", "bookIdea", "notes", "extra", "updatedAt", "type", "times", "mins", "checkedAt"]
     /// Fields of an old version ("gran día"), dropped with what was written in them.
     private static let dropped: Set<String> = ["priorities", "prioDone"]
 
@@ -37,6 +39,7 @@ struct Day: Codable, Equatable, Sendable {
         type = c.lenient(String.self, "type")
         times = c.lenient([String: JSONValue].self, "times")?.compactMapValues(\.text)
         mins = c.lenient([String: JSONValue].self, "mins")
+        checkedAt = c.lenient([String: String].self, "checkedAt")
         extras = c.extras(excluding: Self.known.union(Self.dropped))
     }
 
@@ -53,6 +56,7 @@ struct Day: Codable, Equatable, Sendable {
         try c.encodeIfPresent(type, forKey: AnyKey("type"))
         try c.encodeIfPresent(times, forKey: AnyKey("times"))
         try c.encodeIfPresent(mins, forKey: AnyKey("mins"))
+        try c.encodeIfPresent(checkedAt, forKey: AnyKey("checkedAt"))
     }
 
     func isDone(_ letter: Letter) -> Bool { checks[letter.rawValue] == true }

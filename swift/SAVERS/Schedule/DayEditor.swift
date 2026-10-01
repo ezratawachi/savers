@@ -47,7 +47,7 @@ struct DayEditor: View {
                     }
                 }
             } else {
-                Note("Tu horario se carga al importar tu copia o al entrar con Google.")
+                Note("Tu horario se carga al entrar con Google.")
             }
         }
     }

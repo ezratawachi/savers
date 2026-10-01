@@ -696,6 +696,8 @@ function normalizeSettings(s){
   }
   if(s.schedule && typeof s.schedule === "object") out.schedule = migrateSchedule(clone(s.schedule));
   if(READ_APPS[s.readApp]) out.readApp = s.readApp;
+  // Written on the iPhone ("Notas para la IA"); kept here so the Mac never erases it.
+  if(typeof s.aiNotes === "string" && s.aiNotes) out.aiNotes = s.aiNotes;
   return out;
 }
 

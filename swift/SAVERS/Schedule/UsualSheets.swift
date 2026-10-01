@@ -73,7 +73,7 @@ struct WindDownSheet: View {
 
     var body: some View {
         UsualSheet(title: "Prepararte", days: [], weekday: .constant(nil)) {
-            MinutesWheel(label: "Minutos antes de Dormido", minutes: store.routine.windDown, choices: Array(stride(from: 15, through: 90, by: 5))) {
+            MinutesWheel(label: "Minutos antes de Dormido", minutes: store.routine.windDown, choices: Routine.windDownChoices) {
                 store.setWindDown($0)
             }
         } foot: {

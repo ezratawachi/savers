@@ -8,6 +8,8 @@ struct AppSettings: Codable, Equatable, Sendable {
     var visualization: Visualization = .standard
     var schedule: Schedule?
     var readApp: String = "libros"
+    /// "Notas para la IA": what the app doesn't know (work, what never moves, goals). Always in the packet.
+    var aiNotes: String = ""
 
     static let readApps = ["libros", "kindle", "papel"]
 
@@ -23,6 +25,7 @@ struct AppSettings: Codable, Equatable, Sendable {
             schedule = s
         }
         if let r = c.lenient(String.self, "readApp"), Self.readApps.contains(r) { readApp = r }
+        if let n = c.lenient(String.self, "aiNotes") { aiNotes = n }
     }
 
     func encode(to encoder: Encoder) throws {
@@ -33,6 +36,7 @@ struct AppSettings: Codable, Equatable, Sendable {
         // The web keeps `"schedule": null` when there's none.
         if let schedule { try c.encode(schedule, forKey: AnyKey("schedule")) } else { try c.encodeNil(forKey: AnyKey("schedule")) }
         try c.encode(readApp, forKey: AnyKey("readApp"))
+        if !aiNotes.isEmpty { try c.encode(aiNotes, forKey: AnyKey("aiNotes")) }
     }
 
     /// Name, a schedule or an affirmation: something that came from a copy or the cloud.
