@@ -42,6 +42,7 @@ struct SAVERSApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .background(TapToDismissKeyboard())
                 .environment(store)
                 .environment(toast)
                 .environment(cloud)
