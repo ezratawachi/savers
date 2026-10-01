@@ -10,8 +10,6 @@ struct SettingsView: View {
     @FocusState private var nameFocused: Bool
     private var gemini: GeminiVoice { .shared }
 
-    private static let readApps = [("libros", "Libros"), ("kindle", "Kindle"), ("papel", "Libro físico")]
-
     var body: some View {
         let s = store.settings
         let r = store.routine
@@ -44,10 +42,7 @@ struct SettingsView: View {
                         let n = s.visualization.items.filled.count
                         LabeledContent("Visualización", value: n > 0 ? count(n, "pregunta", "preguntas") : "Vacío")
                     }
-                    Picker("Leer en", selection: Binding { s.readApp } set: { store.setReadApp($0) }) {
-                        ForEach(Self.readApps, id: \.0) { Text($0.1).tag($0.0) }
-                    }
-                    .tint(.muted)
+                    ReadAppPicker()
                 }
                 Section {
                     NavigationLink("Hablar con una IA") {
