@@ -7,7 +7,7 @@
 #   probar.sh tocar "<etiqueta>"                 taps the element with that accessibility label
 #   probar.sh real                               opens the app again with its real data
 #
-# Scenarios: manana abiertas hechas dia-completo shabbat sin-savers historial (all of them if none is given).
+# Scenarios: manana abiertas hechas dia-completo shabbat sin-savers historial ajustes (all of them if none is given).
 # "hechas:2" also scrolls down and captures a second screen. --sin-build skips building.
 set -euo pipefail
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
@@ -16,7 +16,7 @@ UDID=$(cat "$HERE/.sim-id")
 BUNDLE=com.ezratawachi.savers
 APP="$HERE/../swift-build/Build/Products/Debug-iphonesimulator/SAVERS.app"
 OUT="$HERE/../swift-build/probar"
-ALL=(manana abiertas hechas dia-completo shabbat sin-savers historial)
+ALL=(manana abiertas hechas dia-completo shabbat sin-savers historial ajustes)
 
 build() {
   xcrun simctl boot "$UDID" 2>/dev/null || true

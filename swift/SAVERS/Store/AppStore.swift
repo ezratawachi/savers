@@ -231,6 +231,11 @@ final class AppStore {
         }
     }
 
+    /// Minutes before "Dormido" for "Prepararte para dormir", every night.
+    func setWindDown(_ minutes: Int) {
+        changeSchedule { $0.windDown = minutes }
+    }
+
     // MARK: Import
 
     /// Replaces the parts of the settings the copy brings; days are added, the newest `updatedAt` wins.

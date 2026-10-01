@@ -48,6 +48,19 @@ struct Routine {
         return time(of: step, on: ds)
     }
 
+    /// "Dormido": the night's step that says so, or its last one.
+    func bedStep(_ kind: DayType) -> Step? {
+        let night = settings.schedule?.type(kind)?[.night] ?? []
+        return night.first { $0.title?.localizedCaseInsensitiveContains("dorm") == true } ?? night.last
+    }
+
+    static let usualWindDown = 45
+
+    /// How many minutes before "Dormido" "Prepararte para dormir" arrives, the same every night.
+    var windDown: Int {
+        settings.schedule?.windDown.flatMap { (1...240).contains($0) ? $0 : nil } ?? Self.usualWindDown
+    }
+
     static func valid(_ v: JSONValue?) -> Int? {
         guard let n = v?.number, n >= 1, n <= 240, n.rounded() == n else { return nil }
         return Int(n)

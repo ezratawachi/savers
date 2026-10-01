@@ -32,6 +32,7 @@ struct Backup {
         "y \"letters\" (qué letras van en ese bloque y en qué orden: silencio, afirmaciones, visualizacion, ejercicio, lectura, escritura). " +
         "Los minutos de Silencio y Lectura van en \"minutes\" ({\"silencio\": 10, \"lectura\": 4}) y \"minutesDays\" ({\"lectura\": {\"jue\": 10}}); los de Afirmaciones, Visualización, Ejercicio y Escritura no se pueden cambiar. " +
         "\"week\" dice qué es cada día (0 domingo … 5 viernes): \"normal\", \"gym\" u \"off\" (sin SAVERS); el sábado es Shabbat. " +
+        "En settings.schedule, \"windDown\" son los minutos antes de Dormido en que llega el aviso de prepararte para dormir: uno para todas las noches, de 15 a 90 (si falta, 45). " +
         "Las horas se escriben \"5:20\" (de mañana) o \"8:50 pm\". Un cambio solo para una fecha va en days[\"AAAA-MM-DD\"]: \"times\" (por id de bloque) y \"mins\"."
 
     let settings: AppSettings

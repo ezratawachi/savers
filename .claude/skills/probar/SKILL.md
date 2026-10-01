@@ -20,7 +20,7 @@ swift/tools/probar.sh hoja manana --sin-build   # sin compilar (si no cambió el
 Imprime la ruta de `hoja.png`; léela con Read. Es una imagen para todo, en vez de una captura por paso.
 Escenarios: `manana` (nada marcado, Silencio en Ahora), `abiertas` (Afirmaciones, Visualización y Escritura
 abiertas con texto), `hechas` (mañana completa, bloque "hechas" abierto con una letra abierta), `dia-completo`,
-`shabbat`, `sin-savers`, `historial`.
+`shabbat`, `sin-savers`, `historial`, `ajustes` (la pestaña Ajustes, para entrar a Horario o Notificaciones con `tocar`).
 
 ## Probar una interacción: texto, no imágenes
 

@@ -59,6 +59,8 @@ extension Routine {
         let letters: [LetterLine]
         /// "Lectura termina 6:12, pasa las 6:10 de Baño"
         let warnings: [String]
+        /// Under "Dormido": "9:40 pm · 45 min antes", when "Prepararte para dormir" arrives.
+        var windDown: String?
         var id: String { step.id ?? step.label }
     }
 
@@ -66,6 +68,7 @@ extension Routine {
     func stepLines(_ kind: DayType) -> [(group: TypeSchedule.Group, lines: [StepLine])] {
         guard let t = settings.schedule?.type(kind) else { return [] }
         var seen: Set<Letter> = []
+        let bedID = bedStep(kind)?.id
         return TypeSchedule.Group.allCases.compactMap { g in
             let list = t[g]
             guard !list.isEmpty else { return nil }
@@ -73,10 +76,18 @@ extension Routine {
                 let st = list[i]
                 let keys = st.letterKeys.filter { seen.insert($0).inserted }
                 let next = i + 1 < list.count ? list[i + 1] : nil
-                return StepLine(step: st, summary: stepSummary(st, kind), letters: letterLines(kind, st, keys), warnings: overlaps(kind, st, next: next, letters: keys))
+                return StepLine(step: st, summary: stepSummary(st, kind), letters: letterLines(kind, st, keys), warnings: overlaps(kind, st, next: next, letters: keys),
+                                windDown: g == .night && st.id == bedID ? windDownInfo(st) : nil)
             }
             return (g, lines)
         }
+    }
+
+    /// "9:40 pm · 45 min antes": the hour for all the days, before the "Dormido" it hangs from.
+    private func windDownInfo(_ bed: Step) -> String {
+        let mins = "\(windDown) min antes"
+        guard let at = TimeText.minutes(bed.time) else { return mins }
+        return TimeText.label((at - windDown + 24 * 60) % (24 * 60)) + " · " + mins
     }
 
     /// Each letter at the hour it starts: the block's hour plus the minutes of the letters before it.

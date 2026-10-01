@@ -67,6 +67,21 @@ struct MinutesSheet: View {
     }
 }
 
+/// How long before "Dormido" "Prepararte para dormir" arrives: one number for every night.
+struct WindDownSheet: View {
+    @Environment(AppStore.self) private var store
+
+    var body: some View {
+        UsualSheet(title: "Prepararte", days: [], weekday: .constant(nil)) {
+            MinutesWheel(label: "Minutos antes de Dormido", minutes: store.routine.windDown, choices: Array(stride(from: 15, through: 90, by: 5))) {
+                store.setWindDown($0)
+            }
+        } foot: {
+            Note("Igual todas las noches. El aviso Prepararte para dormir llega estos minutos antes de Dormido.")
+        }
+    }
+}
+
 /// Title and Listo, "Todos | lun | mar…", the wheel, and what the choice means.
 private struct UsualSheet<Wheel: View, Foot: View>: View {
     @Environment(\.dismiss) private var dismiss

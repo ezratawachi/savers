@@ -18,11 +18,11 @@ enum NoteKind: String, CaseIterable, Identifiable {
         }
     }
 
-    var about: String {
+    func about(_ r: Routine) -> String {
         switch self {
         case .lectura: "Cuando terminan tus minutos, aunque SAVERS esté cerrada."
         case .leer: "Los días de gym, si todavía no leíste."
-        case .dormir: "45 minutos antes de dormir, de domingo a jueves."
+        case .dormir: "\(r.windDown) minutos antes de Dormido, de domingo a jueves. Lo cambias en Horario."
         case .revision: "Afirmaciones y visualización, el primer domingo a las 11:00 am."
         }
     }
@@ -163,11 +163,11 @@ final class Notices {
         DayKey.calendar.date(byAdding: .minute, value: minute, to: DayKey.date(ds)) ?? DayKey.date(ds)
     }
 
-    /// The night before a SAVERS day, 45 minutes before its "Dormido".
+    /// The night before a SAVERS day, `windDown` minutes before its "Dormido".
     static func bedNote(_ r: Routine, _ ds: String) -> PlannedNote? {
-        guard r.isScheduled(ds), let t = r.settings.schedule?.type(r.scheduleKind(ds)) else { return nil }
-        let night = t[.night], steps = t[.steps]
-        guard let bedStep = night.first(where: { $0.title?.localizedCaseInsensitiveContains("dorm") == true }) ?? night.last,
+        guard r.isScheduled(ds) else { return nil }
+        let kind = r.scheduleKind(ds)
+        guard let steps = r.settings.schedule?.type(kind)?[.steps], let bedStep = r.bedStep(kind),
               let bed = TimeText.minutes(r.time(of: bedStep, on: ds)) else { return nil }
         let wakeStep = steps.first { s in ["te paras", "despiert"].contains { s.title?.localizedCaseInsensitiveContains($0) == true } } ?? steps.first
         let wake = wakeStep.flatMap { TimeText.minutes(r.time(of: $0, on: ds)) }
@@ -175,9 +175,9 @@ final class Notices {
         let night0 = bed >= 12 * 60 ? DayKey.adding(-1, to: ds) : ds
         var body = "Dormido a las \(TimeText.label(bed))."
         if let wake {
-            body += (r.scheduleKind(ds) == .gym ? " Mañana es gym: te paras a las " : " Mañana te paras a las ") + TimeText.label(wake) + "."
+            body += (kind == .gym ? " Mañana es gym: te paras a las " : " Mañana te paras a las ") + TimeText.label(wake) + "."
         }
-        return PlannedNote(id: "dormir-" + ds, at: at(night0, minute: bed - 45), title: "Hora de prepararte para dormir", body: body)
+        return PlannedNote(id: "dormir-" + ds, at: at(night0, minute: bed - r.windDown), title: "Hora de prepararte para dormir", body: body)
     }
 
     /// A Lectura that's "Más tarde" that day (the gym days), while it isn't marked.

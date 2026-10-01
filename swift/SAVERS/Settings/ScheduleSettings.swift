@@ -78,6 +78,7 @@ struct ScheduleSettings: View {
                 switch edit {
                 case .step(let kind, let id): StepTimeSheet(kind: kind, id: id)
                 case .minutes(let kind, let letter): MinutesSheet(kind: kind, letter: letter)
+                case .windDown: WindDownSheet()
                 }
             }
             .presentationDetents([.medium])
@@ -102,6 +103,13 @@ struct ScheduleSettings: View {
                 SettingsRow(title: l.letter.name, detail: l.info, chevron: false, sub: true)
             }
         }
+        if let info = line.windDown {
+            Button {
+                editing = .windDown
+            } label: {
+                SettingsRow(title: "Prepararte", detail: info, chevron: true, sub: true)
+            }
+        }
         ForEach(line.warnings, id: \.self) { w in
             Label(w, systemImage: "exclamationmark.triangle.fill")
                 .font(.reading(15, relativeTo: .subheadline))
@@ -113,11 +121,13 @@ struct ScheduleSettings: View {
 enum ScheduleEdit: Identifiable {
     case step(DayType, String)
     case minutes(DayType, Letter)
+    case windDown
 
     var id: String {
         switch self {
         case .step(let k, let id): "\(k.rawValue)-\(id)"
         case .minutes(let k, let l): "\(k.rawValue)-\(l.rawValue)"
+        case .windDown: "windDown"
         }
     }
 }

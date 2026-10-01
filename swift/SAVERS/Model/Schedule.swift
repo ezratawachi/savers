@@ -7,10 +7,12 @@ struct Schedule: Codable, Equatable, Sendable {
     var week: [String: String] = [:]
     var gymTime: String?
     var gymReading: String?
+    /// Minutes before "Dormido" that "Prepararte para dormir" arrives, the same every night.
+    var windDown: Int?
     var types: [String: TypeSchedule]?
     var extras: [String: JSONValue] = [:]
 
-    private static let known: Set<String> = ["week", "gymTime", "gymReading", "types"]
+    private static let known: Set<String> = ["week", "gymTime", "gymReading", "windDown", "types"]
 
     /// A schedule that only says what each weekday is (the web's `migrateSchedule({})`).
     static var blank: Schedule {
@@ -26,6 +28,7 @@ struct Schedule: Codable, Equatable, Sendable {
         week = c.lenient([String: String].self, "week") ?? [:]
         gymTime = c.lenient(String.self, "gymTime")
         gymReading = c.lenient(String.self, "gymReading")
+        windDown = c.lenient(Int.self, "windDown")
         types = c.lenient([String: TypeSchedule].self, "types")
         extras = c.extras(excluding: Self.known)
     }
@@ -36,6 +39,7 @@ struct Schedule: Codable, Equatable, Sendable {
         try c.encode(week, forKey: AnyKey("week"))
         try c.encodeIfPresent(gymTime, forKey: AnyKey("gymTime"))
         try c.encodeIfPresent(gymReading, forKey: AnyKey("gymReading"))
+        try c.encodeIfPresent(windDown, forKey: AnyKey("windDown"))
         try c.encodeIfPresent(types, forKey: AnyKey("types"))
     }
 

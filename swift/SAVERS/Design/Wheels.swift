@@ -23,16 +23,17 @@ struct TimeWheel: View {
     }
 }
 
-/// Silencio's or Lectura's minutes on a wheel: 1…60, then quarter hours up to two hours.
+/// Minutes on a wheel. Silencio's and Lectura's by default: 1…60, then quarter hours up to two hours.
 struct MinutesWheel: View {
     let label: String
     let minutes: Int
+    var choices = Self.letterChoices
     let onChange: (Int) -> Void
 
-    static let choices = Array(1...60) + [75, 90, 105, 120]
+    static let letterChoices = Array(1...60) + [75, 90, 105, 120]
 
     var body: some View {
-        let options = Self.choices.contains(minutes) ? Self.choices : (Self.choices + [minutes]).sorted()
+        let options = choices.contains(minutes) ? choices : (choices + [minutes]).sorted()
         Picker(label, selection: Binding { minutes } set: { onChange($0) }) {
             ForEach(options, id: \.self) { Text("\($0) min").tag($0) }
         }

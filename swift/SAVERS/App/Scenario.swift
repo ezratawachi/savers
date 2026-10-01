@@ -4,7 +4,7 @@ import Foundation
 /// A state to open the app in, for checking the design: `-escenario hechas`. Made-up data in a folder of its own,
 /// with no cloud and no notices, so nothing real is read or changed. Debug builds only.
 enum Scenario: String, CaseIterable {
-    case manana, abiertas, hechas, diaCompleto = "dia-completo", shabbat, sinSavers = "sin-savers", historial
+    case manana, abiertas, hechas, diaCompleto = "dia-completo", shabbat, sinSavers = "sin-savers", historial, ajustes
 
     static let current: Scenario? = {
         let args = ProcessInfo.processInfo.arguments
@@ -19,7 +19,13 @@ enum Scenario: String, CaseIterable {
         return LocalPrefs(defaults: d)
     }()
 
-    var tab: AppTab { self == .historial ? .history : .today }
+    var tab: AppTab {
+        switch self {
+        case .historial: .history
+        case .ajustes: .settings
+        default: .today
+        }
+    }
 
     /// Cards open on Hoy.
     var openCards: Set<Letter> {
@@ -78,7 +84,7 @@ enum Scenario: String, CaseIterable {
             for l in Letter.allCases { d.checks[l.rawValue] = true }
         case .sinSavers:
             d.type = "off"
-        case .shabbat, .historial:
+        case .shabbat, .historial, .ajustes:
             break
         }
         out[today] = d

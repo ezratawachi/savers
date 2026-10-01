@@ -3,6 +3,7 @@ import SwiftUI
 /// Ajustes › Notificaciones: one switch per notice, only on this iPhone. The first one turned on asks iOS.
 struct NoticesSettings: View {
     @Environment(Notices.self) private var notices
+    @Environment(AppStore.self) private var store
     @Environment(Runs.self) private var runs
     @Environment(Toast.self) private var toast
     @Environment(\.scenePhase) private var scenePhase
@@ -23,7 +24,7 @@ struct NoticesSettings: View {
                     }) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(kind.name)
-                            Text(kind.about).font(.footnote).foregroundStyle(.muted)
+                            Text(kind.about(store.routine)).font(.footnote).foregroundStyle(.muted)
                         }
                     }
                     .tint(.sky)
