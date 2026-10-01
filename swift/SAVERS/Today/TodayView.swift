@@ -8,6 +8,7 @@ struct TodayView: View {
     @Environment(Notices.self) private var notices
     @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
 
     /// Every card starts closed; this remembers the ones opened while the app stays open.
     #if DEBUG
@@ -47,10 +48,17 @@ struct TodayView: View {
         let now = routine.nextLetter(blocks, day)
         let finish = routine.finish(ds)
 
+        let free = type == .off && !(day.extra || store.showOff || day.hasContent)
+        let title: TodayHeader.Title = type == .shabbat ? .shabbat : free ? .free : .letters(day)
+        // The dawn stays while the morning is still to do.
+        let glow = title.isLetters && shownFinish == .none && colorScheme == .light ? DawnGlow.on : 0
+
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    TodayHeader(ds: ds, name: store.settings.name, type: type, status: store.saveError) { sheetDay = ds }
+                    TodayHeader(ds: ds, type: type, title: title, note: note(title, routine), status: store.saveError) {
+                        sheetDay = ds
+                    }
                     if !store.settings.hasPersonalData && !cloud.linked {
                         ImportBanner(busy: cloud.busy, error: cloud.error) {
                             Task { await cloud.signIn(using: webAuth) }
@@ -58,26 +66,28 @@ struct TodayView: View {
                             importing = true
                         }
                     }
-                    if type == .shabbat {
-                        RestCard(title: "Shabbat Shalom", text: "Hoy no hay registro. Nos vemos el domingo.")
-                    } else if type == .off && !(day.extra || store.showOff || day.hasContent) {
-                        RestCard(
-                            title: "Sin SAVERS",
-                            text: "Hoy no toca SAVERS. Si quieres, puedes hacerlos igual y quedan registrados.",
-                            button: ("Hacer mis SAVERS hoy", { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
-                        )
-                    } else {
+                    switch title {
+                    case .shabbat:
+                        EmptyView()
+                    case .free:
+                        Button("Hacer mis SAVERS hoy") {
+                            withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) }
+                        }
+                        .buttonStyle(PrimaryButton())
+                    case .letters:
                         guide(routine, ds: ds, day: day, blocks: blocks)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .padding(.bottom, 32)
             }
+            .background(alignment: .top) { DawnGlow(strength: glow) }
             .background(.bg)
             .safeAreaInset(edge: .top, spacing: 0) {
                 // Content scrolls under the clock without showing through it.
-                Color.clear.frame(height: 0).background(.bg)
+                Color.clear.frame(height: 0).background { DawnGlow.band(glow) }
             }
             .scrollDismissesKeyboard(.interactively)
             .onScrollPhaseChange { _, phase in isScrolling = phase != .idle }
@@ -129,7 +139,6 @@ struct TodayView: View {
             }
                 .transition(.scale(scale: 0.96, anchor: .top).combined(with: .opacity))
         }
-        HeroLetters(day: day, streak: routine.streak(), showStreak: fin != .day)
         VStack(alignment: .leading, spacing: 8) {
             if !folded.isEmpty {
                 let label = fin == .day && blocks.contains(where: \.isLater) ? "Todo el día" : "Mañana"
@@ -210,6 +219,17 @@ struct TodayView: View {
             if kind != .gym { ExerciseTimer(done: day.isDone(.ejercicio)) }
         case .silencio:
             EmptyView()
+        }
+    }
+
+    /// The quiet line under the title. The streak shows from two days, and not while "Día completo" says it.
+    private func note(_ title: TodayHeader.Title, _ routine: Routine) -> String? {
+        switch title {
+        case .shabbat: return "Nos vemos el domingo"
+        case .free: return "Hoy no toca SAVERS"
+        case .letters:
+            let streak = routine.streak()
+            return streak >= 2 && shownFinish != .day ? "\(streak) días seguidos" : nil
         }
     }
 

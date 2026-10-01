@@ -1,29 +1,27 @@
 import SwiftUI
 
-/// The six letters as one word: done in terracotta, the rest quiet. Not buttons.
+/// SAVERS from margin to margin: done in terracotta, the rest quiet. Not buttons.
 struct HeroLetters: View {
     let day: Day
-    let streak: Int
-    let showStreak: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 3) {
-                ForEach(Letter.allCases) { letter in
-                    Text(letter.initial)
-                        .font(.display(60, relativeTo: .largeTitle, weight: .heavy))
-                        .foregroundStyle(day.isDone(letter) ? Color.dawn : Color.line)
-                }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(day.doneCount) de 6")
-            if showStreak {
-                Text("Racha: \(Text(streakLabel).bold())")
-                    .font(.reading(16, relativeTo: .subheadline))
-                    .foregroundStyle(.muted)
-            }
-        }
+        // Set big and shrunk to the width, so the word always fills it exactly, at any text size.
+        word
+            .font(.display(200, relativeTo: .largeTitle, weight: .heavy))
+            .tracking(-2)
+            .lineLimit(1)
+            .minimumScaleFactor(0.05)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // The line's room above the capitals and for descenders, which they don't use.
+            .padding(.top, -8)
+            .padding(.bottom, -10)
+            .accessibilityLabel("SAVERS, \(day.doneCount) de 6")
+            .accessibilityAddTraits(.isHeader)
     }
 
-    private var streakLabel: String { streak == 1 ? "1 día" : "\(streak) días" }
+    private var word: Text {
+        Letter.allCases.reduce(Text(verbatim: "")) { word, letter in
+            Text("\(word)\(Text(letter.initial).foregroundStyle(day.isDone(letter) ? Color.dawn : Color.line))")
+        }
+    }
 }
