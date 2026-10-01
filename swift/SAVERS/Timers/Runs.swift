@@ -429,13 +429,13 @@ final class Runs {
 struct ReadApp {
     let name: String
     let url: URL?
-    /// That app's own icon, in Assets. A paper book isn't an app, so it has none.
-    let icon: String?
+    /// That app's own icon, in Assets. A paper book gets a plain gray tile, so the three line up in the menu.
+    let icon: String
 
     init(_ key: String) {
         switch key {
         case "kindle": name = "Kindle"; url = URL(string: "kindle://"); icon = "KindleIcon"
-        case "papel": name = "Libro físico"; url = nil; icon = nil
+        case "papel": name = "Libro físico"; url = nil; icon = "PaperIcon"
         default: name = "Libros"; url = URL(string: "ibooks://"); icon = "BooksIcon"
         }
     }

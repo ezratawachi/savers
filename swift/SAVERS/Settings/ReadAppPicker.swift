@@ -15,7 +15,7 @@ struct ReadAppPicker: View {
                     Label {
                         Text(app.name)
                     } icon: {
-                        if let icon = app.icon { Image(icon).renderingMode(.original) }
+                        Image(app.icon).renderingMode(.original)
                     }
                     .tag(key)
                 }
@@ -23,12 +23,10 @@ struct ReadAppPicker: View {
         } label: {
             LabeledContent {
                 HStack(spacing: 6) {
-                    if let icon = current.icon {
-                        Image(icon)
-                            .resizable()
-                            .frame(width: iconSize, height: iconSize)
-                            .accessibilityHidden(true)
-                    }
+                    Image(current.icon)
+                        .resizable()
+                        .frame(width: iconSize, height: iconSize)
+                        .accessibilityHidden(true)
                     Text(current.name)
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.footnote.weight(.medium))
