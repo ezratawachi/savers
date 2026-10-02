@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Historial: first how your mornings went, then what you wrote. The month is the title, on the night,
+/// History: first how your mornings went, then what you wrote. The month is the title, on the night,
 /// each day a little sun; you slide between months (back as far as there are records, ahead up to a
-/// year). Under it, the day: "Lo que escribiste". Tapping a day opens it.
+/// year). Under it, "What you wrote". Tapping a day opens it.
 struct HistoryView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -29,8 +29,8 @@ struct HistoryView: View {
                         pager(Array(first...last), shown: shown)
                             .overlay(alignment: .topTrailing) {
                                 HStack(spacing: 4) {
-                                    pageButton("chevron.left", "Mes anterior", to: shown.advanced(by: -1), enabled: shown > first)
-                                    pageButton("chevron.right", "Mes siguiente", to: shown.advanced(by: 1), enabled: shown < last)
+                                    pageButton("chevron.left", String(localized: "Previous month"), to: shown.advanced(by: -1), enabled: shown > first)
+                                    pageButton("chevron.right", String(localized: "Next month"), to: shown.advanced(by: 1), enabled: shown < last)
                                 }
                                 .padding(.trailing, 8)
                                 .padding(.top, 4)
@@ -40,7 +40,7 @@ struct HistoryView: View {
                     }
                     .onScrollVisibilityChange(threshold: 0.3) { visible in monthGone = !visible }
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Lo que escribiste")
+                        Text("What you wrote")
                             .font(.display(22, relativeTo: .title3))
                             .foregroundStyle(.ink)
                             .accessibilityAddTraits(.isHeader)

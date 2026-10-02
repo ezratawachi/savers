@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Leer en": where you read, each app with its own icon. A Menu around the Picker so the row can
+/// "Read on": where you read, each app with its own icon. A Menu around the Picker so the row can
 /// space the icon from the name; the Picker's own row glues them together.
 struct ReadAppPicker: View {
     @Environment(AppStore.self) private var store
@@ -9,7 +9,7 @@ struct ReadAppPicker: View {
     var body: some View {
         let current = ReadApp(store.settings.readApp)
         Menu {
-            Picker("Leer en", selection: Binding { store.settings.readApp } set: { store.setReadApp($0) }) {
+            Picker("Read on", selection: Binding { store.settings.readApp } set: { store.setReadApp($0) }) {
                 ForEach(AppSettings.readApps, id: \.self) { key in
                     let app = ReadApp(key)
                     Label {
@@ -35,7 +35,7 @@ struct ReadAppPicker: View {
                 .foregroundStyle(.muted)
             } label: {
                 // A Menu tints its label; this row reads like the others around it.
-                Text("Leer en").foregroundStyle(Color.primary)
+                Text("Read on").foregroundStyle(Color.primary)
             }
         }
     }

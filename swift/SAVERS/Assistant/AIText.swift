@@ -1,6 +1,6 @@
 import Foundation
 
-/// Reading what an AI writes: names with or without accents, hours in any common way, Spanish day names.
+/// Reading what an AI writes: names with or without accents, hours in any common way, days in Spanish or English.
 enum AIText {
     /// "Visualización", " leer en" → "visualizacion", "leeren": how a name from the AI is compared with ours.
     static func key(_ s: String) -> String {
@@ -18,28 +18,30 @@ enum AIText {
         return TimeText.minutes("\(h):00 \(p.2)m").map(TimeText.label)
     }
 
-    /// "Respira", "lee (L)", and the old "silencio", "lectura" → the step.
+    /// "Breathe", "respira", "lee (L)", and the old "silencio", "lectura" → the step.
     static func letter(_ s: String) -> Letter? {
         let k = key(s)
-        return Letter.allCases.first { k.hasPrefix($0.aiKey) || k.hasPrefix($0.rawValue) }
+        return Letter.allCases.first { l in l.knownNames.contains { k.hasPrefix(key($0)) } }
     }
 
-    /// "normal", "Gym", "descanso", "sin savers", "off" → the kind a weekday or a date can be.
+    /// "normal", "Gym", "rest", "descanso", "sin savers", "off" → the kind a weekday or a date can be.
     static func dayType(_ v: JSONValue?) -> DayType? {
         guard let s = v?.text else { return nil }
         switch key(s) {
         case "normal": return .normal
-        case "gym", "gimnasio", "diadegym": return .gym
-        case "sinsavers", "off", "libre", "descanso", "ninguno": return .off
+        case "gym", "gimnasio", "diadegym", "gymday": return .gym
+        case "sinsavers", "off", "libre", "descanso", "ninguno", "rest", "restday", "dayoff", "none": return .off
         default: return nil
         }
     }
 
-    /// "jueves", "Jue", "miercoles" → 0 (domingo) … 6 (sábado).
+    /// "jueves", "Jue", "miercoles", "Thursday", "thu" → 0 (Sunday) … 6 (Saturday).
     static func weekday(_ s: String) -> Int? {
         let p = Weekday.plain(s)
-        return Weekday.keys.map(Weekday.plain).firstIndex(of: p)
+        return Weekday.keys.map(Weekday.plain).firstIndex(of: p) ?? englishDays.firstIndex(of: p)
     }
+
+    private static let englishDays = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
 
     /// A whole number, written as a number or as text ("15", "15 min").
     static func minutes(_ v: JSONValue?) -> Int? {
@@ -48,11 +50,11 @@ enum AIText {
         return Int(m.1)
     }
 
-    static func quoted(_ s: String) -> String { "«\(s)»" }
+    static func quoted(_ s: String) -> String { AppLanguage.isSpanish ? "«\(s)»" : "“\(s)”" }
 }
 
 extension Letter {
-    /// "respira", "lee": how the AI's configuration names it.
+    /// "breathe", "respira": how the AI's configuration names it, in the app's language.
     var aiKey: String { AIText.key(name) }
 }
 
@@ -66,7 +68,7 @@ extension Routine {
             for st in t[g] where st.id != nil {
                 let title = (st.title ?? "").trimmingCharacters(in: .whitespaces)
                 var name = title.isEmpty ? st.label : title
-                if name.isEmpty { name = "Bloque \(out.count + 1)" }
+                if name.isEmpty { name = String(localized: "Block \(out.count + 1)") }
                 let n = used[AIText.key(name), default: 0] + 1
                 used[AIText.key(name)] = n
                 out.append((n == 1 ? name : "\(name) (\(n))", st))

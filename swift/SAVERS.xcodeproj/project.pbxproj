@@ -75,9 +75,10 @@
 				LastUpgradeCheck = 2700;
 			};
 			buildConfigurationList = A1000000000000000000000A /* Build configuration list for PBXProject "SAVERS" */;
-			developmentRegion = es;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				en,
 				es,
 				Base,
 			);

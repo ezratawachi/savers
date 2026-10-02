@@ -41,7 +41,7 @@ struct SunLine: View {
         let left = Double(start) + len - now
         let p = min(1, max(0, (now - Double(start)) / len))
         let over = left <= 0
-        let label = over ? (next.isEmpty ? "0 min" : "Sigue \(next)") : "\(Int(min(left, len).rounded(.up))) min"
+        let label = over ? (next.isEmpty ? String(localized: "\(0) min") : String(localized: "Next: \(next)")) : String(localized: "\(Int(min(left, len).rounded(.up))) min")
         return SunState(p: p, zone: max(0, (len - 1) / len), over: over, last: !over && left <= 1, label: label)
     }
 

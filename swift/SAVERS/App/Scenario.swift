@@ -77,7 +77,7 @@ enum Scenario: String, CaseIterable {
             var d = Day(date: ds)
             let skipped = back == 9 || back == 16
             for l in Letter.allCases where !skipped || l == .ejercicio { d.checks[l.rawValue] = true }
-            if back % 3 == 0 { d.gratitude = "Una caminata tranquila con la familia." }
+            if back % 3 == 0 { d.gratitude = Self.pick("Una caminata tranquila con la familia.", "A quiet walk with the family.") }
             out[ds] = d
         }
         var d = Day(date: today)
@@ -88,8 +88,8 @@ enum Scenario: String, CaseIterable {
         case .abiertas:
             d.type = "gym"
             d.checks = ["ejercicio": true]
-            d.gratitude = "El café de la mañana en silencio, porque me ordena el día."
-            d.bookIdea = "Los hábitos pequeños se suman más de lo que parece."
+            d.gratitude = Self.pick("El café de la mañana en silencio, porque me ordena el día.", "Morning coffee in silence, because it puts my day in order.")
+            d.bookIdea = Self.pick("Los hábitos pequeños se suman más de lo que parece.", "Small habits add up to more than it seems.")
         case .hechas:
             d.type = "gym"
             for l in morning { d.checks[l.rawValue] = true }
@@ -105,7 +105,38 @@ enum Scenario: String, CaseIterable {
         return out
     }
 
-    private static let settingsJSON = """
+    /// Made-up data in the app's language, like someone who wrote it in that language would have.
+    private static func pick(_ es: String, _ en: String) -> String { AppLanguage.isSpanish ? es : en }
+
+    private static var settingsJSON: String { pick(spanishJSON, englishJSON) }
+
+    private static let englishJSON = """
+    {"name": "Test", "readApp": "libros",
+     "affirmations": ["Today I start the day calmly and with intention.",
+                      "I keep my promises, one step at a time.",
+                      "I'm present with the people I love."],
+     "schedule": {
+      "gymReading": "Wednesday 8:50 pm", "gymTime": "5:15–6:00",
+      "week": {"0": "off", "1": "normal", "2": "normal", "3": "gym", "4": "normal", "5": "gym"},
+      "types": {
+       "gym": {"minutes": {"lectura": 10},
+        "night": [{"id": "gym-night-0", "time": "9:40 pm", "title": "Asleep"}],
+        "steps": [{"id": "gym-steps-0", "time": "4:40", "title": "Get up", "detail": "your coffee time"},
+                  {"id": "gym-steps-1", "time": "5:15", "title": "Gym with your trainer", "short": "Gym", "letters": ["ejercicio"]},
+                  {"id": "gym-steps-2", "time": "6:05", "title": "SAVERS", "short": "SAVERS",
+                   "letters": ["silencio", "afirmaciones", "visualizacion", "escritura"]},
+                  {"id": "gym-steps-3", "time": "6:25", "title": "Shower", "short": "Shower"}],
+        "later": [{"id": "gym-later-0", "time": "8:50 pm", "title": "Read", "letters": ["lectura"]}]},
+       "normal": {"minutes": {"lectura": 10},
+        "night": [{"id": "normal-night-0", "time": "10:25 pm", "title": "Asleep"}],
+        "steps": [{"id": "normal-steps-0", "time": "5:25", "title": "Get up", "detail": "your coffee time"},
+                  {"id": "normal-steps-1", "time": "5:55", "title": "SAVERS", "short": "SAVERS",
+                   "letters": ["silencio", "lectura", "afirmaciones", "visualizacion", "ejercicio", "escritura"]},
+                  {"id": "normal-steps-2", "time": "6:35", "title": "Shower", "short": "Shower"}],
+        "later": []}}}}
+    """
+
+    private static let spanishJSON = """
     {"name": "Prueba", "readApp": "libros",
      "affirmations": ["Hoy empiezo el día con calma y con intención.",
                       "Cumplo lo que prometo, paso a paso.",

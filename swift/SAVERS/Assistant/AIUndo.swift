@@ -1,6 +1,6 @@
 import Foundation
 
-/// "Deshacer los últimos cambios de la IA": the settings and the dates it touched, just before and just after.
+/// "Undo the AI's last changes": the settings and the dates it touched, just before and just after.
 /// Kept on this iPhone until the next changes from an AI.
 struct AIUndo: Codable {
     /// What the AI can change on a date.

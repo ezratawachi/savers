@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// "Cambios de la IA": each change with its before and after and a switch, the ones that can't be made in
-/// red with "Copiar para la IA", and "Aplicar".
+/// "Changes from the AI": each change with its before and after and a switch, the ones that can't be made
+/// in red with "Copy for the AI", and "Apply".
 struct ChangesSheet: View {
     @Environment(AppStore.self) private var store
     @Environment(Toast.self) private var toast
@@ -26,7 +26,7 @@ struct ChangesSheet: View {
                             .tint(.sky)
                         }
                     } footer: {
-                        Text("Apaga los que no quieras.")
+                        Text("Turn off the ones you don't want.")
                     }
                 }
                 if !proposal.problems.isEmpty {
@@ -36,29 +36,29 @@ struct ChangesSheet: View {
                                 .font(.reading(16))
                                 .foregroundStyle(.warn)
                         }
-                        Button(copied ? "Copiado" : "Copiar para la IA", systemImage: copied ? "checkmark" : "doc.on.doc") {
+                        Button(copied ? "Copied" : "Copy for the AI", systemImage: copied ? "checkmark" : "doc.on.doc") {
                             UIPasteboard.general.string = proposal.problemsMessage
                             copied = true
                         }
                         .foregroundStyle(.sky)
                         .cardRow()
                     } header: {
-                        Text(proposal.problems.count == 1 ? "No se puede aplicar" : "No se pueden aplicar")
+                        Text(proposal.problems.count == 1 ? "This one can't be applied" : "These can't be applied")
                     } footer: {
-                        Text("Pégaselo a la IA para que te dé el bloque corregido.")
+                        Text("Paste it to the AI so it gives you the fixed block.")
                     }
                 }
             }
-            .navigationTitle("Cambios de la IA")
+            .navigationTitle("Changes from the AI")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
             }
             .safeAreaInset(edge: .bottom) {
                 if !proposal.changes.isEmpty {
-                    Button(chosen.isEmpty ? "Cerrar sin cambios" : chosen.count == 1 ? "Aplicar 1 cambio" : "Aplicar \(chosen.count) cambios", action: apply)
+                    Button(chosen.isEmpty ? String(localized: "Close without changes") : String(localized: "Apply \(chosen.count) changes"), action: apply)
                         .buttonStyle(PrimaryButton())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -73,12 +73,12 @@ struct ChangesSheet: View {
         let picked = chosen
         guard !picked.isEmpty else { return dismiss() }
         store.applyAI(picked)
-        toast.show(picked.count == 1 ? "Cambio aplicado" : "\(picked.count) cambios aplicados")
+        toast.show(String(localized: "\(picked.count) changes applied"))
         dismiss()
     }
 }
 
-/// "Amanecer" / "Normal · solo los jueves" / "5:55 → 5:45", and a list's lines under it.
+/// "Sunrise" / "Normal · Thursdays only" / "5:55 → 5:45", and a list's lines under it.
 private struct ChangeRow: View {
     let change: AIChange
 

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ajustes › Notificaciones: one switch per notice, only on this iPhone. The first one turned on asks iOS.
+/// Settings › Notifications: one switch per notice, only on this iPhone. The first one turned on asks iOS.
 struct NoticesSettings: View {
     @Environment(Notices.self) private var notices
     @Environment(AppStore.self) private var store
@@ -31,42 +31,42 @@ struct NoticesSettings: View {
                     .disabled(blocked || notices.busy != nil)
                 }
             } footer: {
-                Text("Nada desde el viernes en la tarde hasta que termina Shabbat.")
+                Text("Nothing from Friday afternoon until Shabbat ends.")
             }
 
             if blocked {
                 Section {
-                    Button("Abrir Configuración") {
+                    Button("Open Settings") {
                         if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
                     }
                     .foregroundStyle(.sky)
                     .cardRow()
                 } header: {
-                    Text("Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › Sunling.")
+                    Text("Notifications are blocked. Turn them on in Settings › Notifications › Sunling.")
                         .textCase(nil)
                         .font(.footnote)
                         .foregroundStyle(.warn)
                 }
             } else if notices.anyOn {
                 Section {
-                    Button("Mandar un aviso de prueba") {
+                    Button("Send a test notification") {
                         Task {
                             await notices.test()
-                            toast.show("Aviso de prueba enviado")
+                            toast.show(String(localized: "Test notification sent"))
                         }
                     }
                     .foregroundStyle(.sky)
                     .cardRow()
                 } footer: {
-                    Text("Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › Sunling. Con el modo Dormir u otra concentración llegan sin sonido y sin mostrarse, salvo que Sunling esté entre sus apps permitidas.")
+                    Text("How they look and whether they make a sound, you choose in Settings › Notifications › Sunling. With Sleep or another Focus they arrive silently and hidden, unless Sunling is one of its allowed apps.")
                 }
             }
         }
-        .navigationTitle("Notificaciones")
+        .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .task { await notices.readPermission() }
         .onChange(of: scenePhase) { _, phase in
-            // Back from Configuración: what you chose there shows here right away.
+            // Back from iOS Settings: what you chose there shows here right away.
             if phase == .active { Task { await notices.readPermission() } }
         }
     }

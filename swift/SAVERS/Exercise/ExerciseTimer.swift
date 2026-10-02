@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ejercicio en casa: the step, its drawing, the clock, the map of the six parts, and the buttons.
+/// Move at home: the step, its drawing, the clock, the map of the six parts, and the buttons.
 struct ExerciseTimer: View {
     @Environment(Runs.self) private var runs
     let done: Bool
@@ -15,12 +15,12 @@ struct ExerciseTimer: View {
         let rest = run == nil && done
 
         VStack(alignment: .leading, spacing: 0) {
-            Text(rest ? "Hecho" : run == nil ? "Listo para empezar" : step.rest ? "Cambia de ejercicio" : step.name)
+            Text(rest ? String(localized: "All done") : run == nil ? String(localized: "Ready to start") : step.rest ? String(localized: "Switch exercises") : step.name)
                 .font(.display(20, relativeTo: .headline, weight: .bold))
                 .foregroundStyle(.ink)
                 .contentTransition(.opacity)
             if rest {
-                Text("Si quieres, puedes repetirlo.")
+                Text("If you like, you can do it again.")
                     .font(.reading(15, relativeTo: .subheadline))
                     .foregroundStyle(.muted)
                     .padding(.top, 2)
@@ -60,16 +60,16 @@ struct ExerciseTimer: View {
 
     @ViewBuilder
     private func buttons(run: GuidedRun?, rest: Bool) -> some View {
-        Button(run?.running == true ? "Pausar" : run != nil ? "Seguir" : rest ? "Repetir" : "Empezar") {
+        Button(run?.running == true ? "Pause" : run != nil ? "Resume" : rest ? "Repeat" : "Start") {
             if run?.running == true { runs.pause(.ejercicio) } else { runs.start(.ejercicio) }
         }
         .buttonStyle(TimerButton(prominent: !rest || run != nil))
         if !rest {
-            Button("Siguiente") { runs.skip(.ejercicio) }
+            Button("Next") { runs.skip(.ejercicio) }
                 .buttonStyle(TimerButton())
         }
         if run != nil {
-            Button("Reiniciar", systemImage: "arrow.counterclockwise") { runs.reset(.ejercicio) }
+            Button("Restart", systemImage: "arrow.counterclockwise") { runs.reset(.ejercicio) }
                 .labelStyle(.iconOnly)
                 .buttonStyle(TimerButton(round: true))
         }
@@ -111,7 +111,7 @@ private struct ExerciseMap: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(current < 0 ? "Seis partes" : "Parte \(current + 1) de 6: \(Exercise.map[current].name)")
+        .accessibilityLabel(current < 0 ? String(localized: "Six parts") : String(localized: "Part \(current + 1) of 6: \(Exercise.map[current].name)"))
     }
 }
 

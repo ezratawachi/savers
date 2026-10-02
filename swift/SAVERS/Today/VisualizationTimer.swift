@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Visualización's guided timer: a minute per question, read aloud.
+/// Imagine's guided timer: a minute per question, read aloud.
 struct VisualizationTimer: View {
     @Environment(Runs.self) private var runs
     let done: Bool
@@ -20,22 +20,22 @@ struct VisualizationTimer: View {
         let clock = run == nil ? Int(total) : Int((Runs.stepStart(steps, idx) + steps[idx].secs - el).rounded(.up))
 
         return TimerPanel(
-            title: rest ? "Hecho" : run == nil ? "Cierra los ojos y escucha" : "Pregunta \(idx + 1) de \(steps.count)",
-            subtitle: rest ? "Si quieres, puedes repetirlo." : run == nil ? "La voz te lee cada pregunta y te da un minuto." : steps[idx].text,
+            title: rest ? String(localized: "All done") : run == nil ? String(localized: "Close your eyes and listen") : String(localized: "Question \(idx + 1) of \(steps.count)"),
+            subtitle: rest ? String(localized: "If you like, you can do it again.") : run == nil ? String(localized: "The voice reads you each question and gives you a minute.") : steps[idx].text,
             subtitleIsText: run != nil,
             clock: rest ? nil : max(0, clock),
             progress: run == nil || total == 0 ? 0 : el / total
         ) {
-            Button(run?.running == true ? "Pausar" : run != nil ? "Seguir" : rest ? "Repetir" : "Empezar") {
+            Button(run?.running == true ? "Pause" : run != nil ? "Resume" : rest ? "Repeat" : "Start") {
                 if run?.running == true { runs.pause(.visualizacion) } else { runs.start(.visualizacion) }
             }
             .buttonStyle(TimerButton(prominent: !rest || run != nil))
             if !rest {
-                Button("Siguiente") { runs.skip(.visualizacion) }
+                Button("Next") { runs.skip(.visualizacion) }
                     .buttonStyle(TimerButton())
             }
             if run != nil {
-                Button("Reiniciar", systemImage: "arrow.counterclockwise") { runs.reset(.visualizacion) }
+                Button("Restart", systemImage: "arrow.counterclockwise") { runs.reset(.visualizacion) }
                     .labelStyle(.iconOnly)
                     .buttonStyle(TimerButton(round: true))
             }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ajustes: how you want your mornings. On the night, your week (it opens Horario); under it, what you
+/// Settings: how you want your mornings. On the night, your week (it opens Horario); under it, what you
 /// say and see, help, sound and notices, and your data. Each page pushes in from the right.
 struct SettingsView: View {
     @Environment(AppStore.self) private var store
@@ -25,34 +25,34 @@ struct SettingsView: View {
                     .onScrollVisibilityChange(threshold: 0.3) { visible in weekGone = !visible }
 
                     CardSections {
-                        Section("Lo que dices y ves") {
+                        Section("What you say and see") {
                             NavigationLink {
                                 BreathePage()
                             } label: {
-                                RowLabel(title: "Respira", value: s.breatheLine)
+                                RowLabel(title: Letter.silencio.name, value: s.breatheLine)
                             }
                             .cardRow()
                             NavigationLink {
                                 ItemsPage(kind: .affirmations)
                             } label: {
                                 let n = s.affirmations.filled.count
-                                RowLabel(title: Letter.afirmaciones.name, value: n > 0 ? count(n, "frase", "frases") : "Vacío")
+                                RowLabel(title: Letter.afirmaciones.name, value: n > 0 ? String(localized: "\(n) phrases") : String(localized: "Empty"))
                             }
                             .cardRow()
                             NavigationLink {
                                 ItemsPage(kind: .visualization)
                             } label: {
                                 let n = s.visualization.items.filled.count
-                                RowLabel(title: Letter.visualizacion.name, value: n > 0 ? count(n, "pregunta", "preguntas") : "Vacío")
+                                RowLabel(title: Letter.visualizacion.name, value: n > 0 ? String(localized: "\(n) questions") : String(localized: "Empty"))
                             }
                             .cardRow()
                             ReadAppPicker()
                         }
-                        Section("Ayuda") {
+                        Section("Help") {
                             NavigationLink {
                                 AssistantPage()
                             } label: {
-                                RowLabel(title: "Hablar con una IA")
+                                RowLabel(title: String(localized: "Talk with an AI"))
                             }
                             .cardRow()
                         }
@@ -60,36 +60,36 @@ struct SettingsView: View {
                             NavigationLink {
                                 NoticesSettings()
                             } label: {
-                                RowLabel(title: "Notificaciones", value: notices.anyOn ? "Activadas" : "Apagadas")
+                                RowLabel(title: String(localized: "Notifications"), value: notices.anyOn ? String(localized: "On") : String(localized: "Off"))
                             }
                             .cardRow()
                             NavigationLink {
                                 VoiceSettings()
                             } label: {
-                                RowLabel(title: "Voz", value: gemini.hasKey ? gemini.voice : "Del iPhone")
+                                RowLabel(title: String(localized: "Voice"), value: gemini.hasKey ? gemini.voice : String(localized: "iPhone"))
                             }
                             .cardRow()
-                            Toggle("Mantener mi música", isOn: $keepMusic)
+                            Toggle("Keep my music", isOn: $keepMusic)
                                 .tint(.sky)
                                 .onChange(of: keepMusic) { _, on in ToneEngine.keepMusic = on }
                         } header: {
-                            Text("Sonido y avisos")
+                            Text("Sound and notifications")
                         } footer: {
                             Text(keepMusic
-                                 ? "Tu música sigue en los temporizadores; la voz se oye si el iPhone no está en silencio."
-                                 : "La voz pausa tu música y suena siempre.")
+                                 ? "Your music keeps playing during the timers; you hear the voice if the iPhone isn't on silent."
+                                 : "The voice pauses your music and always plays.")
                         }
                         Section {
                             NavigationLink {
                                 BackupPage()
                             } label: {
-                                RowLabel(title: "Copia de seguridad", value: cloud.linked ? "En la nube" : "Apagada")
+                                RowLabel(title: String(localized: "Backup"), value: cloud.linked ? String(localized: "In the cloud") : String(localized: "backup.off", defaultValue: "Off"))
                             }
                             .cardRow()
                         } header: {
-                            Text("Tus datos")
+                            Text("Your data")
                         } footer: {
-                            Text(cloud.linked ? "Tus registros se guardan en este aparato y en la nube." : "Tus registros viven solo en este aparato.")
+                            Text(cloud.linked ? "Your records are saved on this device and in the cloud." : "Your records live only on this device.")
                         }
                     }
                     .padding(.horizontal, 16)
@@ -100,10 +100,8 @@ struct SettingsView: View {
             .background(.bg)
             .toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top, spacing: 0) {
-                NightStrip(title: weekGone ? "Ajustes" : nil)
+                NightStrip(title: weekGone ? String(localized: "Settings") : nil)
             }
         }
     }
-
-    private func count(_ n: Int, _ one: String, _ many: String) -> String { "\(n) \(n == 1 ? one : many)" }
 }

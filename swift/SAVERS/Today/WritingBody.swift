@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Escritura: three fields that save while you write, and Listo to mark the letter.
+/// Write: three fields that save while you write, and Done to check it off.
 struct WritingBody: View {
     let ds: String
     let gym: Bool
@@ -15,9 +15,9 @@ struct WritingBody: View {
                     .id(field)
             }
             if !done {
-                Button("Listo", action: onDone)
+                Button("Done", action: onDone)
                     .buttonStyle(PrimaryButton())
-                    .accessibilityLabel("Listo, marcar Escribe")
+                    .accessibilityLabel("Done, check off \(Letter.escritura.name)")
             }
         }
     }

@@ -59,9 +59,9 @@ final class CloudSync {
             loop = Task { await run() }
         } catch CloudError.cancelled {
         } catch CloudError.offline {
-            error = "Sin conexión: prueba más tarde."
+            error = String(localized: "No connection: try again later.")
         } catch {
-            self.error = "No se pudo entrar con Google. Toca otra vez."
+            self.error = String(localized: "Couldn't sign in with Google. Tap again.")
         }
     }
 
@@ -214,9 +214,9 @@ final class CloudSync {
         switch e as? CloudError {
         case .offline: offline = true
         case .unauthorized: session = nil
-        case .denied: signOut(message: "Esta cuenta de Google no tiene acceso a esta app.")
+        case .denied: signOut(message: String(localized: "This Google account doesn't have access to this app."))
         case .signedOut: signOut()
-        default: error = "No se pudo conectar con la nube."
+        default: error = String(localized: "Couldn't connect to the cloud.")
         }
     }
 
@@ -229,15 +229,20 @@ final class CloudSync {
         prefs["cloudAt"] = Date.now.iso
     }
 
-    /// "Guardado · hace 5 min", like the web.
+    /// "Saved · 5 min ago", like the web.
     func statusLabel(now: Date = .now) -> String {
         guard linked else { return "" }
         if !error.isEmpty { return error }
-        if !ready || pending { return offline ? "Sin conexión · se sube después" : ready ? "Subiendo…" : "Conectando…" }
-        guard let lastAt else { return "Guardado" }
+        if !ready || pending {
+            return offline ? String(localized: "Offline · it uploads later") : ready ? String(localized: "Uploading…") : String(localized: "Connecting…")
+        }
+        guard let lastAt else { return String(localized: "Saved") }
         let min = Int(now.timeIntervalSince(lastAt) / 60)
-        let ago = min < 1 ? "ahora" : min < 60 ? "hace \(min) min" : min < 1440 ? "hace \(min / 60) h" : "hace \(min / 1440) días"
-        return "Guardado · " + ago
+        let ago = min < 1 ? String(localized: "just now")
+            : min < 60 ? String(localized: "\(min) min ago")
+            : min < 1440 ? String(localized: "\(min / 60) h ago")
+            : String(localized: "\(min / 1440) days ago")
+        return String(localized: "Saved · \(ago)")
     }
 }
 

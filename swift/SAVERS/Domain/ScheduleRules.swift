@@ -24,7 +24,7 @@ extension Routine {
     /// "5:20 · jue 5:10": the hour for all days and the weekdays that have their own.
     func stepSummary(_ step: Step, _ kind: DayType) -> String {
         let all = (step.time ?? "").isEmpty ? "—" : step.time ?? ""
-        let own = days(of: kind).compactMap { w in ownTime(step, weekday: w).map { "\(Weekday.keys[w]) \($0)" } }
+        let own = days(of: kind).compactMap { w in ownTime(step, weekday: w).map { "\(Weekday.short[w]) \($0)" } }
         return ([all] + own).joined(separator: " · ")
     }
 
@@ -33,9 +33,9 @@ extension Routine {
         let all = usualMinutes(kind, letter, weekday: nil)
         let own = days(of: kind).compactMap { w -> String? in
             let n = usualMinutes(kind, letter, weekday: w)
-            return n == all ? nil : "\(Weekday.keys[w]) \(n) min"
+            return n == all ? nil : "\(Weekday.short[w]) " + String(localized: "\(n) min")
         }
-        return (["\(all) min"] + own).joined(separator: " · ")
+        return ([String(localized: "\(all) min")] + own).joined(separator: " · ")
     }
 
     /// A weekday's own minutes, if it has them.
@@ -85,7 +85,7 @@ extension Routine {
 
     /// "9:40 pm · 45 min antes": the hour for all the days, before the "Dormido" it hangs from.
     private func windDownInfo(_ bed: Step) -> String {
-        let mins = "\(windDown) min antes"
+        let mins = String(localized: "\(windDown) min before")
         guard let at = TimeText.minutes(bed.time) else { return mins }
         return TimeText.label((at - windDown + 24 * 60) % (24 * 60)) + " · " + mins
     }
@@ -96,7 +96,7 @@ extension Routine {
         var at = keys.count == 1 && st.onlyStep != nil ? nil : TimeText.minutes(st.time)
         return keys.map { k in
             let min = letterMinutes(k, kind, weekday: nil)
-            let mins = k.usualMinutes != nil ? minutesSummary(kind, k) : min > 0 ? "\(min) min" : ""
+            let mins = k.usualMinutes != nil ? minutesSummary(kind, k) : min > 0 ? String(localized: "\(min) min") : ""
             let info = [at.map(TimeText.label) ?? "", mins].filter { !$0.isEmpty }.joined(separator: " · ")
             if let a = at { at = a + min }
             return LetterLine(letter: k, info: info)
@@ -114,7 +114,7 @@ extension Routine {
                   let nextAt = TimeText.minutes(usualTime(next, weekday: w)), nextAt > start else { continue }
             let end = start + letters.reduce(0) { $0 + letterMinutes($1, kind, weekday: w) }
             guard end > nextAt else { continue }
-            let msg = "\(last.name) termina \(TimeText.label(end)), pasa las \(TimeText.label(nextAt)) de \(next.label)"
+            let msg = String(localized: "\(last.name) ends at \(TimeText.label(end)), past \(next.label) at \(TimeText.label(nextAt))")
             if found[msg] == nil { order.append(msg) }
             found[msg, default: []].append(w)
         }
@@ -134,8 +134,4 @@ extension Routine {
         guard let times = d.times, let t = settings.schedule?.type(dayType(ds)) else { return false }
         return TypeSchedule.Group.allCases.contains { g in t[g].contains { $0.id.flatMap { times[$0] }?.isEmpty == false } }
     }
-}
-
-extension String {
-    var capitalizedFirst: String { prefix(1).uppercased() + dropFirst() }
 }

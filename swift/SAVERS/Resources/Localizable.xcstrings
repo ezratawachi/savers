@@ -1,0 +1,4922 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "\"%@\" goes like {\"YYYY-MM-DD\": {…}}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\" va como {\"AAAA-MM-DD\": {…}}."
+          }
+        }
+      }
+    },
+    "\"%@\" has to have \"%@\" or \"%@\"." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%1$@\" tiene que tener \"%2$@\" o \"%3$@\"."
+          }
+        }
+      }
+    },
+    "\"%@\" has to say what each day is." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\" tiene que decir qué es cada día."
+          }
+        }
+      }
+    },
+    "# My sunrise in Sunling\n\nToday is %@ (%@). Here's everything from Sunling, my app for starting the day, so you can help me." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Mi amanecer en Sunling\n\nHoy es %1$@ (%2$@). Te paso todo lo de Sunling, mi app para empezar el día, para que me ayudes."
+          }
+        }
+      }
+    },
+    "## Dates with changes (read only)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Fechas con cambios (solo para leer)"
+          }
+        }
+      }
+    },
+    "## How it's gone (last %lld weeks, read only)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Cómo me ha ido (últimas %lld semanas, solo para leer)"
+          }
+        }
+      }
+    },
+    "## How the app works\n\n- My sunrise is six short steps each morning, to start the day with myself before the world. It's always all six: when time is short, they get shorter, they don't get dropped.\n  - Breathe: a few minutes still, to breathe, meditate or pray.\n  - Affirm: out loud, a few phrases I believe about who I choose to be. Nothing over the top like \"I'm amazing\": for someone who doesn't believe it, it makes things worse.\n  - Imagine: today's most important thing, the likely obstacle and what I'll do if it comes up (\"if X happens, I'll do Y\"). The path, not just the goal reached.\n  - Move: a few minutes of movement at home, or the gym.\n  - Read: a few pages of something that helps me grow.\n  - Write: give thanks for something specific and jot down an idea from what I read.\n- It's a method of its own, with these names. Even if it looks like others you know, don't call it by another name or use their acronyms.\n- Rest counts too: a rest day doesn't break my sunrises in a row.\n- Each weekday is Normal, Gym or Rest. Saturday is Shabbat and doesn't change.\n- Normal and Gym each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep). Some blocks hold steps, in order.\n- Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.\n- Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine 1 minute per question, Write 2, Move 8 or however long the gym lasts).\n- The bedtime block is in \"The night before\": it's when I go to sleep the night before that day. \"windDown\" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.\n- A time or some minutes can be different on one weekday (\"hoursByDay\", \"minutesByDay\") or on one date (\"dates\", from today up to a year ahead).\n- Blocks can't be added, removed or renamed, and steps can't move from one block to another. If that would suit me, tell me in the conversation, not in the change block." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Cómo funciona la app\n\n- Mi amanecer son seis pasos cortos cada mañana, para empezar el día conmigo antes que con el mundo. Son siempre los seis: si falta tiempo, se acortan, no se quitan.\n  - Respira: unos minutos quieto, para respirar, meditar o rezar.\n  - Afirma: en voz alta, pocas frases que me crea sobre quién elijo ser. Nada exagerado como \"soy increíble\": a quien no se lo cree lo hace sentir peor.\n  - Imagina: lo más importante de hoy, el obstáculo probable y qué haré si pasa (\"si pasa X, hago Y\"). El camino, no solo la meta cumplida.\n  - Muévete: unos minutos de movimiento en casa, o el gym.\n  - Lee: unas páginas de algo que me haga crecer.\n  - Escribe: agradecer algo concreto y anotar una idea de lo que leí.\n- Es un método propio con estos nombres. Aunque se parezca a otros que conoces, no lo llames con otro nombre ni uses sus siglas.\n- Descansar también cuenta: un día de descanso no corta mis amaneceres seguidos.\n- Cada día de la semana es Normal, Gym o Descanso. El sábado es Shabbat y no se cambia.\n- Normal y Gym tienen su propio horario de bloques con hora (por ejemplo Te paras, Amanecer, Baño, Dormido). Algunos bloques tienen pasos dentro, en orden.\n- La hora de cada paso es la hora de su bloque más los minutos de los pasos que van antes. Para mover un paso, se mueve su bloque o se cambian minutos.\n- Solo Respira y Lee tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de los otros pasos salen de su contenido (Afirma unos 25 segundos por frase, Imagina 1 minuto por pregunta, Escribe 2, Muévete 8 o lo que dura el gym).\n- \"Dormido\" está en \"La noche anterior\": es la hora de dormir de la noche antes de ese día. \"Prepararte\" son los minutos antes de Dormido en que me llega el aviso para prepararme: de 15 a 90, de 5 en 5, el mismo todas las noches.\n- Una hora o unos minutos pueden ser distintos un día de la semana (\"horasPorDia\", \"minutosPorDia\") o una fecha (\"fechas\", desde hoy hasta un año adelante).\n- No se pueden agregar, quitar ni renombrar bloques, ni mover pasos de un bloque a otro. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios."
+          }
+        }
+      }
+    },
+    "## How to work with me\n\n- Talk first: understand what I'm asking, ask me what you don't know and suggest ideas. I don't always want to change something; sometimes I want to think or discuss.\n- Respect my notes: what they say doesn't move, doesn't move.\n- Give me the change block only when I accept a proposal or ask you for the changes. Not before.\n- Before suggesting a time, check that the block's steps end before the next block." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Cómo trabajar conmigo\n\n- Primero conversa: entiende lo que te pido, pregúntame lo que no sepas y propón ideas. No siempre quiero cambiar algo; a veces quiero pensar o discutir.\n- Respeta mis notas: lo que dicen que no se mueve, no se mueve.\n- Dame el bloque de cambios solo cuando yo acepte una propuesta o te pida los cambios. Antes no.\n- Antes de proponer una hora, revisa que los pasos del bloque terminen antes del bloque siguiente."
+          }
+        }
+      }
+    },
+    "## My configuration (this is what can be changed)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Mi configuración (esto es lo que se puede cambiar)"
+          }
+        }
+      }
+    },
+    "## My notes (what the app doesn't know)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Mis notas (lo que la app no sabe)"
+          }
+        }
+      }
+    },
+    "## The change block\n\nWhen I ask you to, at the end of your reply put a code block marked `sunling` with a JSON that has **only what changes**, in the same shape as my configuration. Whatever you leave out stays the same.\n\n- Morning times are written \"5:20\"; afternoon and evening ones with pm: \"8:50 pm\".\n- To bring a weekday's or a date's time or minutes back to the usual, set them to null. To remove all of a date's changes: \"YYYY-MM-DD\": null.\n- The affirmations and the Imagine questions go complete and in their final order, even if only one changes.\n- Use the block names exactly as they are in my configuration.\n\nExample of the shape (not a proposal):\n\n```sunling\n{\n  \"normal\": {\"hours\": {\"%@\": \"5:45\"}, \"minutes\": {\"read\": 15}},\n  \"week\": {\"thursday\": \"gym\"},\n  \"dates\": {\"YYYY-MM-DD\": {\"type\": \"rest\"}}\n}\n```\n\nI copy your reply and paste it into the app, which shows me each change before applying it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## El bloque de cambios\n\nCuando yo te lo pida, al final de tu respuesta pon un bloque de código marcado `sunling` con un JSON que tenga **solo lo que cambia**, con la misma forma que mi configuración. Lo que no pongas se queda igual.\n\n- Las horas de la mañana se escriben \"5:20\"; las de la tarde y la noche, con pm: \"8:50 pm\".\n- Para que la hora o los minutos de un día de la semana o de una fecha vuelvan a ser como siempre, ponles null. Para quitar todos los cambios de una fecha: \"AAAA-MM-DD\": null.\n- Las afirmaciones y las preguntas de visualización van completas y en su orden final, aunque cambie una sola.\n- Usa los nombres de los bloques tal como están en mi configuración.\n\nEjemplo de la forma (no es una propuesta):\n\n```sunling\n{\n  \"normal\": {\"horas\": {\"%@\": \"5:45\"}, \"minutos\": {\"lee\": 15}},\n  \"semana\": {\"jueves\": \"gym\"},\n  \"fechas\": {\"AAAA-MM-DD\": {\"tipo\": \"descanso\"}}\n}\n```\n\nYo copio tu respuesta y la pego en la app, que me muestra cada cambio antes de aplicarlo."
+          }
+        }
+      }
+    },
+    "## What I want" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Lo que quiero"
+          }
+        }
+      }
+    },
+    "## What each day looks like (worked out by the app, read only)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "## Así es cada día (lo calcula la app, solo para leer)"
+          }
+        }
+      }
+    },
+    "%@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ (round %lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (ronda %2$lld)"
+          }
+        }
+      }
+    },
+    "%@ at %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ a las %2$@"
+          }
+        }
+      }
+    },
+    "%@ can't be changed from the app." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ no se puede cambiar desde la app."
+          }
+        }
+      }
+    },
+    "%@ ends at %@, past %@ at %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ termina %2$@, pasa las %4$@ de %3$@"
+          }
+        }
+      }
+    },
+    "%@ has passed: only dates from today on can be changed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ya pasó: solo se cambian fechas desde hoy."
+          }
+        }
+      }
+    },
+    "%@ has to have \"%@\" and \"%@\"." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ tiene que tener \"%2$@\" y \"%3$@\"."
+          }
+        }
+      }
+    },
+    "%@ have another time. If you change it here, they all end up the same." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tienen otra hora. Si la cambias aquí, todos quedan iguales."
+          }
+        }
+      }
+    },
+    "%@ have other minutes. If you change them here, they all end up the same." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tienen otros minutos. Si los cambias aquí, todos quedan iguales."
+          }
+        }
+      }
+    },
+    "%@ is %@: it has no sunrise hours or minutes." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ es %2$@: no tiene horas ni minutos del amanecer."
+          }
+        }
+      }
+    },
+    "%@ is a Saturday (Shabbat) and doesn't change." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ es sábado (Shabbat) y no se cambia."
+          }
+        }
+      }
+    },
+    "%@ is being prepared: %lld of %lld phrases. Meanwhile, %@ plays." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ se está preparando: %2$lld de %3$lld frases. Mientras, suena %4$@."
+          }
+        }
+      }
+    },
+    "%@ is more than a year away: only dates up to a year ahead can be changed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ está a más de un año: solo se cambian fechas hasta un año adelante."
+          }
+        }
+      }
+    },
+    "%@ isn't a date (it's written YYYY-MM-DD)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ no es una fecha (se escribe AAAA-MM-DD)."
+          }
+        }
+      }
+    },
+    "%@ isn't a day that can be changed (%@ in %@)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ no es un día que se pueda cambiar (%2$@ en %3$@)."
+          }
+        }
+      }
+    },
+    "%@ isn't a kind of day (%@): use normal, gym or rest." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ no es un tipo de día (%2$@): usa normal, gym o descanso."
+          }
+        }
+      }
+    },
+    "%@ isn't a step (%@)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ no es un paso (%2$@)."
+          }
+        }
+      }
+    },
+    "%@ isn't a time (%@ in %@)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ no es una hora (%2$@ en %3$@)."
+          }
+        }
+      }
+    },
+    "%@ isn't a time (%@, %@)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ no es una hora (%2$@, %3$@)."
+          }
+        }
+      }
+    },
+    "%@ isn't a way to read: use books, kindle or paper." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ no es una forma de leer: usa libros, kindle o papel."
+          }
+        }
+      }
+    },
+    "%@ isn't a weekday." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ no es un día de la semana."
+          }
+        }
+      }
+    },
+    "%@ left." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan %@."
+          }
+        }
+      }
+    },
+    "%@ left. It checks itself off when you're back." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan %@. Se marca sola al volver."
+          }
+        }
+      }
+    },
+    "%@ on %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ del %2$@"
+          }
+        }
+      }
+    },
+    "%@ only." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo %@."
+          }
+        }
+      }
+    },
+    "%@ opens and I'll let you know when it's over." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se abre %@ y te aviso al terminar."
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ only" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · solo %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld at the gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$lld de gym"
+          }
+        }
+      }
+    },
+    "%@ → as usual (%@)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ → como siempre (%2$@)"
+          }
+        }
+      }
+    },
+    "%@ → like the other days (%@)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ → como los demás días (%2$@)"
+          }
+        }
+      }
+    },
+    "%@'s minutes come from its content and can't be changed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los minutos de %@ salen de su contenido y no se pueden cambiar."
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@. Change this day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@. Cambiar este día"
+          }
+        }
+      }
+    },
+    "%@, %lld of 6" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$lld de 6"
+          }
+        }
+      }
+    },
+    "%@, changed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, cambiado"
+          }
+        }
+      }
+    },
+    "%@. Change this day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. Cambiar este día"
+          }
+        }
+      }
+    },
+    "%@: \"%@\" goes like {\"%@\": \"7:00\"}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: \"%2$@\" va como {\"%3$@\": \"7:00\"}."
+          }
+        }
+      }
+    },
+    "%@: \"%@\" goes like {\"%@\": 20}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: \"%2$@\" va como {\"%3$@\": 20}."
+          }
+        }
+      }
+    },
+    "%@: %@ minutes isn't possible (%@). Use 1 to 60, or 75, 90, 105 or 120." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@ minutos no se puede (%3$@). Usa de 1 a 60, o 75, 90, 105 o 120."
+          }
+        }
+      }
+    },
+    "%@: it goes like {\"%@\": …, \"%@\": …, \"%@\": …}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: va como {\"%2$@\": …, \"%3$@\": …, \"%4$@\": …}."
+          }
+        }
+      }
+    },
+    "%lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
+    },
+    "%lld changes applied" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Change applied"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld changes applied"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cambio aplicado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cambios aplicados"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld days ago" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day ago"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days ago"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "hace %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "hace %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld h ago" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hace %lld h"
+          }
+        }
+      }
+    },
+    "%lld min" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        }
+      }
+    },
+    "%lld min %lld s" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min %2$lld s"
+          }
+        }
+      }
+    },
+    "%lld min ago" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hace %lld min"
+          }
+        }
+      }
+    },
+    "%lld min before" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min antes"
+          }
+        }
+      }
+    },
+    "%lld minutes" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minute"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minutes"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minuto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minutos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld minutes before bedtime, Sunday to Thursday. You change it in Schedule." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minute before bedtime, Sunday to Thursday. You change it in Schedule."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minutes before bedtime, Sunday to Thursday. You change it in Schedule."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minuto antes de Dormido, de domingo a jueves. Lo cambias en Horario."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minutos antes de Dormido, de domingo a jueves. Lo cambias en Horario."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld minutes with your coffee. The goal is the time, not the pages." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minute with your coffee. The goal is the time, not the pages."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minutes with your coffee. The goal is the time, not the pages."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minuto con tu café. La meta es el tiempo, no las páginas."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld minutos con tu café. La meta es el tiempo, no las páginas."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld mornings complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld mañanas completas"
+          }
+        }
+      }
+    },
+    "%lld of %lld phrases ready. The rest play in the iPhone's voice." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld frases listas. Las que faltan suenan con la voz del iPhone."
+          }
+        }
+      }
+    },
+    "%lld of 1 morning complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld de 1 mañana completa"
+          }
+        }
+      }
+    },
+    "%lld phrases" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld phrase"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld phrases"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld frase"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld frases"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld questions" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld question"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld questions"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pregunta"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld preguntas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld seconds" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld second"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld seconds"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld segundo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld segundos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sunrises" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sunrise"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sunrises"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld amanecer"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld amaneceres"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sunrises in a row" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sunrise in a row"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sunrises in a row"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld amanecer seguido"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld amaneceres seguidos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld → %lld min" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld → %2$lld min"
+          }
+        }
+      }
+    },
+    "%lld → as usual (%lld min)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld → como siempre (%2$lld min)"
+          }
+        }
+      }
+    },
+    "%lld → like the other days (%lld min)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld → como los demás días (%2$lld min)"
+          }
+        }
+      }
+    },
+    "%lld." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld."
+          }
+        }
+      }
+    },
+    "%lld. %@ (was %@)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld. %2$@ (antes %3$@)"
+          }
+        }
+      }
+    },
+    "%lld. New: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld. Nueva: %2$@"
+          }
+        }
+      }
+    },
+    "Account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta"
+          }
+        }
+      }
+    },
+    "Add affirmation" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar afirmación"
+          }
+        }
+      }
+    },
+    "Add affirmations" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar afirmaciones"
+          }
+        }
+      }
+    },
+    "Add question" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar pregunta"
+          }
+        }
+      }
+    },
+    "Add questions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar preguntas"
+          }
+        }
+      }
+    },
+    "Affirm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afirma"
+          }
+        }
+      }
+    },
+    "Affirm and Imagine, the first Sunday at 11:00 am." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afirmaciones y visualización, el primer domingo a las 11:00 am."
+          }
+        }
+      }
+    },
+    "Affirmations" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afirmaciones"
+          }
+        }
+      }
+    },
+    "Affirmations can't be left empty." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afirmaciones no puede quedar vacía."
+          }
+        }
+      }
+    },
+    "Affirmations have to be the whole list." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afirmaciones tiene que ser la lista completa."
+          }
+        }
+      }
+    },
+    "Affirmations reviewed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afirmaciones revisadas"
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos"
+          }
+        }
+      }
+    },
+    "All %lld phrases are ready on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las %lld frases están listas en este iPhone."
+          }
+        }
+      }
+    },
+    "All day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo el día"
+          }
+        }
+      }
+    },
+    "All done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hecho"
+          }
+        }
+      }
+    },
+    "All done. Move is checked off." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo. Ejercicio marcado."
+          }
+        }
+      }
+    },
+    "Apply %lld changes" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Apply %lld change"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Apply %lld changes"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aplicar %lld cambio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aplicar %lld cambios"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Asleep at %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormido a las %@."
+          }
+        }
+      }
+    },
+    "Back" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve"
+          }
+        }
+      }
+    },
+    "Back to the usual" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a lo de siempre"
+          }
+        }
+      }
+    },
+    "Backup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia de seguridad"
+          }
+        }
+      }
+    },
+    "Before bedtime, every night" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de Dormido, todas las noches"
+          }
+        }
+      }
+    },
+    "Before: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes: %@"
+          }
+        }
+      }
+    },
+    "Before: (empty)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes: (vacía)"
+          }
+        }
+      }
+    },
+    "Bird dog" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bird dog"
+          }
+        }
+      }
+    },
+    "Block %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloque %lld"
+          }
+        }
+      }
+    },
+    "Blocks can't be removed (%@ in %@)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pueden quitar bloques (%1$@ en %2$@)."
+          }
+        }
+      }
+    },
+    "Books" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libros"
+          }
+        }
+      }
+    },
+    "Breathe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respira"
+          }
+        }
+      }
+    },
+    "Breathe in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inhala"
+          }
+        }
+      }
+    },
+    "Breathe out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exhala"
+          }
+        }
+      }
+    },
+    "Breathe slowly, let your back go" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respira lento, suelta la espalda"
+          }
+        }
+      }
+    },
+    "Breathing with your legs on the chair" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respiraciones con piernas en la silla"
+          }
+        }
+      }
+    },
+    "Bridge" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puente"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        }
+      }
+    },
+    "Chair squat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sentadilla a silla"
+          }
+        }
+      }
+    },
+    "Changes from the AI" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambios de la IA"
+          }
+        }
+      }
+    },
+    "Changes saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambios guardados"
+          }
+        }
+      }
+    },
+    "Changes undone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambios deshechos"
+          }
+        }
+      }
+    },
+    "Check off %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar %@"
+          }
+        }
+      }
+    },
+    "Chest up, touch the chair and rise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pecho arriba, toca la silla y sube"
+          }
+        }
+      }
+    },
+    "Close without changes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sin cambios"
+          }
+        }
+      }
+    },
+    "Close your eyes and listen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra los ojos y escucha"
+          }
+        }
+      }
+    },
+    "Closes the card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la carta"
+          }
+        }
+      }
+    },
+    "Closes the wheel" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la rueda"
+          }
+        }
+      }
+    },
+    "Cloud" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nube"
+          }
+        }
+      }
+    },
+    "Connecting…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectando…"
+          }
+        }
+      }
+    },
+    "Copied" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado"
+          }
+        }
+      }
+    },
+    "Copy for the AI" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar para la IA"
+          }
+        }
+      }
+    },
+    "Couldn't connect to the cloud." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo conectar con la nube."
+          }
+        }
+      }
+    },
+    "Couldn't save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar"
+          }
+        }
+      }
+    },
+    "Couldn't sign in with Google. Tap again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo entrar con Google. Toca otra vez."
+          }
+        }
+      }
+    },
+    "Creating…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creando…"
+          }
+        }
+      }
+    },
+    "Day complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día completo"
+          }
+        }
+      }
+    },
+    "Day off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día libre"
+          }
+        }
+      }
+    },
+    "Days" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Días"
+          }
+        }
+      }
+    },
+    "Days with a sunrise: %lld. Complete: %lld. By step: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Días con amanecer: %1$lld. Completos: %2$lld. Por paso: %3$@."
+          }
+        }
+      }
+    },
+    "Dead bug" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dead bug"
+          }
+        }
+      }
+    },
+    "Discard changes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar cambios"
+          }
+        }
+      }
+    },
+    "Discard your changes?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar los cambios?"
+          }
+        }
+      }
+    },
+    "Do your affirmations and your Imagine questions still feel like yours?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Tus afirmaciones y tu visualización siguen sintiéndose tuyas?"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        }
+      }
+    },
+    "Done, check off %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo, marcar %@"
+          }
+        }
+      }
+    },
+    "Down" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baja"
+          }
+        }
+      }
+    },
+    "Edit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        }
+      }
+    },
+    "Empty" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacío"
+          }
+        }
+      }
+    },
+    "End of reading" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin de la lectura"
+          }
+        }
+      }
+    },
+    "Every week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada semana"
+          }
+        }
+      }
+    },
+    "Everything goes back to how it was before they were applied." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo vuelve a como estaba antes de aplicarlos."
+          }
+        }
+      }
+    },
+    "Everything goes back to how it was before they were applied. What you changed afterwards is lost too." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo vuelve a como estaba antes de aplicarlos. También se pierde lo que cambiaste después."
+          }
+        }
+      }
+    },
+    "Eyes closed, guided" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ojos cerrados, guiada"
+          }
+        }
+      }
+    },
+    "First paste your Gemini key" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primero pega tu clave de Gemini"
+          }
+        }
+      }
+    },
+    "Fix them and give me the whole change block again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corrígelos y dame otra vez el bloque de cambios completo."
+          }
+        }
+      }
+    },
+    "For %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para %@."
+          }
+        }
+      }
+    },
+    "For a single day, like a holiday or a cancelled gym, tap it in Today or in History." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para un solo día, como un feriado o un gym cancelado, tócalo en Hoy o en Historial."
+          }
+        }
+      }
+    },
+    "From the book" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del libro"
+          }
+        }
+      }
+    },
+    "Gemini didn't answer (code %lld). Meanwhile, the iPhone's voice plays." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemini no respondió (código %lld). Mientras, suena la voz del iPhone."
+          }
+        }
+      }
+    },
+    "Gemini didn't answer. Meanwhile, the iPhone's voice plays." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemini no respondió. Mientras, suena la voz del iPhone."
+          }
+        }
+      }
+    },
+    "Gemini voice" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voz de Gemini"
+          }
+        }
+      }
+    },
+    "Get it free at aistudio.google.com with Get API key. It stays only on this iPhone: it never goes to the cloud. With no internet or no quota left, the iPhone's voice plays." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sácala gratis en aistudio.google.com con Get API key. Se queda solo en este iPhone: no va a la nube. Sin internet o sin límite, suena la voz del iPhone."
+          }
+        }
+      }
+    },
+    "Get ready" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prepárate"
+          }
+        }
+      }
+    },
+    "Give thanks and jot down" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agradecer y anotar"
+          }
+        }
+      }
+    },
+    "Glute bridge" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puente de glúteos"
+          }
+        }
+      }
+    },
+    "Goes back to the usual" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve a ser como siempre"
+          }
+        }
+      }
+    },
+    "Good morning. This is your voice for Sunling." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenos días. Esta es tu voz para Sunling."
+          }
+        }
+      }
+    },
+    "Google asks for a pause. Wait a minute and try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google pide una pausa. Espera un minuto y vuelve a probar."
+          }
+        }
+      }
+    },
+    "Grateful for" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agradezco"
+          }
+        }
+      }
+    },
+    "Gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gym"
+          }
+        }
+      }
+    },
+    "Gym day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día de gym"
+          }
+        }
+      }
+    },
+    "Gym with your trainer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gym con tu entrenador"
+          }
+        }
+      }
+    },
+    "Help" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayuda"
+          }
+        }
+      }
+    },
+    "Hides what's done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oculta lo hecho"
+          }
+        }
+      }
+    },
+    "History" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historial"
+          }
+        }
+      }
+    },
+    "Hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostén"
+          }
+        }
+      }
+    },
+    "Home routine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rutina en casa"
+          }
+        }
+      }
+    },
+    "Hours" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horas"
+          }
+        }
+      }
+    },
+    "How do I see myself doing today's most important thing well?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo me veo haciendo bien lo más importante de hoy?"
+          }
+        }
+      }
+    },
+    "How they look and whether they make a sound, you choose in Settings › Notifications › Sunling. With Sleep or another Focus they arrive silently and hidden, unless Sunling is one of its allowed apps." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › Sunling. Con el modo Dormir u otra concentración llegan sin sonido y sin mostrarse, salvo que Sunling esté entre sus apps permitidas."
+          }
+        }
+      }
+    },
+    "How you breathe, meditate or pray each morning: an app, a prayer, a place. Left empty, it says “%@”." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo respiras, meditas o rezas cada mañana: una app, una oración, un lugar. Vacío, dice «%@»."
+          }
+        }
+      }
+    },
+    "I didn't find any changes for Sunling in what you copied" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No encontré cambios para Sunling en lo que copiaste"
+          }
+        }
+      }
+    },
+    "I don't know yet. Ask me what I want to talk about." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no lo sé. Pregúntame de qué quiero hablar."
+          }
+        }
+      }
+    },
+    "I'll let you know when it's over." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te aviso al terminar."
+          }
+        }
+      }
+    },
+    "I'm done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya terminé"
+          }
+        }
+      }
+    },
+    "If that happens, what will I do?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si pasa eso, ¿qué hago?"
+          }
+        }
+      }
+    },
+    "If you like, you can do it again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si quieres, puedes repetirlo."
+          }
+        }
+      }
+    },
+    "If you like, you can read again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si quieres, puedes leer otra vez."
+          }
+        }
+      }
+    },
+    "Imagine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagina"
+          }
+        }
+      }
+    },
+    "Imagine done and checked off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visualización lista y marcada"
+          }
+        }
+      }
+    },
+    "Imagine is done." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visualización lista."
+          }
+        }
+      }
+    },
+    "Imagine note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota de visualización"
+          }
+        }
+      }
+    },
+    "Imagine questions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntas de visualización"
+          }
+        }
+      }
+    },
+    "Imagine questions can't be left empty." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntas de visualización no puede quedar vacía."
+          }
+        }
+      }
+    },
+    "Imagine questions have to be the whole list." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntas de visualización tiene que ser la lista completa."
+          }
+        }
+      }
+    },
+    "In %@, \"%@\" goes like {\"%@\": 15}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %1$@, \"%2$@\" va como {\"%3$@\": 15}."
+          }
+        }
+      }
+    },
+    "In %@, \"%@\" goes like {\"%@\": {\"%@\": 10}}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %1$@, \"%2$@\" va como {\"%3$@\": {\"%4$@\": 10}}."
+          }
+        }
+      }
+    },
+    "In %@, \"%@\" has to go by block and by day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %1$@, \"%2$@\" tiene que ir por bloque y por día."
+          }
+        }
+      }
+    },
+    "In %@, \"%@\" has to have each block's time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %1$@, \"%2$@\" tiene que tener la hora de cada bloque."
+          }
+        }
+      }
+    },
+    "In %@, %@ can't be changed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %1$@, %2$@ no se puede cambiar."
+          }
+        }
+      }
+    },
+    "In %@, %@'s hours by day go like {\"%@\": \"5:40\"}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %1$@, las horas por día de %2$@ van como {\"%3$@\": \"5:40\"}."
+          }
+        }
+      }
+    },
+    "In %@, %@'s minutes by day go like {\"%@\": 10}." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %1$@, los minutos por día de %2$@ van como {\"%3$@\": 10}."
+          }
+        }
+      }
+    },
+    "In Imagine questions, each one has to be a text." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En preguntas de visualización, cada una tiene que ser un texto."
+          }
+        }
+      }
+    },
+    "In Imagine, %@ can't be changed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En visualización, %@ no se puede cambiar."
+          }
+        }
+      }
+    },
+    "In affirmations, each one has to be a text." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En afirmaciones, cada una tiene que ser un texto."
+          }
+        }
+      }
+    },
+    "In the cloud" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En la nube"
+          }
+        }
+      }
+    },
+    "It goes with instructions, your schedule, your affirmations, your Imagine questions, your notes and what you checked off in the last %lld weeks. Not what you write in %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se manda con instrucciones, tu horario, tus afirmaciones, tu visualización, tus notas y lo que marcaste en las últimas %1$lld semanas. Lo que escribes en %2$@, no."
+          }
+        }
+      }
+    },
+    "It saves by itself. If you change the same thing on the iPhone and on the Mac, the last change stays." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se guarda solo. Si cambias lo mismo en el iPhone y en la Mac, se queda el último cambio."
+          }
+        }
+      }
+    },
+    "Keep editing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir editando"
+          }
+        }
+      }
+    },
+    "Keep my music" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantener mi música"
+          }
+        }
+      }
+    },
+    "Key" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave"
+          }
+        }
+      }
+    },
+    "Knees up, arms loose" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sube las rodillas, brazos sueltos"
+          }
+        }
+      }
+    },
+    "Last one: legs on the chair, breathe slowly." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Último: piernas en la silla, respira lento."
+          }
+        }
+      }
+    },
+    "Later" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más tarde"
+          }
+        }
+      }
+    },
+    "Log my sunrise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar mi amanecer"
+          }
+        }
+      }
+    },
+    "Lower back pressed to the floor" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espalda baja pegada al piso"
+          }
+        }
+      }
+    },
+    "Lower slowly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baja despacio"
+          }
+        }
+      }
+    },
+    "Man · kind" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hombre · amable"
+          }
+        }
+      }
+    },
+    "Man · serene" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hombre · sereno"
+          }
+        }
+      }
+    },
+    "March" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcha"
+          }
+        }
+      }
+    },
+    "March in place" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marchar en el sitio"
+          }
+        }
+      }
+    },
+    "March in place, one minute." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marchar en el sitio, un minuto."
+          }
+        }
+      }
+    },
+    "Meditate, pray or breathe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medita, reza o solo respira"
+          }
+        }
+      }
+    },
+    "Minutes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutos"
+          }
+        }
+      }
+    },
+    "Minutes before bedtime" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutos antes de Dormido"
+          }
+        }
+      }
+    },
+    "Minutes of %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutos de %@"
+          }
+        }
+      }
+    },
+    "Minutes of %@, %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutos de %1$@, %2$lld"
+          }
+        }
+      }
+    },
+    "Minutes of %@, %lld, changed for this day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutos de %1$@, %2$lld, cambiados para este día"
+          }
+        }
+      }
+    },
+    "Monthly review" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisión del mes"
+          }
+        }
+      }
+    },
+    "Monthly review done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisión del mes lista"
+          }
+        }
+      }
+    },
+    "Morning" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mañana"
+          }
+        }
+      }
+    },
+    "Morning done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mañana lista"
+          }
+        }
+      }
+    },
+    "Move" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muévete"
+          }
+        }
+      }
+    },
+    "Move done and checked off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejercicio terminado y marcado"
+          }
+        }
+      }
+    },
+    "My day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi día"
+          }
+        }
+      }
+    },
+    "My obstacle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi obstáculo"
+          }
+        }
+      }
+    },
+    "My plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi plan"
+          }
+        }
+      }
+    },
+    "My sunrise in Sunling" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi amanecer en Sunling"
+          }
+        }
+      }
+    },
+    "My work, what never moves, what I want to achieve" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi trabajo, lo que no se mueve, lo que quiero lograr"
+          }
+        }
+      }
+    },
+    "New month: do they still feel like yours?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes nuevo: ¿siguen sintiéndose tuyas?"
+          }
+        }
+      }
+    },
+    "Next" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente"
+          }
+        }
+      }
+    },
+    "Next month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes siguiente"
+          }
+        }
+      }
+    },
+    "Next up: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue: %@."
+          }
+        }
+      }
+    },
+    "Next: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue %@"
+          }
+        }
+      }
+    },
+    "No connection. Try when you have internet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin conexión. Prueba cuando tengas internet."
+          }
+        }
+      }
+    },
+    "No connection: try again later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin conexión: prueba más tarde."
+          }
+        }
+      }
+    },
+    "No day uses this schedule now." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún día usa este horario ahora."
+          }
+        }
+      }
+    },
+    "No days logged yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no hay días registrados."
+          }
+        }
+      }
+    },
+    "No mornings yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin mañanas todavía"
+          }
+        }
+      }
+    },
+    "No notes." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin notas."
+          }
+        }
+      }
+    },
+    "Normal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        }
+      }
+    },
+    "Normal day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día normal"
+          }
+        }
+      }
+    },
+    "Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota"
+          }
+        }
+      }
+    },
+    "Notes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas"
+          }
+        }
+      }
+    },
+    "Notes for the AI" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas para la IA"
+          }
+        }
+      }
+    },
+    "Nothing from Friday afternoon until Shabbat ends." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada desde el viernes en la tarde hasta que termina Shabbat."
+          }
+        }
+      }
+    },
+    "Notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones"
+          }
+        }
+      }
+    },
+    "Notifications are blocked. Turn them on in Settings › Notifications › Sunling." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › Sunling."
+          }
+        }
+      }
+    },
+    "Notifications work" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los avisos funcionan"
+          }
+        }
+      }
+    },
+    "Now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora"
+          }
+        }
+      }
+    },
+    "Now: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora: %@"
+          }
+        }
+      }
+    },
+    "Now: (empty)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora: (vacía)"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagadas"
+          }
+        }
+      }
+    },
+    "Offline · it uploads later" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin conexión · se sube después"
+          }
+        }
+      }
+    },
+    "On" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activadas"
+          }
+        }
+      }
+    },
+    "On gym days, if you haven't read yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los días de gym, si todavía no leíste."
+          }
+        }
+      }
+    },
+    "One knee up, then the other" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sube una rodilla, luego la otra"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Configuración"
+          }
+        }
+      }
+    },
+    "Opens that day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre ese día"
+          }
+        }
+      }
+    },
+    "Opens the card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la carta"
+          }
+        }
+      }
+    },
+    "Opens the wheel to change it" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la rueda para cambiarla"
+          }
+        }
+      }
+    },
+    "Opens your schedule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre tu horario"
+          }
+        }
+      }
+    },
+    "Optional" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcional"
+          }
+        }
+      }
+    },
+    "Optional. For example: I don't have enough time to read" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcional. Por ejemplo: no me alcanza el tiempo para leer"
+          }
+        }
+      }
+    },
+    "Other side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otro lado"
+          }
+        }
+      }
+    },
+    "Out loud" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En voz alta"
+          }
+        }
+      }
+    },
+    "Paper book" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libro físico"
+          }
+        }
+      }
+    },
+    "Part %lld of 6: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte %1$lld de 6: %2$@"
+          }
+        }
+      }
+    },
+    "Paste it here" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pégala aquí"
+          }
+        }
+      }
+    },
+    "Paste it to the AI so it gives you the fixed block." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pégaselo a la IA para que te dé el bloque corregido."
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausar"
+          }
+        }
+      }
+    },
+    "Preparing the phrases…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando las frases…"
+          }
+        }
+      }
+    },
+    "Previous month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes anterior"
+          }
+        }
+      }
+    },
+    "Question %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregunta %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Reach" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estira"
+          }
+        }
+      }
+    },
+    "Read" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lee"
+          }
+        }
+      }
+    },
+    "Read checked off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lectura marcada"
+          }
+        }
+      }
+    },
+    "Read on" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leer en"
+          }
+        }
+      }
+    },
+    "Reading" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leyendo"
+          }
+        }
+      }
+    },
+    "Reading done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lectura terminada"
+          }
+        }
+      }
+    },
+    "Ready to start" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo para empezar"
+          }
+        }
+      }
+    },
+    "Removed: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se quita: %@"
+          }
+        }
+      }
+    },
+    "Repeat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir"
+          }
+        }
+      }
+    },
+    "Rest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso"
+          }
+        }
+      }
+    },
+    "Rest day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día de descanso"
+          }
+        }
+      }
+    },
+    "Restart" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reiniciar"
+          }
+        }
+      }
+    },
+    "Resume" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir"
+          }
+        }
+      }
+    },
+    "Review affirmations" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar afirmaciones"
+          }
+        }
+      }
+    },
+    "Round two: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ronda dos: %@."
+          }
+        }
+      }
+    },
+    "SUNRISE" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AMANECER"
+          }
+        }
+      }
+    },
+    "Saturday is Shabbat and doesn't change." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El sábado es Shabbat y no se cambia."
+          }
+        }
+      }
+    },
+    "Saturdays and rest days only show up if I did my sunrise anyway." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los sábados y los días de descanso solo aparecen si hice mi amanecer igual."
+          }
+        }
+      }
+    },
+    "Saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado"
+          }
+        }
+      }
+    },
+    "Saved · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado · %@"
+          }
+        }
+      }
+    },
+    "Schedule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horario"
+          }
+        }
+      }
+    },
+    "See you on Sunday" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nos vemos el domingo"
+          }
+        }
+      }
+    },
+    "Send a test notification" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandar un aviso de prueba"
+          }
+        }
+      }
+    },
+    "Send to an AI" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandar a la IA"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes"
+          }
+        }
+      }
+    },
+    "Shabbat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shabbat"
+          }
+        }
+      }
+    },
+    "Shabbat has no record." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shabbat no tiene registro."
+          }
+        }
+      }
+    },
+    "Shows what's done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra lo hecho"
+          }
+        }
+      }
+    },
+    "Sign in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar"
+          }
+        }
+      }
+    },
+    "Sign in with Google" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar con Google"
+          }
+        }
+      }
+    },
+    "Sign in with Google to load your affirmations and schedule." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entra con Google para cargar tus afirmaciones y horario."
+          }
+        }
+      }
+    },
+    "Sign out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sesión"
+          }
+        }
+      }
+    },
+    "Sign out?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cerrar sesión?"
+          }
+        }
+      }
+    },
+    "Six parts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seis partes"
+          }
+        }
+      }
+    },
+    "Slowly, feeling each phrase." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Despacio, sintiendo cada frase."
+          }
+        }
+      }
+    },
+    "Sound and notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido y avisos"
+          }
+        }
+      }
+    },
+    "Squat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sentadilla"
+          }
+        }
+      }
+    },
+    "Squeeze your glutes, without arching your back" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprieta glúteos, sin arquear la espalda"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar"
+          }
+        }
+      }
+    },
+    "Start it here and it checks itself off." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza desde aquí y se marca sola."
+          }
+        }
+      }
+    },
+    "Start my sunrise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar mi amanecer"
+          }
+        }
+      }
+    },
+    "Start reading" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar lectura"
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estado"
+          }
+        }
+      }
+    },
+    "Still to come" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por venir"
+          }
+        }
+      }
+    },
+    "Still to go: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falta %@"
+          }
+        }
+      }
+    },
+    "Streak: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Racha: %@"
+          }
+        }
+      }
+    },
+    "Sunling rests this day: it doesn't break your sunrises in a row." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este día Sunling descansa: no corta tus amaneceres seguidos."
+          }
+        }
+      }
+    },
+    "Sunling rests today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunling descansa hoy"
+          }
+        }
+      }
+    },
+    "Sunling was resting that day. If you did your sunrise anyway, you can log it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese día Sunling descansaba. Si igual hiciste tu amanecer, puedes registrarlo."
+          }
+        }
+      }
+    },
+    "Sunrise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amanecer"
+          }
+        }
+      }
+    },
+    "Sunrise, %lld of 6" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amanecer, %lld de 6"
+          }
+        }
+      }
+    },
+    "Switch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambio"
+          }
+        }
+      }
+    },
+    "Switch exercises" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambia de ejercicio"
+          }
+        }
+      }
+    },
+    "Talk with an AI" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hablar con una IA"
+          }
+        }
+      }
+    },
+    "Tap Edit to add questions." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca Editar para agregar preguntas."
+          }
+        }
+      }
+    },
+    "Tap an hour to change it on every %@ day or on just one. The same goes for the minutes of %@ and %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca una hora para cambiarla en todos los días de %1$@ o solo en uno. Los minutos de %2$@ y %3$@, igual."
+          }
+        }
+      }
+    },
+    "Test notification sent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aviso de prueba enviado"
+          }
+        }
+      }
+    },
+    "Text of affirmation %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto de afirmación %lld"
+          }
+        }
+      }
+    },
+    "Text of question %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto de pregunta %lld"
+          }
+        }
+      }
+    },
+    "That date" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esa fecha"
+          }
+        }
+      }
+    },
+    "That date only · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo esa fecha · %@"
+          }
+        }
+      }
+    },
+    "The Imagine note has to be a text." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nota de visualización tiene que ser un texto."
+          }
+        }
+      }
+    },
+    "The app couldn't apply these changes:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app no pudo aplicar estos cambios:"
+          }
+        }
+      }
+    },
+    "The app didn't save yet what time I check off each step." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app todavía no guardaba a qué hora marco cada paso."
+          }
+        }
+      }
+    },
+    "The key doesn't work. Check that it's complete." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clave no funciona. Revisa que esté completa."
+          }
+        }
+      }
+    },
+    "The night before" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La noche anterior"
+          }
+        }
+      }
+    },
+    "The order changes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambia el orden"
+          }
+        }
+      }
+    },
+    "The same every night. The wind-down notice arrives this many minutes before bedtime." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Igual todas las noches. El aviso Prepararte para dormir llega estos minutos antes de Dormido."
+          }
+        }
+      }
+    },
+    "The sun isn't up yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no amanece"
+          }
+        }
+      }
+    },
+    "The time next to each step is when I checked it off in the app (it can be after doing it)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La hora junto a cada paso es cuando lo marqué en la app (puede ser después de hacerlo)."
+          }
+        }
+      }
+    },
+    "The voice pauses your music and always plays." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La voz pausa tu música y suena siempre."
+          }
+        }
+      }
+    },
+    "The voice reads you each question and gives you a minute." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La voz te lee cada pregunta y te da un minuto."
+          }
+        }
+      }
+    },
+    "There's no %@ schedule in the app." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay horario de %@ en la app."
+          }
+        }
+      }
+    },
+    "There's no block %@ in %@. The blocks are: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No existe el bloque %1$@ en %2$@. Los bloques son: %3$@."
+          }
+        }
+      }
+    },
+    "These can't be applied" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pueden aplicar"
+          }
+        }
+      }
+    },
+    "This Google account doesn't have access to this app." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta cuenta de Google no tiene acceso a esta app."
+          }
+        }
+      }
+    },
+    "This day is" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este día es"
+          }
+        }
+      }
+    },
+    "This is how" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Así se hace"
+          }
+        }
+      }
+    },
+    "This is how Sunling's notifications reach you." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Así te llegan los avisos de Sunling."
+          }
+        }
+      }
+    },
+    "This month hasn't come yet. Tap a day to plan its hours." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este mes todavía no llega. Toca un día para preparar su horario."
+          }
+        }
+      }
+    },
+    "This one can't be applied" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede aplicar"
+          }
+        }
+      }
+    },
+    "Those changes are already in your app" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esos cambios ya están en tu app"
+          }
+        }
+      }
+    },
+    "Time of %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de %@"
+          }
+        }
+      }
+    },
+    "Time of %@, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Time of %@, %@, changed for this day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de %1$@, %2$@, cambiada para este día"
+          }
+        }
+      }
+    },
+    "Time to read" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de leer"
+          }
+        }
+      }
+    },
+    "Time to review them" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca revisarlas"
+          }
+        }
+      }
+    },
+    "Time to wind down for bed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de prepararte para dormir"
+          }
+        }
+      }
+    },
+    "Title (optional)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título (opcional)"
+          }
+        }
+      }
+    },
+    "Title of affirmation %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título de afirmación %lld"
+          }
+        }
+      }
+    },
+    "Title of question %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título de pregunta %lld"
+          }
+        }
+      }
+    },
+    "Today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy"
+          }
+        }
+      }
+    },
+    "Today you read later, at %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy lees más tarde, a las %@."
+          }
+        }
+      }
+    },
+    "Today you read later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy lees más tarde."
+          }
+        }
+      }
+    },
+    "Today you read later: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy lees más tarde: %@."
+          }
+        }
+      }
+    },
+    "Today's free quota is used up. Tomorrow you can try more voices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya se usó el límite gratis de hoy. Mañana puedes probar más voces."
+          }
+        }
+      }
+    },
+    "Today's free quota ran out: they'll be finished tomorrow." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se acabó el límite gratis de hoy: mañana se completan."
+          }
+        }
+      }
+    },
+    "Tomorrow is gym: you get up at %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mañana es gym: te paras a las %@."
+          }
+        }
+      }
+    },
+    "Tomorrow you get up at %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mañana te paras a las %@."
+          }
+        }
+      }
+    },
+    "Touch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca"
+          }
+        }
+      }
+    },
+    "Try" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar"
+          }
+        }
+      }
+    },
+    "Try reads your first %@ question. %@ sounds calm, the home routine energetic and the notices neutral." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar lee tu primera pregunta de visualización. La visualización suena calmada, el ejercicio con energía y los avisos en tono neutro."
+          }
+        }
+      }
+    },
+    "Turn off the ones you don't want." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apaga los que no quieras."
+          }
+        }
+      }
+    },
+    "Under %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debajo de %@"
+          }
+        }
+      }
+    },
+    "Undo changes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer cambios"
+          }
+        }
+      }
+    },
+    "Undo the AI's last changes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer los últimos cambios de la IA"
+          }
+        }
+      }
+    },
+    "Undo the AI's last changes?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Deshacer los últimos cambios de la IA?"
+          }
+        }
+      }
+    },
+    "Up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sube"
+          }
+        }
+      }
+    },
+    "Uploading…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subiendo…"
+          }
+        }
+      }
+    },
+    "Use the same minutes as the others" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar los mismos minutos que los demás"
+          }
+        }
+      }
+    },
+    "Use the same time as the others" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar la misma hora que los demás"
+          }
+        }
+      }
+    },
+    "Voice" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voz"
+          }
+        }
+      }
+    },
+    "What do you want to talk about?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿De qué quieres hablar?"
+          }
+        }
+      }
+    },
+    "What is most likely to pull me off track today?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué es lo que más probablemente me saque del camino hoy?"
+          }
+        }
+      }
+    },
+    "What the app doesn't know about you. They always go along." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que la app no sabe de ti. Van siempre."
+          }
+        }
+      }
+    },
+    "What you change here is just for this day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que cambies aquí es solo para este día."
+          }
+        }
+      }
+    },
+    "What you say and see" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que dices y ves"
+          }
+        }
+      }
+    },
+    "What you want to talk about" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De qué quieres hablar"
+          }
+        }
+      }
+    },
+    "What you wrote" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que escribiste"
+          }
+        }
+      }
+    },
+    "What you wrote on %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que escribiste el %@"
+          }
+        }
+      }
+    },
+    "When you accept what it suggests, the AI gives you a change block. Copy its whole reply and tap Paste: you see each change before it's applied." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando aceptes lo que te propone, la IA te da un bloque de cambios. Copia su respuesta entera y toca Pegar: ves cada cambio antes de aplicarlo."
+          }
+        }
+      }
+    },
+    "When your minutes are up, even if Sunling is closed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando terminan tus minutos, aunque Sunling esté cerrada."
+          }
+        }
+      }
+    },
+    "Wind down" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prepararte"
+          }
+        }
+      }
+    },
+    "Wind down for bed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prepararte para dormir"
+          }
+        }
+      }
+    },
+    "Wind down goes from 15 to 90 minutes, in steps of 5 (%@ isn't possible)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prepararte va de 15 a 90 minutos, de 5 en 5 (%@ no se puede)."
+          }
+        }
+      }
+    },
+    "With your coffee" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con tu café"
+          }
+        }
+      }
+    },
+    "Without a key, the iPhone's voice plays." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin clave, suena la voz del iPhone."
+          }
+        }
+      }
+    },
+    "Woman · soft" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mujer · suave"
+          }
+        }
+      }
+    },
+    "Woman · warm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mujer · cálida"
+          }
+        }
+      }
+    },
+    "Write" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe"
+          }
+        }
+      }
+    },
+    "Write the question" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe la pregunta"
+          }
+        }
+      }
+    },
+    "Write your affirmation" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe tu afirmación"
+          }
+        }
+      }
+    },
+    "You don't have any affirmations yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no tienes afirmaciones."
+          }
+        }
+      }
+    },
+    "You don't have any affirmations yet. Tap Edit to add them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no tienes afirmaciones. Toca Editar para agregarlas."
+          }
+        }
+      }
+    },
+    "You don't have any questions yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no tienes preguntas."
+          }
+        }
+      }
+    },
+    "You read for %lld minutes. It checks itself off when you're back in Sunling." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You read for %lld minute. It checks itself off when you're back in Sunling."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You read for %lld minutes. It checks itself off when you're back in Sunling."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Leíste %lld minuto. Se marca sola al volver a Sunling."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Leíste %lld minutos. Se marca sola al volver a Sunling."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Your %lld minutes of reading for today." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your %lld minute of reading for today."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your %lld minutes of reading for today."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tu %lld minuto de lectura de hoy."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tus %lld minutos de lectura de hoy."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Your book" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu libro"
+          }
+        }
+      }
+    },
+    "Your data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos"
+          }
+        }
+      }
+    },
+    "Your hours load when you sign in with Google." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus horas se cargan al entrar con Google."
+          }
+        }
+      }
+    },
+    "Your leg goes no higher than your hip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La pierna no sube más que la cadera"
+          }
+        }
+      }
+    },
+    "Your music keeps playing during the timers; you hear the voice if the iPhone isn't on silent." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu música sigue en los temporizadores; la voz se oye si el iPhone no está en silencio."
+          }
+        }
+      }
+    },
+    "Your records are saved on this device and in the cloud." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus registros se guardan en este aparato y en la nube."
+          }
+        }
+      }
+    },
+    "Your records live only on this device." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus registros viven solo en este aparato."
+          }
+        }
+      }
+    },
+    "Your records save themselves to the cloud, and you see them on the Mac too. Only your Google account can open them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus registros se guardan solos en la nube y los ves también en la Mac. Solo tu cuenta de Google puede abrirlos."
+          }
+        }
+      }
+    },
+    "Your records stay on this device, but stop being saved to the cloud." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus registros se quedan en este aparato, pero dejan de guardarse en la nube."
+          }
+        }
+      }
+    },
+    "Your schedule loads when you sign in with Google." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu horario se carga al entrar con Google."
+          }
+        }
+      }
+    },
+    "Your week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu semana"
+          }
+        }
+      }
+    },
+    "Your week: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu semana: %@"
+          }
+        }
+      }
+    },
+    "Your words from %@ will show up here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que escribas en %@ va a aparecer aquí."
+          }
+        }
+      }
+    },
+    "all 6" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "los 6"
+          }
+        }
+      }
+    },
+    "an idea from what you read today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "una idea de lo que leíste hoy"
+          }
+        }
+      }
+    },
+    "an idea from what you read yesterday" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "una idea de lo que leíste ayer"
+          }
+        }
+      }
+    },
+    "backup.off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagada"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        }
+      }
+    },
+    "did it anyway" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lo hice igual"
+          }
+        }
+      }
+    },
+    "iPhone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del iPhone"
+          }
+        }
+      }
+    },
+    "just now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ahora"
+          }
+        }
+      }
+    },
+    "missed: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "faltó: %@"
+          }
+        }
+      }
+    },
+    "no days" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ningún día"
+          }
+        }
+      }
+    },
+    "no time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sin hora"
+          }
+        }
+      }
+    },
+    "nothing checked" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nada marcado"
+          }
+        }
+      }
+    },
+    "optional" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "opcional"
+          }
+        }
+      }
+    },
+    "preparing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "preparando"
+          }
+        }
+      }
+    },
+    "something specific from yesterday, and why" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "algo concreto de ayer y por qué"
+          }
+        }
+      }
+    },
+    "today, nothing checked yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hoy, todavía nada marcado"
+          }
+        }
+      }
+    },
+    "today, still without: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hoy, todavía sin: %@"
+          }
+        }
+      }
+    },
+    "wind down from %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prepararte desde %@"
+          }
+        }
+      }
+    },
+    "· %lld done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· %lld hechas"
+          }
+        }
+      }
+    },
+    "· %lld of 6" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· %lld de 6"
+          }
+        }
+      }
+    },
+    "✓ Saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✓ Guardado"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

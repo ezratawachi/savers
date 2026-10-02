@@ -1,17 +1,17 @@
 import SwiftUI
 
-/// Afirmaciones: the phrases to say out loud.
+/// Affirm: the phrases to say out loud.
 struct AffirmationsBody: View {
     let items: [Item]
     let reviewDue: Bool
-    /// "Revisar afirmaciones" (the monthly review) or "Agregar afirmaciones" when there are none.
+    /// "Review affirmations" (the monthly review) or "Add affirmations" when there are none.
     let onEdit: (_ review: Bool) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if items.isEmpty {
-                Text("Todavía no tienes afirmaciones.")
-                Button("Agregar afirmaciones") { onEdit(false) }
+                Text("You don't have any affirmations yet.")
+                Button("Add affirmations") { onEdit(false) }
                     .buttonStyle(PrimaryButton())
             } else {
                 ForEach(items.indices, id: \.self) { i in
@@ -19,9 +19,9 @@ struct AffirmationsBody: View {
                         .font(.reading(19, relativeTo: .body))
                         .lineSpacing(3)
                 }
-                Note(reviewDue ? "Mes nuevo: ¿siguen sintiéndose tuyas?" : "Despacio, sintiendo cada frase.")
+                Note(reviewDue ? String(localized: "New month: do they still feel like yours?") : String(localized: "Slowly, feeling each phrase."))
                 if reviewDue {
-                    Button("Revisar afirmaciones") { onEdit(true) }
+                    Button("Review affirmations") { onEdit(true) }
                         .buttonStyle(PrimaryButton())
                 }
             }

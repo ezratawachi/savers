@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Ajustes › Afirmaciones or Visualización: read, and Editar. While editing, Cancelar and Listo take
-/// the place of going back.
+/// Settings › Affirm or Imagine: read, and Edit. While editing, Cancel and Done take the place of going
+/// back.
 struct ItemsPage: View {
     @Environment(AppStore.self) private var store
     @Environment(Toast.self) private var toast
@@ -25,21 +25,21 @@ struct ItemsPage: View {
         .toolbar {
             if editing {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar", action: cancel)
-                        .confirmationDialog("¿Descartar los cambios?", isPresented: $askingDiscard, titleVisibility: .visible) {
-                            Button("Descartar cambios", role: .destructive) { editing = false }
-                            Button("Seguir editando", role: .cancel) {}
+                    Button("Cancel", action: cancel)
+                        .confirmationDialog("Discard your changes?", isPresented: $askingDiscard, titleVisibility: .visible) {
+                            Button("Discard changes", role: .destructive) { editing = false }
+                            Button("Keep editing", role: .cancel) {}
                         }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Listo") {
+                    Button("Done") {
                         if let message = store.save(draft, kind, inReview: false) { toast.show(message) }
                         editing = false
                     }
                 }
             } else {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Editar") {
+                    Button("Edit") {
                         draft = ItemsDraft(kind, store.settings)
                         editing = true
                     }
@@ -54,8 +54,8 @@ struct ItemsPage: View {
     }
 }
 
-/// From Hoy: "Revisar afirmaciones" (the monthly review: Afirmaciones, then Visualización), or "Agregar"
-/// when a card is empty. Opens already editing; closing returns to the same spot in Hoy.
+/// From Today: "Review affirmations" (the monthly review: Affirm, then Imagine), or "Add" when a card is
+/// empty. Opens already editing; closing returns to the same spot in Today.
 struct ItemsSheet: View {
     enum Mode: String, Identifiable {
         case review, affirmations, visualization
@@ -95,15 +95,15 @@ struct ItemsSheet: View {
             .navigationBarBackButtonHidden()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    // In the review, Cancelar ends it where it is.
-                    Button("Cancelar", action: cancel)
-                        .confirmationDialog("¿Descartar los cambios?", isPresented: $askingDiscard, titleVisibility: .visible) {
-                            Button("Descartar cambios", role: .destructive) { dismiss() }
-                            Button("Seguir editando", role: .cancel) {}
+                    // In the review, Cancel ends it where it is.
+                    Button("Cancel", action: cancel)
+                        .confirmationDialog("Discard your changes?", isPresented: $askingDiscard, titleVisibility: .visible) {
+                            Button("Discard changes", role: .destructive) { dismiss() }
+                            Button("Keep editing", role: .cancel) {}
                         }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(next ? "Siguiente" : "Listo") { done(kind, next: next) }
+                    Button(next ? "Next" : "Done") { done(kind, next: next) }
                 }
             }
     }
@@ -126,7 +126,7 @@ struct ItemsSheet: View {
             return
         }
         if mode == .review {
-            toast.show("Revisión del mes lista")
+            toast.show(String(localized: "Monthly review done"))
         } else if let message {
             toast.show(message)
         }

@@ -1,5 +1,7 @@
+import Foundation
+
 /// What to do in each moment of a drill, by ear. Each move is a soft tone gliding for the whole move: up while
-/// going up (estira, sube, inhala), down while going down; a hold ticks once a second, and a soft bell closes a drill.
+/// going up (reach, up, breathe in), down while going down; a hold ticks once a second, and a soft bell closes a drill.
 /// Round 1 (and the breathing) also says the word on the first two reps, over a quieter glide, so the sound gets learned.
 struct Guide {
     enum Move { case up, down, hold }
@@ -19,16 +21,19 @@ struct Guide {
     static func of(_ fig: Fig) -> Guide? {
         switch fig {
         case .marcha: nil
-        case .birddog: Guide(sides: true, phases: [.init(move: .up, secs: 2, word: "Estira"), .init(move: .hold, secs: 3, word: "Sostén"), .init(move: .down, secs: 2, word: "Vuelve")])
-        case .deadbug: Guide(sides: true, phases: [.init(move: .down, secs: 3, word: "Baja despacio"), .init(move: .up, secs: 2, word: "Vuelve")])
-        case .puente: Guide(phases: [.init(move: .up, secs: 2, word: "Sube"), .init(move: .hold, secs: 2, word: "Sostén"), .init(move: .down, secs: 2, word: "Baja")])
-        case .sentadilla: Guide(phases: [.init(move: .down, secs: 3, word: "Baja"), .init(move: .hold, secs: 0.5, word: "Toca"), .init(move: .up, secs: 2, word: "Sube")])
-        case .descanso: Guide(lead: 5, tone: .calm, phases: [.init(move: .up, secs: 4, word: "Inhala"), .init(move: .down, secs: 6, word: "Exhala")])
+        case .birddog: Guide(sides: true, phases: [.init(move: .up, secs: 2, word: String(localized: "Reach")), .init(move: .hold, secs: 3, word: String(localized: "Hold")),
+                                                   .init(move: .down, secs: 2, word: String(localized: "Back"))])
+        case .deadbug: Guide(sides: true, phases: [.init(move: .down, secs: 3, word: String(localized: "Lower slowly")), .init(move: .up, secs: 2, word: String(localized: "Back"))])
+        case .puente: Guide(phases: [.init(move: .up, secs: 2, word: String(localized: "Up")), .init(move: .hold, secs: 2, word: String(localized: "Hold")),
+                                     .init(move: .down, secs: 2, word: String(localized: "Down"))])
+        case .sentadilla: Guide(phases: [.init(move: .down, secs: 3, word: String(localized: "Down")), .init(move: .hold, secs: 0.5, word: String(localized: "Touch")),
+                                         .init(move: .up, secs: 2, word: String(localized: "Up"))])
+        case .descanso: Guide(lead: 5, tone: .calm, phases: [.init(move: .up, secs: 4, word: String(localized: "Breathe in")), .init(move: .down, secs: 6, word: String(localized: "Breathe out"))])
         }
     }
 
     static let wordReps = 2
-    static let otherSide = "Otro lado"
+    static let otherSide = String(localized: "Other side")
 }
 
 /// A drill's guide fitted to its step: reps stretched a little so the last one ends with the step.

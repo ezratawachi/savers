@@ -348,7 +348,7 @@ final class AppStore {
             try persistence.save(settings: settings, days: days)
             saveError = nil
         } catch {
-            saveError = "No se pudo guardar"
+            saveError = String(localized: "Couldn't save")
         }
         onSave?()
     }

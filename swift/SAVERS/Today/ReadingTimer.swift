@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Lectura: starts here, opens your reading app, and a notice says when the minutes are over.
+/// Read: starts here, opens your reading app, and a notice says when the minutes are over.
 /// Coming back with the time done marks it.
 struct ReadingTimer: View {
     @Environment(Runs.self) private var runs
@@ -14,27 +14,28 @@ struct ReadingTimer: View {
 
         TimerPanel(title: title(run, rest), subtitle: subtitle(run, rest, app)) {
             if run == nil {
-                Button(rest ? "Repetir" : "Empezar lectura") { runs.startReading() }
+                Button(rest ? "Repeat" : "Start reading") { runs.startReading() }
                     .buttonStyle(TimerButton(prominent: !rest))
             } else {
-                Button("Ya terminé") { runs.finishReading() }
+                Button("I'm done") { runs.finishReading() }
                     .buttonStyle(TimerButton(prominent: true))
-                Button("Cancelar") { runs.cancelReading() }
+                Button("Cancel") { runs.cancelReading() }
                     .buttonStyle(TimerButton())
             }
         }
     }
 
     private func title(_ run: ReadingRun?, _ rest: Bool) -> String {
-        if run != nil { return "Leyendo" }
-        return rest ? "Hecho" : "\(runs.readingMinutes()) minutos"
+        if run != nil { return String(localized: "Reading") }
+        return rest ? String(localized: "All done") : String(localized: "\(runs.readingMinutes()) minutes")
     }
 
     private func subtitle(_ run: ReadingRun?, _ rest: Bool, _ app: ReadApp) -> String {
         if let run {
-            return "Faltan \(TimerPanel<EmptyView>.clockText(run.left(runs.now)))" + (app.url == nil ? "." : ". Se marca sola al volver.")
+            let left = TimerPanel<EmptyView>.clockText(run.left(runs.now))
+            return app.url == nil ? String(localized: "\(left) left.") : String(localized: "\(left) left. It checks itself off when you're back.")
         }
-        if rest { return "Si quieres, puedes leer otra vez." }
-        return app.url == nil ? "Te aviso al terminar." : "Se abre \(app.name) y te aviso al terminar."
+        if rest { return String(localized: "If you like, you can read again.") }
+        return app.url == nil ? String(localized: "I'll let you know when it's over.") : String(localized: "\(app.name) opens and I'll let you know when it's over.")
     }
 }

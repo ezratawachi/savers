@@ -4,7 +4,7 @@ import SwiftUI
 struct TimerPanel<Buttons: View>: View {
     let title: String
     let subtitle: String
-    /// Visualización's question reads as text, not as a hint.
+    /// Imagine's question reads as text, not as a hint.
     var subtitleIsText = false
     /// Seconds on the clock; nil hides the clock and the bar (done, or reading).
     var clock: Int?
@@ -110,6 +110,6 @@ struct TimerClock: View {
 
     private static func spoken(_ secs: Int) -> String {
         let m = secs / 60, s = secs % 60
-        return m > 0 ? "\(m) min \(s) s" : "\(s) segundos"
+        return m > 0 ? String(localized: "\(m) min \(s) s") : String(localized: "\(s) seconds")
     }
 }

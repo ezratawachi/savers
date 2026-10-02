@@ -21,13 +21,13 @@ struct AIChange: Identifiable {
 
     let id: Int
     let edit: Edit
-    /// "Amanecer"
+    /// "Sunrise"
     let title: String
-    /// "Normal · solo los jueves"
+    /// "Normal · Thursdays only"
     let context: String
     /// "5:55 → 5:45"
     let detail: String
-    /// For a list: "Cambia la 2: «…»", "Nueva: «…»".
+    /// For a list: "2. “…” (was “…”)", "3. New: “…”".
     var lines: [String] = []
 
     /// The date it touches, if any.
@@ -54,7 +54,7 @@ struct AIChange: Identifiable {
 
 extension AIChange.Edit {
     /// Applies this change to the settings and the days, the way Ajustes and the day sheet would.
-    /// Unlike "Todos" in Ajustes, a new hour for all days keeps the weekdays that have their own: the AI
+    /// Unlike "All" in Settings, a new hour for all days keeps the weekdays that have their own: the AI
     /// only changes what it names.
     func apply(to s: inout AppSettings, days: inout [String: Day], today: String) {
         switch self {

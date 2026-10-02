@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The top of Hoy is the icon's night: "JUEVES 1 OCT · GYM", the day's one big title, a quiet line, and
+/// The top of Today is the icon's night: "THURSDAY, OCT 1 · GYM", the day's one big title, a quiet line, and
 /// Sunling on the horizon that closes it. On a day without the routine the night takes most of the screen
 /// and he sleeps in the middle of it.
 struct TodayHeader: View {
@@ -17,7 +17,7 @@ struct TodayHeader: View {
     let ds: String
     let type: DayType
     let title: Title
-    /// "6 amaneceres seguidos", "Sunling descansa hoy"; nil hides the line.
+    /// "6 sunrises in a row", "Sunling rests today"; nil hides the line.
     let note: String?
     /// A save that failed takes the line, in the warning color.
     let status: String?
@@ -114,7 +114,7 @@ struct TodayHeader: View {
                 .padding(.vertical, -13)
             }
             .buttonStyle(PressScale())
-            .accessibilityLabel("\(DayKey.head(ds)), \(type.chipName). Cambiar este día")
+            .accessibilityLabel("\(DayKey.head(ds)), \(type.chipName). Change this day")
         }
     }
 
@@ -139,7 +139,7 @@ struct TodayHeader: View {
         case .shabbat:
             restTitle("Shabbat Shalom")
         case .free:
-            restTitle("Día libre")
+            restTitle(String(localized: "Day off"))
         }
     }
 

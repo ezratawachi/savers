@@ -12,7 +12,7 @@ struct LetterCard<Content: View>: View {
     let sunNext: String
     let onToggle: () -> Void
     let onOpen: () -> Void
-    /// Inside another card ("hechas"): no card of its own, on that card's line.
+    /// Inside another card (the done ones): no card of its own, on that card's line.
     var nested = false
     @ViewBuilder let content: Content
 
@@ -23,7 +23,7 @@ struct LetterCard<Content: View>: View {
                 if info.opens {
                     Button(action: onOpen) { rowText }
                         .buttonStyle(.plain)
-                        .accessibilityHint(isOpen ? "Cierra la carta" : "Abre la carta")
+                        .accessibilityHint(isOpen ? "Closes the card" : "Opens the card")
                 } else {
                     rowText
                 }
@@ -69,7 +69,7 @@ struct LetterCard<Content: View>: View {
                         .font(.reading(18, relativeTo: .headline).bold())
                         .foregroundStyle(.ink)
                     if isNow && !done {
-                        Text("Ahora")
+                        Text("Now")
                             .font(.reading(12, relativeTo: .caption).bold())
                             .foregroundStyle(.sky)
                             .padding(.horizontal, 7)

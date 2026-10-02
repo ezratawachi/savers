@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Everything done, folded into one row: "Mañana · 5 hechas". Opens to show them again.
+/// Everything done, folded into one row: "Morning · 5 done". Opens to show them again.
 struct FoldCard<Content: View>: View {
     let label: String
     let count: Int
@@ -21,7 +21,7 @@ struct FoldCard<Content: View>: View {
                         .frame(width: 36, height: 36)
                         .background(.done, in: .circle)
                         .frame(width: 44, height: 44)
-                    Text("\(Text(label).bold()) \(Text("· \(count) hechas").foregroundStyle(.muted))")
+                    Text("\(Text(label).bold()) \(Text("· \(count) done").foregroundStyle(.muted))")
                         .font(.reading(18, relativeTo: .headline))
                         .foregroundStyle(.ink)
                     Spacer()
@@ -36,7 +36,7 @@ struct FoldCard<Content: View>: View {
             // The circle's drawing, not its target, sits on the card's line.
             .padding(EdgeInsets(top: -CardLayout.circleSlack, leading: -CardLayout.circleSlack,
                                 bottom: -CardLayout.circleSlack, trailing: 0))
-            .accessibilityHint(isOpen ? "Oculta lo hecho" : "Muestra lo hecho")
+            .accessibilityHint(isOpen ? "Hides what's done" : "Shows what's done")
             if isOpen {
                 content
                     .padding(.top, CardLayout.inset)

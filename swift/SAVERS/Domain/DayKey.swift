@@ -39,38 +39,38 @@ enum DayKey {
     /// "AAAA-MM"
     static func month(_ key: String) -> String { String(key.prefix(7)) }
 
-    private static func formatter(_ format: String) -> DateFormatter {
+    /// Spanish keeps the app's own formats ("Martes 29 sept", no commas); other languages, the iPhone's.
+    private static func formatter(_ spanish: String, _ template: String) -> DateFormatter {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "es")
+        f.locale = AppLanguage.locale
         f.calendar = calendar
-        f.dateFormat = format
+        if AppLanguage.isSpanish { f.dateFormat = spanish } else { f.setLocalizedDateFormatFromTemplate(template) }
         return f
     }
 
-    /// "Martes 29 sept"
+    /// "Martes 29 sept", "Tuesday, Sep 29"
     static func head(_ key: String) -> String {
-        let s = formatter("EEEE d MMM").string(from: date(key)).replacingOccurrences(of: ".", with: "")
-        return s.prefix(1).uppercased() + s.dropFirst()
+        formatter("EEEE d MMM", "EEEEMMMd").string(from: date(key)).replacingOccurrences(of: ".", with: "").capitalizedFirst
     }
 
-    /// "Martes 29 de septiembre"
+    /// "Martes 29 de septiembre", "Tuesday, September 29"
     static func long(_ key: String) -> String {
-        formatter("EEEE d 'de' MMMM").string(from: date(key)).capitalizedFirst
+        formatter("EEEE d 'de' MMMM", "EEEEMMMMd").string(from: date(key)).capitalizedFirst
     }
 
-    /// "Mar 29 sept"
+    /// "Mar 29 sept", "Tue, Sep 29"
     static func short(_ key: String) -> String {
-        formatter("EEE d MMM").string(from: date(key)).replacingOccurrences(of: ".", with: "").capitalizedFirst
+        formatter("EEE d MMM", "EEEMMMd").string(from: date(key)).replacingOccurrences(of: ".", with: "").capitalizedFirst
     }
 
     /// "Septiembre"
     static func monthOnly(_ month: MonthIndex) -> String {
-        formatter("LLLL").string(from: date(month.first)).capitalizedFirst
+        formatter("LLLL", "LLLL").string(from: date(month.first)).capitalizedFirst
     }
 
-    /// "Septiembre de 2026"
+    /// "Septiembre de 2026", "September 2026"
     static func monthName(_ month: MonthIndex) -> String {
-        formatter("LLLL 'de' y").string(from: date(month.first)).capitalizedFirst
+        formatter("LLLL 'de' y", "LLLLy").string(from: date(month.first)).capitalizedFirst
     }
 }
 

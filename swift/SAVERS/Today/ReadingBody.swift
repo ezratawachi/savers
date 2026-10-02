@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Lectura: with your coffee, or later on a gym day.
+/// Read: with your coffee, or later on a gym day.
 struct ReadingBody: View {
     let minutes: Int
     let gym: Bool
@@ -13,9 +13,9 @@ struct ReadingBody: View {
         VStack(alignment: .leading, spacing: 12) {
             Group {
                 if gym {
-                    Text(laterLine + " Empieza desde aquí y se marca sola.")
+                    Text(laterLine + " " + String(localized: "Start it here and it checks itself off."))
                 } else {
-                    Text("\(minutes) minutos con tu café. La meta es el tiempo, no las páginas.")
+                    Text("\(minutes) minutes with your coffee. The goal is the time, not the pages.")
                 }
             }
             .font(.reading())
@@ -25,8 +25,8 @@ struct ReadingBody: View {
     }
 
     private var laterLine: String {
-        if !laterAt.isEmpty { return "Hoy lees más tarde, a las \(laterAt)." }
-        if let g = gymReading, !g.isEmpty { return "Hoy lees más tarde: \(g)." }
-        return "Hoy lees más tarde."
+        if !laterAt.isEmpty { return String(localized: "Today you read later, at \(laterAt).") }
+        if let g = gymReading, !g.isEmpty { return String(localized: "Today you read later: \(g).") }
+        return String(localized: "Today you read later.")
     }
 }

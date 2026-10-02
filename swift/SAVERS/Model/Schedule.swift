@@ -7,7 +7,7 @@ struct Schedule: Codable, Equatable, Sendable {
     var week: [String: String] = [:]
     var gymTime: String?
     var gymReading: String?
-    /// Minutes before "Dormido" that "Prepararte para dormir" arrives, the same every night.
+    /// Minutes before "Dormido" (asleep) that "Prepararte para dormir" (wind down) arrives, the same every night.
     var windDown: Int?
     var types: [String: TypeSchedule]?
     var extras: [String: JSONValue] = [:]
@@ -85,7 +85,7 @@ struct Schedule: Codable, Equatable, Sendable {
         self.types = types
     }
 
-    /// The morning block that held the letters was called "SAVERS"; it's "Amanecer" now. Done once, on what
+    /// The morning block that held the letters was called "SAVERS"; it's "Sunrise" ("Amanecer") now. Done once, on what
     /// arrives from this iPhone or the cloud. Returns whether anything changed.
     mutating func renameSaversBlock() -> Bool {
         guard var types else { return false }
@@ -94,7 +94,7 @@ struct Schedule: Codable, Equatable, Sendable {
             guard var list = t.steps else { continue }
             for i in list.indices where !list[i].letterKeys.isEmpty {
                 for field in [\Step.title, \Step.short] where list[i][keyPath: field]?.lowercased() == "savers" {
-                    list[i][keyPath: field] = "Amanecer"
+                    list[i][keyPath: field] = String(localized: "Sunrise")
                     changed = true
                 }
             }

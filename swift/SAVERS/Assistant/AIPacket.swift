@@ -1,7 +1,7 @@
 import Foundation
 
-/// What "Mandar a la IA" sends: the instructions, the notes, the question, each day as it is, the last
-/// weeks' marks and the configuration the AI can change. Never what was written in Escribe.
+/// What "Send to an AI" sends: the instructions, the notes, the question, each day as it is, the last
+/// weeks' marks and the configuration the AI can change. Never what was written in Write.
 enum AIPacket {
     static let weeks = 8
 
@@ -9,85 +9,89 @@ enum AIPacket {
         let q = question.trimmingCharacters(in: .whitespacesAndNewlines)
         let notes = r.settings.aiNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
-        parts.append("# Mi amanecer en Sunling\n\n" +
-            "Hoy es \(DayKey.long(r.today).lowercased()) (\(r.today)). Te paso todo lo de Sunling, mi app para empezar el día, para que me ayudes.")
-        parts.append("## Lo que quiero\n\n" + (q.isEmpty ? "Todavía no lo sé. Pregúntame de qué quiero hablar." : q))
-        parts.append("## Mis notas (lo que la app no sabe)\n\n" + (notes.isEmpty ? "Sin notas." : notes))
+        parts.append(String(localized: "# My sunrise in Sunling\n\nToday is \(DayKey.long(r.today).inSentence) (\(r.today)). Here's everything from Sunling, my app for starting the day, so you can help me."))
+        parts.append(String(localized: "## What I want") + "\n\n" + (q.isEmpty ? String(localized: "I don't know yet. Ask me what I want to talk about.") : q))
+        parts.append(String(localized: "## My notes (what the app doesn't know)") + "\n\n" + (notes.isEmpty ? String(localized: "No notes.") : notes))
         parts.append(howToWork)
         parts.append(howItWorks)
-        parts.append("## Así es cada día (lo calcula la app, solo para leer)\n\n" + r.aiWeek())
+        parts.append(String(localized: "## What each day looks like (worked out by the app, read only)") + "\n\n" + r.aiWeek())
         let dates = r.aiDates()
-        if !dates.isEmpty { parts.append("## Fechas con cambios (solo para leer)\n\n" + dates) }
-        parts.append("## Cómo me ha ido (últimas \(weeks) semanas, solo para leer)\n\n" + r.aiRecord(weeks: weeks))
-        parts.append("## Mi configuración (esto es lo que se puede cambiar)\n\n```json\n" + r.aiConfig().rendered() + "\n```")
+        if !dates.isEmpty { parts.append(String(localized: "## Dates with changes (read only)") + "\n\n" + dates) }
+        parts.append(String(localized: "## How it's gone (last \(weeks) weeks, read only)") + "\n\n" + r.aiRecord(weeks: weeks))
+        parts.append(String(localized: "## My configuration (this is what can be changed)") + "\n\n```json\n" + r.aiConfig().rendered() + "\n```")
         parts.append(changeBlock(r))
         return parts.joined(separator: "\n\n") + "\n"
     }
 
-    private static let howToWork = """
-    ## Cómo trabajar conmigo
+    private static var howToWork: String {
+        String(localized: """
+        ## How to work with me
 
-    - Primero conversa: entiende lo que te pido, pregúntame lo que no sepas y propón ideas. No siempre quiero cambiar algo; a veces quiero pensar o discutir.
-    - Respeta mis notas: lo que dicen que no se mueve, no se mueve.
-    - Dame el bloque de cambios solo cuando yo acepte una propuesta o te pida los cambios. Antes no.
-    - Antes de proponer una hora, revisa que los pasos del bloque terminen antes del bloque siguiente.
-    """
+        - Talk first: understand what I'm asking, ask me what you don't know and suggest ideas. I don't always want to change something; sometimes I want to think or discuss.
+        - Respect my notes: what they say doesn't move, doesn't move.
+        - Give me the change block only when I accept a proposal or ask you for the changes. Not before.
+        - Before suggesting a time, check that the block's steps end before the next block.
+        """)
+    }
 
-    private static let howItWorks = """
-    ## Cómo funciona la app
+    /// Each language names its own configuration words (`AIWord`).
+    private static var howItWorks: String {
+        String(localized: """
+        ## How the app works
 
-    - Mi amanecer son seis pasos cortos cada mañana, para empezar el día conmigo antes que con el mundo. Son siempre los seis: si falta tiempo, se acortan, no se quitan.
-      - Respira: unos minutos quieto, para respirar, meditar o rezar.
-      - Afirma: en voz alta, pocas frases que me crea sobre quién elijo ser. Nada exagerado como "soy increíble": a quien no se lo cree lo hace sentir peor.
-      - Imagina: lo más importante de hoy, el obstáculo probable y qué haré si pasa ("si pasa X, hago Y"). El camino, no solo la meta cumplida.
-      - Muévete: unos minutos de movimiento en casa, o el gym.
-      - Lee: unas páginas de algo que me haga crecer.
-      - Escribe: agradecer algo concreto y anotar una idea de lo que leí.
-    - Es un método propio con estos nombres. Aunque se parezca a otros que conoces, no lo llames con otro nombre ni uses sus siglas.
-    - Descansar también cuenta: un día de descanso no corta mis amaneceres seguidos.
-    - Cada día de la semana es Normal, Gym o Descanso. El sábado es Shabbat y no se cambia.
-    - Normal y Gym tienen su propio horario de bloques con hora (por ejemplo Te paras, Amanecer, Baño, Dormido). Algunos bloques tienen pasos dentro, en orden.
-    - La hora de cada paso es la hora de su bloque más los minutos de los pasos que van antes. Para mover un paso, se mueve su bloque o se cambian minutos.
-    - Solo Respira y Lee tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de los otros pasos salen de su contenido (Afirma unos 25 segundos por frase, Imagina 1 minuto por pregunta, Escribe 2, Muévete 8 o lo que dura el gym).
-    - "Dormido" está en "La noche anterior": es la hora de dormir de la noche antes de ese día. "Prepararte" son los minutos antes de Dormido en que me llega el aviso para prepararme: de 15 a 90, de 5 en 5, el mismo todas las noches.
-    - Una hora o unos minutos pueden ser distintos un día de la semana ("horasPorDia", "minutosPorDia") o una fecha ("fechas", desde hoy hasta un año adelante).
-    - No se pueden agregar, quitar ni renombrar bloques, ni mover pasos de un bloque a otro. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios.
-    """
+        - My sunrise is six short steps each morning, to start the day with myself before the world. It's always all six: when time is short, they get shorter, they don't get dropped.
+          - Breathe: a few minutes still, to breathe, meditate or pray.
+          - Affirm: out loud, a few phrases I believe about who I choose to be. Nothing over the top like "I'm amazing": for someone who doesn't believe it, it makes things worse.
+          - Imagine: today's most important thing, the likely obstacle and what I'll do if it comes up ("if X happens, I'll do Y"). The path, not just the goal reached.
+          - Move: a few minutes of movement at home, or the gym.
+          - Read: a few pages of something that helps me grow.
+          - Write: give thanks for something specific and jot down an idea from what I read.
+        - It's a method of its own, with these names. Even if it looks like others you know, don't call it by another name or use their acronyms.
+        - Rest counts too: a rest day doesn't break my sunrises in a row.
+        - Each weekday is Normal, Gym or Rest. Saturday is Shabbat and doesn't change.
+        - Normal and Gym each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep). Some blocks hold steps, in order.
+        - Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.
+        - Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine 1 minute per question, Write 2, Move 8 or however long the gym lasts).
+        - The bedtime block is in "The night before": it's when I go to sleep the night before that day. "windDown" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.
+        - A time or some minutes can be different on one weekday ("hoursByDay", "minutesByDay") or on one date ("dates", from today up to a year ahead).
+        - Blocks can't be added, removed or renamed, and steps can't move from one block to another. If that would suit me, tell me in the conversation, not in the change block.
+        """)
+    }
 
     private static func changeBlock(_ r: Routine) -> String {
-        let block = r.aiBlocks(.normal).first { !$0.step.letterKeys.isEmpty }?.name ?? "Amanecer"
-        return """
-        ## El bloque de cambios
+        let block = r.aiBlocks(.normal).first { !$0.step.letterKeys.isEmpty }?.name ?? String(localized: "Sunrise")
+        return String(localized: """
+        ## The change block
 
-        Cuando yo te lo pida, al final de tu respuesta pon un bloque de código marcado `sunling` con un JSON que tenga **solo lo que cambia**, con la misma forma que mi configuración. Lo que no pongas se queda igual.
+        When I ask you to, at the end of your reply put a code block marked `sunling` with a JSON that has **only what changes**, in the same shape as my configuration. Whatever you leave out stays the same.
 
-        - Las horas de la mañana se escriben "5:20"; las de la tarde y la noche, con pm: "8:50 pm".
-        - Para que la hora o los minutos de un día de la semana o de una fecha vuelvan a ser como siempre, ponles null. Para quitar todos los cambios de una fecha: "AAAA-MM-DD": null.
-        - Las afirmaciones y las preguntas de visualización van completas y en su orden final, aunque cambie una sola.
-        - Usa los nombres de los bloques tal como están en mi configuración.
+        - Morning times are written "5:20"; afternoon and evening ones with pm: "8:50 pm".
+        - To bring a weekday's or a date's time or minutes back to the usual, set them to null. To remove all of a date's changes: "YYYY-MM-DD": null.
+        - The affirmations and the Imagine questions go complete and in their final order, even if only one changes.
+        - Use the block names exactly as they are in my configuration.
 
-        Ejemplo de la forma (no es una propuesta):
+        Example of the shape (not a proposal):
 
         ```sunling
         {
-          "normal": {"horas": {"\(block)": "5:45"}, "minutos": {"lee": 15}},
-          "semana": {"jueves": "gym"},
-          "fechas": {"AAAA-MM-DD": {"tipo": "descanso"}}
+          "normal": {"hours": {"\(block)": "5:45"}, "minutes": {"read": 15}},
+          "week": {"thursday": "gym"},
+          "dates": {"YYYY-MM-DD": {"type": "rest"}}
         }
         ```
 
-        Yo copio tu respuesta y la pego en la app, que me muestra cada cambio antes de aplicarlo.
-        """
+        I copy your reply and paste it into the app, which shows me each change before applying it.
+        """)
     }
 }
 
 extension DayType {
-    /// How the configuration writes it: "normal", "gym", "descanso".
+    /// How the configuration writes it: "normal", "gym", "rest" ("descanso").
     var aiName: String {
         switch self {
         case .normal: "normal"
         case .gym: "gym"
-        case .off: "descanso"
+        case .off: AppLanguage.isSpanish ? "descanso" : "rest"
         case .shabbat: "shabbat"
         }
     }
@@ -98,41 +102,41 @@ extension Routine {
 
     func aiConfig() -> OrderedJSON {
         var top: [(String, OrderedJSON)] = [
-            ("leerEn", .string(settings.readApp)),
-            ("afirmaciones", .array(settings.affirmations.filled.map(Self.aiItem))),
-            ("visualizacion", .object([
-                ("preguntas", .array(settings.visualization.items.filled.map(Self.aiItem))),
-                ("nota", .string(settings.visualization.note)),
+            (AIWord.readOn, .string(AIWord.readApp(settings.readApp))),
+            (AIWord.affirmations, .array(settings.affirmations.filled.map(Self.aiItem))),
+            (AIWord.visualization, .object([
+                (AIWord.questions, .array(settings.visualization.items.filled.map(Self.aiItem))),
+                (AIWord.note, .string(settings.visualization.note)),
             ])),
-            ("semana", .object((0...5).map { (Weekday.names[$0], .string(weekType($0).aiName)) })),
-            ("prepararte", .number(windDown)),
+            (AIWord.week, .object((0...5).map { (AIWord.weekday($0), .string(weekType($0).aiName)) })),
+            (AIWord.windDown, .number(windDown)),
         ]
         for kind in [DayType.normal, .gym] where settings.schedule?.type(kind) != nil {
             top.append((kind.rawValue, aiKind(kind)))
         }
-        top.append(("fechas", .object(aiDateKeys().map { ($0, aiDate($0)) })))
+        top.append((AIWord.dates, .object(aiDateKeys().map { ($0, aiDate($0)) })))
         return .object(top)
     }
 
     private static func aiItem(_ i: Item) -> OrderedJSON {
-        i.label.isEmpty ? .string(i.text) : .object([("titulo", .string(i.label)), ("texto", .string(i.text))])
+        i.label.isEmpty ? .string(i.text) : .object([(AIWord.title, .string(i.label)), (AIWord.text, .string(i.text))])
     }
 
     private func aiKind(_ kind: DayType) -> OrderedJSON {
         let blocks = aiBlocks(kind)
-        var out: [(String, OrderedJSON)] = [("horas", .object(blocks.map { ($0.name, .string($0.step.time ?? "")) }))]
+        var out: [(String, OrderedJSON)] = [(AIWord.hours, .object(blocks.map { ($0.name, .string($0.step.time ?? "")) }))]
         let perDay: [(String, OrderedJSON)] = blocks.compactMap { b in
-            let own = (0...5).compactMap { w in ownTime(b.step, weekday: w).map { (Weekday.names[w], OrderedJSON.string($0)) } }
+            let own = (0...5).compactMap { w in ownTime(b.step, weekday: w).map { (AIWord.weekday(w), OrderedJSON.string($0)) } }
             return own.isEmpty ? nil : (b.name, .object(own))
         }
-        if !perDay.isEmpty { out.append(("horasPorDia", .object(perDay))) }
+        if !perDay.isEmpty { out.append((AIWord.hoursByDay, .object(perDay))) }
         let letters = [Letter.silencio, .lectura]
-        out.append(("minutos", .object(letters.map { ($0.aiKey, .number(usualMinutes(kind, $0, weekday: nil))) })))
+        out.append((AIWord.minutes, .object(letters.map { ($0.aiKey, .number(usualMinutes(kind, $0, weekday: nil))) })))
         let minsPerDay: [(String, OrderedJSON)] = letters.compactMap { l in
-            let own = (0...5).compactMap { w in ownMinutes(kind, l, weekday: w).map { (Weekday.names[w], OrderedJSON.number($0)) } }
+            let own = (0...5).compactMap { w in ownMinutes(kind, l, weekday: w).map { (AIWord.weekday(w), OrderedJSON.number($0)) } }
             return own.isEmpty ? nil : (l.aiKey, .object(own))
         }
-        if !minsPerDay.isEmpty { out.append(("minutosPorDia", .object(minsPerDay))) }
+        if !minsPerDay.isEmpty { out.append((AIWord.minutesByDay, .object(minsPerDay))) }
         return .object(out)
     }
 
@@ -147,25 +151,25 @@ extension Routine {
     private func aiDate(_ ds: String) -> OrderedJSON {
         let d = day(ds)
         var out: [(String, OrderedJSON)] = []
-        if d.type != nil { out.append(("tipo", .string(dayType(ds).aiName))) }
+        if d.type != nil { out.append((AIWord.type, .string(dayType(ds).aiName))) }
         if isScheduled(ds) {
             let kind = scheduleKind(ds)
             let hours: [(String, OrderedJSON)] = aiBlocks(kind).compactMap { b in
                 guard let id = b.step.id, let t = d.times?[id], !t.isEmpty else { return nil }
                 return (b.name, .string(t))
             }
-            if !hours.isEmpty { out.append(("horas", .object(hours))) }
+            if !hours.isEmpty { out.append((AIWord.hours, .object(hours))) }
             let mins: [(String, OrderedJSON)] = [Letter.silencio, .lectura].compactMap { l in
                 Self.valid(d.mins?[l.rawValue]).map { (l.aiKey, .number($0)) }
             }
-            if !mins.isEmpty { out.append(("minutos", .object(mins))) }
+            if !mins.isEmpty { out.append((AIWord.minutes, .object(mins))) }
         }
         return .object(out)
     }
 
     // MARK: Each day as text
 
-    /// The week, weekdays that look the same together: "Lunes, martes y jueves (Normal)" and their hours.
+    /// The week, weekdays that look the same together: "Monday, Tuesday and Thursday (Normal)" and their hours.
     func aiWeek() -> String {
         var order: [String] = []
         var who: [String: [Int]] = [:]
@@ -180,8 +184,7 @@ extension Routine {
         }
         return order.map { key in
             let ws = who[key] ?? []
-            let names = ws.map { Weekday.names[$0] }
-            let list = names.count > 1 ? names.dropLast().joined(separator: ", ") + " y " + (names.last ?? "") : names.first ?? ""
+            let list = AppLanguage.list(ws.map { Weekday.names[$0] })
             let parts = key.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
             let body = parts.count > 1 ? String(parts[1]) : ""
             return "**\(list.capitalizedFirst) (\(parts.first ?? ""))**" + (body.isEmpty ? "" : "\n" + body)
@@ -199,33 +202,33 @@ extension Routine {
         }.joined(separator: "\n\n")
     }
 
-    /// "La noche anterior / 10:25 pm Dormido", "Mañana / 5:55 Amanecer / 5:55 Respira · 10 min", "Más tarde / …".
+    /// "The night before / 10:25 pm Asleep", "Morning / 5:55 Sunrise / 5:55 Breathe · 10 min", "Later / …".
     private func aiTimeline(_ kind: DayType, time: (Step) -> String, minutes: (Letter) -> Int) -> String {
         guard let t = settings.schedule?.type(kind) else { return "" }
         let bedID = bedStep(kind)?.id
         var seen: Set<Letter> = []
         var lines: [String] = []
         for g in TypeSchedule.Group.allCases where !t[g].isEmpty {
-            lines.append(g == .night ? "La noche anterior" : g == .later ? "Más tarde" : "Mañana")
+            lines.append(g.title ?? String(localized: "Morning"))
             for st in t[g] {
                 let at = time(st)
                 let title = st.title ?? st.label
-                var line = "- \(at.isEmpty ? "sin hora" : at) \(title)"
+                var line = "- \(at.isEmpty ? String(localized: "no time") : at) \(title)"
                 if let detail = st.detail, !detail.isEmpty { line += " (\(detail))" }
                 if st.id == bedID, let m = TimeText.minutes(at) {
-                    line += " · prepararte desde \(TimeText.label((m - windDown + 1440) % 1440))"
+                    line += " · " + String(localized: "wind down from \(TimeText.label((m - windDown + 1440) % 1440))")
                 }
                 let keys = st.letterKeys.filter { seen.insert($0).inserted }
                 if keys.count == 1, keys[0].name == title {
                     let m = minutes(keys[0])
-                    lines.append(line + (m > 0 ? " · \(m) min" : ""))
+                    lines.append(line + (m > 0 ? " · " + String(localized: "\(m) min") : ""))
                     continue
                 }
                 lines.append(line)
                 var start = TimeText.minutes(at)
                 for k in keys {
                     let m = minutes(k)
-                    lines.append("  - " + [start.map(TimeText.label), k.name, m > 0 ? "\(m) min" : nil].compactMap { $0 }.joined(separator: " ") )
+                    lines.append("  - " + [start.map(TimeText.label), k.name, m > 0 ? String(localized: "\(m) min") : nil].compactMap { $0 }.joined(separator: " "))
                     if let s = start { start = s + m }
                 }
             }
@@ -252,41 +255,43 @@ extension Routine {
             count += 1
             if d.doneCount == 6 { complete += 1 }
             for l in Letter.allCases where d.isDone(l) { perLetter[l, default: 0] += 1 }
-            var line = "- \(DayKey.short(ds)) · \(type.name)" + (type.hasSavers ? "" : " (lo hice igual)")
+            var line = "- \(DayKey.short(ds)) · \(type.name)" + (type.hasSavers ? "" : " (" + String(localized: "did it anyway") + ")")
             let done = Letter.allCases.filter(d.isDone)
             let hours = done.map { l in (l, aiHour(d.checkedAt?[l.rawValue], ds: ds)) }
             if hours.contains(where: { $0.1 != nil }) {
                 anyHour = true
                 line += " · " + hours.map { [$0.0.name, $0.1].compactMap { $0 }.joined(separator: " ") }.joined(separator: ", ")
             } else if done.count == 6 {
-                line += " · los 6"
+                line += " · " + String(localized: "all 6")
             } else if !done.isEmpty {
                 line += " · " + done.map(\.name).joined(separator: ", ")
             }
-            let missing = Letter.allCases.filter { !d.isDone($0) }.map(\.name)
+            let missing = Letter.allCases.filter { !d.isDone($0) }.map(\.name).joined(separator: ", ")
             if done.isEmpty {
-                line += ds == today ? " · hoy, todavía nada marcado" : " · nada marcado"
+                line += " · " + (ds == today ? String(localized: "today, nothing checked yet") : String(localized: "nothing checked"))
             } else if !missing.isEmpty {
-                line += ds == today ? " · hoy, todavía sin: " : " · faltó: "
-                line += missing.joined(separator: ", ")
+                line += " · " + (ds == today ? String(localized: "today, still without: \(missing)") : String(localized: "missed: \(missing)"))
             }
             lines.append(line)
         }
-        guard count > 0 else { return "Todavía no hay días registrados." }
+        guard count > 0 else { return String(localized: "No days logged yet.") }
         let totals = Letter.allCases.map { "\($0.name) \(perLetter[$0, default: 0])" }.joined(separator: ", ")
-        var head = "Días con amanecer: \(count). Completos: \(complete). Por paso: \(totals)."
-        head += anyHour
-            ? " La hora junto a cada paso es cuando lo marqué en la app (puede ser después de hacerlo)."
-            : " La app todavía no guardaba a qué hora marco cada paso."
-        return head + " Los sábados y los días de descanso solo aparecen si hice mi amanecer igual.\n\n" + lines.joined(separator: "\n")
+        let head = [
+            String(localized: "Days with a sunrise: \(count). Complete: \(complete). By step: \(totals)."),
+            anyHour
+                ? String(localized: "The time next to each step is when I checked it off in the app (it can be after doing it).")
+                : String(localized: "The app didn't save yet what time I check off each step."),
+            String(localized: "Saturdays and rest days only show up if I did my sunrise anyway."),
+        ].joined(separator: " ")
+        return head + "\n\n" + lines.joined(separator: "\n")
     }
 
-    /// "6:02", or "11:40 pm del Lun 28 sept" when it was marked on another day.
+    /// "6:02", or "11:40 pm on Mon, Sep 28" when it was marked on another day.
     private func aiHour(_ iso: String?, ds: String) -> String? {
         guard let date = Date(iso: iso) else { return nil }
         let p = DayKey.calendar.dateComponents([.hour, .minute], from: date)
         let label = TimeText.label((p.hour ?? 0) * 60 + (p.minute ?? 0))
         let on = DayKey.of(date)
-        return on == ds ? label : "\(label) del \(DayKey.short(on))"
+        return on == ds ? label : String(localized: "\(label) on \(DayKey.short(on))")
     }
 }

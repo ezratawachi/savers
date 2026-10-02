@@ -227,7 +227,7 @@ final class Runs {
             Sounds.bell()
             Task {
                 try? await Task.sleep(for: .milliseconds(700))
-                Voice.shared.say("Visualización lista.", .notice)
+                Voice.shared.say(Self.visualizationDoneCue, .notice)
             }
         case .ejercicio:
             guideStop(from: nil)
@@ -237,8 +237,11 @@ final class Runs {
         }
         changed()
         store.mark(k.letter, on: day)
-        toast.show(k == .ejercicio ? "Ejercicio terminado y marcado" : "Visualización lista y marcada")
+        toast.show(k == .ejercicio ? String(localized: "Move done and checked off") : String(localized: "Imagine done and checked off"))
     }
+
+    /// What the voice says when Imagine's minutes are over.
+    static var visualizationDoneCue: String { String(localized: "Imagine is done.") }
 
     private func tick(_ k: RunKind) {
         guard let r = run(k), r.running else { return }
@@ -318,26 +321,26 @@ final class Runs {
         await LocalNote.schedule(
             id: "lectura",
             at: Date(timeIntervalSince1970: run.start / 1000 + Double(min) * 60),
-            title: "Lectura terminada",
-            body: "Leíste \(min) \(min == 1 ? "minuto" : "minutos"). Se marca sola al volver a Sunling."
+            title: String(localized: "Reading done"),
+            body: String(localized: "You read for \(min) minutes. It checks itself off when you're back in Sunling.")
         )
         if reading?.start == run.start { reading?.sent = true; save() }
     }
 
-    /// The "Fin de la lectura" switch changed while a reading runs.
+    /// The "End of reading" switch changed while a reading runs.
     func readingNoteChanged() {
         guard let r = reading, r.left(.now) > 0 else { return }
         if notices.isOn(.lectura) { Task { await scheduleReadingNote(r) } } else { LocalNote.cancel("lectura") }
     }
 
-    /// Cancelar: the notice goes with it.
+    /// Cancel: the notice goes with it.
     func cancelReading() {
         LocalNote.cancel("lectura")
         reading = nil
         changed()
     }
 
-    /// Ya terminé, or the time ran out.
+    /// I'm done, or the time ran out.
     func finishReading() {
         guard let r = reading else { return }
         LocalNote.cancel("lectura")
@@ -345,7 +348,7 @@ final class Runs {
         changed()
         guard store.mark(.lectura, on: r.day) else { return }
         if store.routine.day(r.day).doneCount == 6 { Sounds.complete() } else { Sounds.check() }
-        toast.show("Lectura marcada")
+        toast.show(String(localized: "Read checked off"))
     }
 
     // MARK: Keeping time
@@ -435,8 +438,8 @@ struct ReadApp {
     init(_ key: String) {
         switch key {
         case "kindle": name = "Kindle"; url = URL(string: "kindle://"); icon = "KindleIcon"
-        case "papel": name = "Libro físico"; url = nil; icon = "PaperIcon"
-        default: name = "Libros"; url = URL(string: "ibooks://"); icon = "BooksIcon"
+        case "papel": name = String(localized: "Paper book"); url = nil; icon = "PaperIcon"
+        default: name = String(localized: "Books"); url = URL(string: "ibooks://"); icon = "BooksIcon"
         }
     }
 }

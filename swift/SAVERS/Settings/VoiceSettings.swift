@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ajustes › Voz: pick a Gemini voice, try it, paste the key. Changes apply as you tap, like iOS Settings.
+/// Settings › Voice: pick a Gemini voice, try it, paste the key. Changes apply as you tap, like iOS Settings.
 struct VoiceSettings: View {
     @Environment(Toast.self) private var toast
     @State private var gemini = GeminiVoice.shared
@@ -15,13 +15,13 @@ struct VoiceSettings: View {
                     row(v)
                 }
             } header: {
-                Text("Voz de Gemini")
+                Text("Gemini voice")
             } footer: {
-                Text("Probar lee tu primera pregunta de visualización. La visualización suena calmada, el ejercicio con energía y los avisos en tono neutro.")
+                Text("Try reads your first \(Letter.visualizacion.name) question. \(Letter.visualizacion.name) sounds calm, the home routine energetic and the notices neutral.")
             }
             Section {
-                LabeledContent("Clave") {
-                    SecureField("Pégala aquí", text: $keyText)
+                LabeledContent("Key") {
+                    SecureField("Paste it here", text: $keyText)
                         .multilineTextAlignment(.trailing)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -33,11 +33,11 @@ struct VoiceSettings: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(gemini.statusText)
                         .foregroundStyle(gemini.statusIsWarning ? Color.warn : Color.muted)
-                    Text("Sácala gratis en aistudio.google.com con Get API key. Se queda solo en este iPhone: no va a la nube. Sin internet o sin límite, suena la voz del iPhone.")
+                    Text("Get it free at aistudio.google.com with Get API key. It stays only on this iPhone: it never goes to the cloud. With no internet or no quota left, the iPhone's voice plays.")
                 }
             }
         }
-        .navigationTitle("Voz")
+        .navigationTitle("Voice")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: keyFocused) { _, focused in if !focused { gemini.setKey(keyText) } }
         .onDisappear { gemini.setKey(keyText) }
@@ -54,7 +54,7 @@ struct VoiceSettings: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(v.id).font(.reading().bold()).foregroundStyle(.ink)
-                        Text(v.desc + (soon ? " · preparando" : ""))
+                        Text(v.desc + (soon ? " · " + String(localized: "preparing") : ""))
                             .font(.reading(15, relativeTo: .subheadline))
                             .foregroundStyle(.muted)
                     }
@@ -69,7 +69,7 @@ struct VoiceSettings: View {
             }
             .buttonStyle(.plain)
             .accessibilityAddTraits(on ? .isSelected : [])
-            Button(trying == v.id ? "Creando…" : "Probar") { tryVoice(v.id) }
+            Button(trying == v.id ? "Creating…" : "Try") { tryVoice(v.id) }
                 .buttonStyle(.bordered)
                 .tint(.sky)
                 .disabled(trying != nil)
@@ -77,7 +77,7 @@ struct VoiceSettings: View {
     }
 
     private func askKey() {
-        toast.show("Primero pega tu clave de Gemini")
+        toast.show(String(localized: "First paste your Gemini key"))
         keyFocused = true
     }
 

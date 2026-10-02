@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Afirmaciones or Visualización: the two lists that are edited the same way.
+/// Affirm or Imagine: the two lists that are edited the same way.
 enum ItemsKind: Hashable {
     case affirmations, visualization
 
@@ -11,22 +11,37 @@ enum ItemsKind: Hashable {
         }
     }
 
-    var noun: String {
+    var placeholder: String {
         switch self {
-        case .affirmations: "afirmación"
-        case .visualization: "pregunta"
+        case .affirmations: String(localized: "Write your affirmation")
+        case .visualization: String(localized: "Write the question")
         }
     }
 
-    var placeholder: String {
+    var addLabel: String {
         switch self {
-        case .affirmations: "Escribe tu afirmación"
-        case .visualization: "Escribe la pregunta"
+        case .affirmations: String(localized: "Add affirmation")
+        case .visualization: String(localized: "Add question")
+        }
+    }
+
+    /// "Title of affirmation 2", for VoiceOver.
+    func titleLabel(_ n: Int) -> String {
+        switch self {
+        case .affirmations: String(localized: "Title of affirmation \(n)")
+        case .visualization: String(localized: "Title of question \(n)")
+        }
+    }
+
+    func textLabel(_ n: Int) -> String {
+        switch self {
+        case .affirmations: String(localized: "Text of affirmation \(n)")
+        case .visualization: String(localized: "Text of question \(n)")
         }
     }
 }
 
-/// What's being edited, apart from the settings until Listo.
+/// What's being edited, apart from the settings until Done.
 struct ItemsDraft: Equatable {
     struct Row: Identifiable, Equatable {
         let id = UUID()
@@ -54,8 +69,8 @@ struct ItemsDraft: Equatable {
 }
 
 extension AppStore {
-    /// Saves an edit. Listo on Afirmaciones also counts as this month's review.
-    /// Returns what to say: "Cambios guardados", "Afirmaciones revisadas", or nothing.
+    /// Saves an edit. Done on Affirm also counts as this month's review.
+    /// Returns what to say: "Changes saved", "Affirmations reviewed", or nothing.
     func save(_ draft: ItemsDraft, _ kind: ItemsKind, inReview: Bool) -> String? {
         let due = kind == .affirmations && routine.affirmationReviewDue(reviewed: affReviewed)
         var message: String?
@@ -64,9 +79,9 @@ extension AppStore {
             case .affirmations: setAffirmations(draft.items)
             case .visualization: setVisualization(draft.items, note: draft.note)
             }
-            message = "Cambios guardados"
+            message = String(localized: "Changes saved")
         } else if due {
-            message = "Afirmaciones revisadas"
+            message = String(localized: "Affirmations reviewed")
         }
         if kind == .affirmations { markAffirmationsReviewed() }
         return inReview ? nil : message
@@ -85,15 +100,15 @@ struct ItemsEditor: View {
             Section {
                 ForEach($draft.rows) { $row in
                     VStack(alignment: .leading, spacing: 4) {
-                        TextField("Título (opcional)", text: $row.label)
+                        TextField("Title (optional)", text: $row.label)
                             .font(.reading(15, relativeTo: .subheadline).bold())
                             .foregroundStyle(.muted)
-                            .accessibilityLabel("Título de \(kind.noun) \(number(row))")
+                            .accessibilityLabel(kind.titleLabel(number(row)))
                         TextField(kind.placeholder, text: $row.text, axis: .vertical)
                             .font(.reading())
                             .foregroundStyle(.ink)
                             .focused($focused, equals: row.id)
-                            .accessibilityLabel("Texto de \(kind.noun) \(number(row))")
+                            .accessibilityLabel(kind.textLabel(number(row)))
                     }
                     .padding(.vertical, 4)
                     .deleteDisabled(draft.rows.count == 1)
@@ -108,18 +123,18 @@ struct ItemsEditor: View {
                     draft.rows.append(row)
                     focused = row.id
                 } label: {
-                    Label("Agregar \(kind.noun)", systemImage: "plus.circle.fill")
+                    Label(kind.addLabel, systemImage: "plus.circle.fill")
                         .font(.reading().bold())
                 }
                 .foregroundStyle(.sky)
             }
             if kind == .visualization {
                 Section {
-                    TextField("Opcional", text: $draft.note, axis: .vertical)
+                    TextField("Optional", text: $draft.note, axis: .vertical)
                         .font(.reading())
                         .foregroundStyle(.ink)
                 } header: {
-                    Text("Nota")
+                    Text("Note")
                 }
             }
         }
@@ -130,7 +145,7 @@ struct ItemsEditor: View {
     private func number(_ row: ItemsDraft.Row) -> Int { (draft.rows.firstIndex(of: row) ?? 0) + 1 }
 }
 
-/// Reading: each one with its title, as it's said in Hoy.
+/// Reading: each one with its title, as it's said in Today.
 struct ItemsReader: View {
     let kind: ItemsKind
     let settings: AppSettings
@@ -140,7 +155,7 @@ struct ItemsReader: View {
         CardList {
             Section {
                 if items.isEmpty {
-                    Text(kind == .affirmations ? "Todavía no tienes afirmaciones. Toca Editar para agregarlas." : "Toca Editar para agregar preguntas.")
+                    Text(kind == .affirmations ? "You don't have any affirmations yet. Tap Edit to add them." : "Tap Edit to add questions.")
                         .font(.reading())
                         .foregroundStyle(.muted)
                 }
@@ -152,7 +167,7 @@ struct ItemsReader: View {
                                 .font(.reading(15, relativeTo: .subheadline).bold())
                                 .foregroundStyle(.muted)
                         }
-                        // As it's said in Hoy.
+                        // As it's said in Today.
                         Text(items[i].text)
                             .font(.reading(19, relativeTo: .body))
                             .lineSpacing(3)

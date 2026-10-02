@@ -31,7 +31,7 @@ struct SAVERSApp: App {
 
     /// Everything the app can say today, with the tone it's said in: what Gemini prepares.
     private static func spokenPhrases(_ settings: AppSettings) -> [(String, SpeechTone)] {
-        var out: [(String, SpeechTone)] = [(Exercise.marchCue, .energetic), (Exercise.doneCue, .notice), ("Visualización lista.", .notice)]
+        var out: [(String, SpeechTone)] = [(Exercise.marchCue, .energetic), (Exercise.doneCue, .notice), (Runs.visualizationDoneCue, .notice)]
         for (i, s) in Exercise.steps.enumerated() where i > 0 && !s.rest { out.append((Exercise.cue(i), .energetic)) }
         for (i, s) in Exercise.steps.enumerated() where !s.rest { out.append((Exercise.cueFull(i), .energetic)) }
         out += GuideEvent.words

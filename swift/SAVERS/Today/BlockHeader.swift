@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// "**5:50** · Amanecer" above a block's letters.
+/// "**5:50** · Sunrise" above a block's letters.
 struct BlockHeader: View {
     let head: [String]
-    /// Inside a card ("hechas"), on that card's line.
+    /// Inside a card (the done ones), on that card's line.
     var nested = false
 
     var body: some View {

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// A day opened from Historial. A past day is a record: letters can be marked or unmarked, and only
-/// Escritura opens. A day to come is only what it will be and its hours.
+/// A day opened from History. A past day is a record: steps can be checked or unchecked, and only
+/// Write opens. A day to come is only what it will be and its hours.
 struct DayRecordView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -32,12 +32,12 @@ struct DayRecordView: View {
                     if future && type != .shabbat {
                         DayEditor(ds: ds)
                     } else if type == .shabbat {
-                        RestCard(title: "Shabbat Shalom", text: "Shabbat no tiene registro.")
+                        RestCard(title: "Shabbat Shalom", text: String(localized: "Shabbat has no record."))
                     } else if !showRoutine {
                         RestCard(
-                            title: "Descanso",
-                            text: "Ese día Sunling descansaba. Si igual hiciste tu amanecer, puedes registrarlo.",
-                            button: ("Registrar mi amanecer", { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
+                            title: DayType.off.name,
+                            text: String(localized: "Sunling was resting that day. If you did your sunrise anyway, you can log it."),
+                            button: (String(localized: "Log my sunrise"), { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
                         )
                     } else {
                         letters(r, d)
@@ -89,13 +89,13 @@ struct DayRecordView: View {
                     HStack(spacing: 8) {
                         DayChip(type: type) { sheetDay = ds }
                         if showRoutine {
-                            Text("· \(d.doneCount) de 6")
+                            Text("· \(d.doneCount) of 6")
                                 .font(.reading(15, relativeTo: .subheadline))
                                 .foregroundStyle(.muted)
                         }
                     }
                 } else {
-                    Text("Todavía no amanece")
+                    Text("The sun isn't up yet")
                         .font(.reading(16, relativeTo: .subheadline))
                         .foregroundStyle(.muted)
                 }
@@ -123,7 +123,7 @@ struct DayRecordView: View {
 
     private func card(_ letter: Letter, _ r: Routine, _ d: Day) -> some View {
         var info = r.info(letter, on: ds, reviewDue: false)
-        // A day to look at, not a morning to run again: only Escritura opens.
+        // A day to look at, not a morning to run again: only Write opens.
         info.opens = letter == .escritura
         return LetterCard(
             letter: letter,
@@ -156,7 +156,7 @@ struct DayRecordView: View {
     private func motion(_ a: Animation) -> Animation? { Motion.pick(a, reduce: reduceMotion) }
 }
 
-/// "Día normal ›": what the day is; a button that opens its sheet, except on Shabbat.
+/// "Normal day ›": what the day is; a button that opens its sheet, except on Shabbat.
 struct DayChip: View {
     let type: DayType
     let action: () -> Void
@@ -167,7 +167,7 @@ struct DayChip: View {
         } else {
             Button(action: action) { label(chevron: true) }
                 .buttonStyle(PressScale())
-                .accessibilityLabel("\(type.chipName). Cambiar este día")
+                .accessibilityLabel("\(type.chipName). Change this day")
         }
     }
 

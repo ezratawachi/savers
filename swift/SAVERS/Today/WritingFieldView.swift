@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One field. Filled and not being edited, it reads as text with "✓ Guardado"; empty or editing, three lines.
+/// One field. Filled and not being edited, it reads as text with "✓ Saved"; empty or editing, three lines.
 struct WritingFieldView: View {
     @Environment(AppStore.self) private var store
     let ds: String
@@ -21,7 +21,7 @@ struct WritingFieldView: View {
                     .foregroundStyle(.ink)
                 Spacer(minLength: 8)
                 if !text.isEmpty && !editing {
-                    Text("✓ Guardado")
+                    Text("✓ Saved")
                         .font(.reading(13, relativeTo: .caption))
                         .foregroundStyle(.ok)
                         .accessibilityHidden(true)

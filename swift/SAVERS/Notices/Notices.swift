@@ -3,7 +3,7 @@ import Observation
 import UIKit
 import UserNotifications
 
-/// The four notices, each with its own switch in Ajustes › Notificaciones.
+/// The four notices, each with its own switch in Settings › Notifications.
 enum NoteKind: String, CaseIterable, Identifiable {
     case lectura, leer, dormir, revision
 
@@ -11,19 +11,19 @@ enum NoteKind: String, CaseIterable, Identifiable {
 
     var name: String {
         switch self {
-        case .lectura: "Fin de la lectura"
-        case .leer: "Hora de leer"
-        case .dormir: "Prepararte para dormir"
-        case .revision: "Revisión del mes"
+        case .lectura: String(localized: "End of reading")
+        case .leer: String(localized: "Time to read")
+        case .dormir: String(localized: "Wind down for bed")
+        case .revision: String(localized: "Monthly review")
         }
     }
 
     func about(_ r: Routine) -> String {
         switch self {
-        case .lectura: "Cuando terminan tus minutos, aunque Sunling esté cerrada."
-        case .leer: "Los días de gym, si todavía no leíste."
-        case .dormir: "\(r.windDown) minutos antes de Dormido, de domingo a jueves. Lo cambias en Horario."
-        case .revision: "Afirmaciones y visualización, el primer domingo a las 11:00 am."
+        case .lectura: String(localized: "When your minutes are up, even if Sunling is closed.")
+        case .leer: String(localized: "On gym days, if you haven't read yet.")
+        case .dormir: String(localized: "\(r.windDown) minutes before bedtime, Sunday to Thursday. You change it in Schedule.")
+        case .revision: String(localized: "Affirm and Imagine, the first Sunday at 11:00 am.")
         }
     }
 }
@@ -98,7 +98,7 @@ final class Notices {
     }
 
     func test() async {
-        await LocalNote.schedule(id: "prueba", at: .now, title: "Los avisos funcionan", body: "Así te llegan los avisos de Sunling.")
+        await LocalNote.schedule(id: "prueba", at: .now, title: String(localized: "Notifications work"), body: String(localized: "This is how Sunling's notifications reach you."))
     }
 
     // MARK: Planning
@@ -169,24 +169,25 @@ final class Notices {
         let kind = r.scheduleKind(ds)
         guard let steps = r.settings.schedule?.type(kind)?[.steps], let bedStep = r.bedStep(kind),
               let bed = TimeText.minutes(r.time(of: bedStep, on: ds)) else { return nil }
-        let wakeStep = steps.first { s in ["te paras", "despiert"].contains { s.title?.localizedCaseInsensitiveContains($0) == true } } ?? steps.first
+        let wakeStep = steps.first { s in ["te paras", "despiert", "get up", "wake"].contains { s.title?.localizedCaseInsensitiveContains($0) == true } } ?? steps.first
         let wake = wakeStep.flatMap { TimeText.minutes(r.time(of: $0, on: ds)) }
         // "10:15 pm" is the night before; "12:10 am" would already be the day itself.
         let night0 = bed >= 12 * 60 ? DayKey.adding(-1, to: ds) : ds
-        var body = "Dormido a las \(TimeText.label(bed))."
+        var body = String(localized: "Asleep at \(TimeText.label(bed)).")
         if let wake {
-            body += (kind == .gym ? " Mañana es gym: te paras a las " : " Mañana te paras a las ") + TimeText.label(wake) + "."
+            let up = TimeText.label(wake)
+            body += " " + (kind == .gym ? String(localized: "Tomorrow is gym: you get up at \(up).") : String(localized: "Tomorrow you get up at \(up)."))
         }
-        return PlannedNote(id: "dormir-" + ds, at: at(night0, minute: bed - r.windDown), title: "Hora de prepararte para dormir", body: body)
+        return PlannedNote(id: "dormir-" + ds, at: at(night0, minute: bed - r.windDown), title: String(localized: "Time to wind down for bed"), body: body)
     }
 
-    /// A Lectura that's "Más tarde" that day (the gym days), while it isn't marked.
+    /// A Read that's "Later" that day (the gym days), while it isn't marked.
     static func readNote(_ r: Routine, _ ds: String) -> PlannedNote? {
         guard r.isScheduled(ds), !r.day(ds).isDone(.lectura) else { return nil }
         let kind = r.scheduleKind(ds)
         guard let min = TimeText.minutes(r.laterTime(kind, .lectura, on: ds)) else { return nil }
         let n = r.letterMinutes(.lectura, kind, on: ds)
-        return PlannedNote(id: "leer-" + ds, at: at(ds, minute: min), title: "Hora de leer", body: "Tus \(n) \(n == 1 ? "minuto" : "minutos") de lectura de hoy.")
+        return PlannedNote(id: "leer-" + ds, at: at(ds, minute: min), title: String(localized: "Time to read"), body: String(localized: "Your \(n) minutes of reading for today."))
     }
 
     /// The first Sunday of the month at 11:00; this month's only while it's still ahead and not done.
@@ -202,7 +203,7 @@ final class Notices {
         }
         var at = firstSunday(0)
         if reviewed == DayKey.month(DayKey.of(now)) || at <= now { at = firstSunday(1) }
-        return PlannedNote(id: "revision", at: at, title: "Revisión del mes", body: "¿Tus afirmaciones y tu visualización siguen sintiéndose tuyas?")
+        return PlannedNote(id: "revision", at: at, title: String(localized: "Monthly review"), body: String(localized: "Do your affirmations and your Imagine questions still feel like yours?"))
     }
 }
 

@@ -2,31 +2,33 @@ import AVFoundation
 
 /// How a phrase is said. The ids are the web's, so the clips' names match.
 enum SpeechTone: String {
-    /// Visualización (and the breathing): calm, soft and slow.
+    /// Imagine (and the breathing): calm, soft and slow.
     case calm = "visualizacion"
-    /// Ejercicio: energetic, like a coach.
+    /// Move: energetic, like a coach.
     case energetic = "ejercicio"
-    /// Short notices: "Visualización lista."
+    /// Short notices: "Imagine is done."
     case notice = "aviso"
 
     var id: String { rawValue }
 
-    /// What Gemini is asked for.
+    /// What Gemini is asked for, with the accent of the app's language.
     var style: String {
+        let accent = AppLanguage.isSpanish ? "Mexican Spanish accent." : "Natural American English accent."
         switch self {
-        case .calm: "Mexican Spanish accent. Calm, soft and slow, like a guided meditation, with gentle pauses."
-        case .energetic: "Mexican Spanish accent. Energetic, clear and encouraging, like a coach. Brisk pace."
-        case .notice: "Mexican Spanish accent. Neutral, warm and clear."
+        case .calm: return accent + " Calm, soft and slow, like a guided meditation, with gentle pauses."
+        case .energetic: return accent + " Energetic, clear and encouraging, like a coach. Brisk pace."
+        case .notice: return accent + " Neutral, warm and clear."
         }
     }
 }
 
-/// Spoken cues: Gemini's voice when its clip is on this iPhone, the iPhone's own Spanish voice otherwise, without a word about it.
+/// Spoken cues: Gemini's voice when its clip is on this iPhone, the iPhone's own voice in the app's language otherwise,
+/// without a word about it.
 final class Voice {
     static let shared = Voice()
 
     private let synth = AVSpeechSynthesizer()
-    private lazy var voice: AVSpeechSynthesisVoice? = Self.bestSpanish()
+    private lazy var voice: AVSpeechSynthesisVoice? = Self.bestVoice()
     /// Moves with every cue and every stop, so a delayed cue knows it's been overtaken.
     private(set) var seq = 0
 
@@ -58,13 +60,15 @@ final class Voice {
         ToneEngine.shared.stop(.voice)
     }
 
-    /// Premium or Enhanced first, then Mexican Spanish, then any Spanish.
-    private static func bestSpanish() -> AVSpeechSynthesisVoice? {
-        let spanish = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix("es") }
+    /// In the app's language: Premium or Enhanced first, then Mexican Spanish (or American English), then any.
+    private static func bestVoice() -> AVSpeechSynthesisVoice? {
+        let lang = AppLanguage.code
+        let first = AppLanguage.isSpanish ? ["es-MX", "es-US"] : ["en-US", "en-GB"]
+        let voices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix(lang) }
         func rank(_ v: AVSpeechSynthesisVoice) -> Int {
             let q = v.quality == .premium ? 0 : v.quality == .enhanced ? 1 : 2
-            return q * 10 + (v.language == "es-MX" ? 0 : v.language == "es-US" ? 1 : 2)
+            return q * 10 + (first.firstIndex(of: v.language) ?? first.count)
         }
-        return spanish.min { rank($0) < rank($1) } ?? AVSpeechSynthesisVoice(language: "es-MX")
+        return voices.min { rank($0) < rank($1) } ?? AVSpeechSynthesisVoice(language: first[0])
     }
 }

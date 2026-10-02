@@ -9,7 +9,7 @@ struct SignInBanner: View {
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Entra con Google para cargar tus afirmaciones y horario.")
+                Text("Sign in with Google to load your affirmations and schedule.")
                     .foregroundStyle(.ink)
                 if !error.isEmpty {
                     Text(error).foregroundStyle(.warn)
@@ -18,7 +18,7 @@ struct SignInBanner: View {
             .font(.reading(15, relativeTo: .subheadline))
             .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-            Button("Entrar", action: onSignIn)
+            Button("Sign in", action: onSignIn)
                 .disabled(busy)
                 .font(.reading(16).bold())
                 .foregroundStyle(.sky)

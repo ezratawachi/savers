@@ -1,4 +1,6 @@
-/// What a date is. Normal and gym have the sunrise with their own hours; off (Descanso) has none; Saturday is Shabbat.
+import Foundation
+
+/// What a date is. Normal and gym have the sunrise with their own hours; off (Rest) has none; Saturday is Shabbat.
 enum DayType: String, Sendable {
     case normal, gym, off, shabbat
 
@@ -12,18 +14,18 @@ enum DayType: String, Sendable {
 
     var name: String {
         switch self {
-        case .normal: "Normal"
-        case .gym: "Gym"
-        case .off: "Descanso"
+        case .normal: String(localized: "Normal")
+        case .gym: String(localized: "Gym")
+        case .off: String(localized: "Rest")
         case .shabbat: "Shabbat"
         }
     }
 
     var chipName: String {
         switch self {
-        case .normal: "Día normal"
-        case .gym: "Día de gym"
-        case .off: "Día de descanso"
+        case .normal: String(localized: "Normal day")
+        case .gym: String(localized: "Gym day")
+        case .off: String(localized: "Rest day")
         case .shabbat: "Shabbat"
         }
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// AMANECER from margin to margin, on the night. It fills with amber from the bottom up, a sixth for each
+/// SUNRISE (AMANECER) from margin to margin, on the night. It fills with amber from the bottom up, a sixth for each
 /// step done, with a hard edge. Not a button.
 struct HeroWord: View {
     let day: Day
@@ -15,7 +15,7 @@ struct HeroWord: View {
         // Set big and shrunk to the width, so the word always fills it exactly, at any text size.
         word
             .foregroundStyle(Color.nightLetter)
-            .accessibilityLabel("Amanecer, \(done) de 6")
+            .accessibilityLabel("Sunrise, \(done) of 6")
             .accessibilityAddTraits(.isHeader)
             .overlay {
                 word
@@ -23,7 +23,7 @@ struct HeroWord: View {
                     .mask(alignment: .init(horizontal: .center, vertical: .lastTextBaseline)) {
                         fill(done)
                     }
-                    // With Reducir movimiento the amber fades to its new height instead of rising.
+                    // With Reduce Motion the amber fades to its new height instead of rising.
                     .id(reduceMotion ? done : 0)
                     .transition(.opacity)
                     .accessibilityHidden(true)
@@ -37,7 +37,8 @@ struct HeroWord: View {
     }
 
     private var word: some View {
-        Text(verbatim: "AMANECER")
+        // In capitals, so each sixth of the height is a sixth of the word.
+        Text("SUNRISE")
             .font(.display(200, relativeTo: .largeTitle, weight: .heavy))
             .tracking(-2)
             .lineLimit(1)

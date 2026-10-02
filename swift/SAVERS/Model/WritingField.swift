@@ -1,4 +1,6 @@
-/// Escritura's three fields.
+import Foundation
+
+/// Write's three fields.
 enum WritingField: String, CaseIterable, Identifiable, Sendable {
     case gratitude, bookIdea, notes
 
@@ -6,17 +8,17 @@ enum WritingField: String, CaseIterable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .gratitude: "Agradezco"
-        case .bookIdea: "Del libro"
-        case .notes: "Notas"
+        case .gratitude: String(localized: "Grateful for")
+        case .bookIdea: String(localized: "From the book")
+        case .notes: String(localized: "Notes")
         }
     }
 
     func hint(gym: Bool) -> String {
         switch self {
-        case .gratitude: "algo concreto de ayer y por qué"
-        case .bookIdea: gym ? "una idea de lo que leíste ayer" : "una idea de lo que leíste hoy"
-        case .notes: "opcional"
+        case .gratitude: String(localized: "something specific from yesterday, and why")
+        case .bookIdea: gym ? String(localized: "an idea from what you read yesterday") : String(localized: "an idea from what you read today")
+        case .notes: String(localized: "optional")
         }
     }
 }

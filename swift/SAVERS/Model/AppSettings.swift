@@ -10,13 +10,13 @@ struct AppSettings: Codable, Equatable, Sendable {
     var readApp: String = "libros"
     /// "Notas para la IA": what the app doesn't know (work, what never moves, goals). Always in the packet.
     var aiNotes: String = ""
-    /// The line under Respira, in your words ("Daily Calm"). Empty: the app's own.
+    /// The line under Breathe, in your words ("Daily Calm"). Empty: the app's own.
     var breatheNote: String = ""
 
     static let readApps = ["libros", "kindle", "papel"]
-    static let breatheDefault = "Medita, reza o solo respira"
+    static var breatheDefault: String { String(localized: "Meditate, pray or breathe") }
 
-    /// What Respira's card says under its name.
+    /// What Breathe's card says under its name.
     var breatheLine: String { breatheNote.isEmpty ? Self.breatheDefault : breatheNote }
 
     init() {}

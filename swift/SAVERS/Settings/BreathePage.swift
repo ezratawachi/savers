@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ajustes › Respira: the line its card shows under the name, in your words.
+/// Settings › Breathe: the line its card shows under the name, in your words.
 struct BreathePage: View {
     @Environment(AppStore.self) private var store
     @State private var note = ""
@@ -12,14 +12,14 @@ struct BreathePage: View {
                 TextField(AppSettings.breatheDefault, text: $note)
                     .focused($focused)
                     .submitLabel(.done)
-                    .accessibilityLabel("Debajo de Respira")
+                    .accessibilityLabel("Under \(Letter.silencio.name)")
             } header: {
-                Text("Debajo de Respira")
+                Text("Under \(Letter.silencio.name)")
             } footer: {
-                Text("Cómo respiras, meditas o rezas cada mañana: una app, una oración, un lugar. Vacío, dice «\(AppSettings.breatheDefault)».")
+                Text("How you breathe, meditate or pray each morning: an app, a prayer, a place. Left empty, it says “\(AppSettings.breatheDefault)”.")
             }
         }
-        .navigationTitle("Respira")
+        .navigationTitle(Letter.silencio.name)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { note = store.settings.breatheNote }
         .onChange(of: note) { _, new in

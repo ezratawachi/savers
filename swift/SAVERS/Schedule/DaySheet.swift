@@ -14,11 +14,11 @@ struct DaySheet: View {
                     .padding(.vertical, 12)
             }
             .background(.bg)
-            .navigationTitle(ds == store.today ? "Hoy" : DayKey.short(ds))
+            .navigationTitle(ds == store.today ? String(localized: "Today") : DayKey.short(ds))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Listo") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }

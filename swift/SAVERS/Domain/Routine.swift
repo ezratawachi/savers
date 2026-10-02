@@ -48,10 +48,10 @@ struct Routine {
         return time(of: step, on: ds)
     }
 
-    /// "Dormido": the night's step that says so, or its last one.
+    /// "Dormido" (asleep): the night's step that says so, in either language, or its last one.
     func bedStep(_ kind: DayType) -> Step? {
         let night = settings.schedule?.type(kind)?[.night] ?? []
-        return night.first { $0.title?.localizedCaseInsensitiveContains("dorm") == true } ?? night.last
+        return night.first { st in ["dorm", "sleep", "bed"].contains { st.title?.localizedCaseInsensitiveContains($0) == true } } ?? night.last
     }
 
     static let usualWindDown = 45
@@ -122,7 +122,7 @@ struct Routine {
             add(st.id ?? "s\(i)", [time(of: st, on: ds), st.label], st.letterKeys, isLater: false)
         }
         for (i, st) in (t?[.later] ?? []).enumerated() {
-            add(st.id ?? "l\(i)", ["Más tarde", time(of: st, on: ds)], st.letterKeys, isLater: true)
+            add(st.id ?? "l\(i)", [String(localized: "Later"), time(of: st, on: ds)], st.letterKeys, isLater: true)
         }
         add("rest", nil, Letter.allCases, isLater: false)
         return morning + later

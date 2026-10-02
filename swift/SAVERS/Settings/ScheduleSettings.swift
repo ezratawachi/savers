@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ajustes › Horario: what each weekday is, and the usual hours of Normal and Gym. Changes as you tap,
+/// Settings › Schedule: what each weekday is, and the usual hours of Normal and Gym. Changes as you tap,
 /// like iOS Settings.
 struct ScheduleSettings: View {
     @Environment(AppStore.self) private var store
@@ -24,32 +24,32 @@ struct ScheduleSettings: View {
                         .tint(.muted)
                     }
                 }
-                LabeledContent("Sábado", value: "Shabbat")
+                LabeledContent(Weekday.names[6].capitalizedFirst, value: "Shabbat")
             } header: {
-                Text("Días")
+                Text("Days")
             } footer: {
-                Text("Para un solo día, como un feriado o un gym cancelado, tócalo en Hoy o en Historial.")
+                Text("For a single day, like a holiday or a cancelled gym, tap it in Today or in History.")
             }
 
             if kinds.isEmpty {
-                Section("Horas") {
-                    Text("Tus horas se cargan al entrar con Google.")
+                Section("Hours") {
+                    Text("Your hours load when you sign in with Google.")
                         .foregroundStyle(.muted)
                 }
             } else {
                 Section {
                     if kinds.count > 1 {
                         SegmentedChoice(
-                            label: "Horario",
+                            label: String(localized: "Schedule"),
                             options: kinds.map { k in
                                 let ws = r.days(of: k)
-                                return .init(id: k, title: k.name, note: ws.isEmpty ? "ningún día" : Weekday.list(ws))
+                                return .init(id: k, title: k.name, note: ws.isEmpty ? String(localized: "no days") : Weekday.list(ws))
                             },
                             selection: Binding { shown } set: { tab = $0 }
                         )
                     }
                 } header: {
-                    Text("Horas")
+                    Text("Hours")
                 }
                 .cardPlain()
                 ForEach(r.stepLines(shown), id: \.group) { g in
@@ -61,13 +61,13 @@ struct ScheduleSettings: View {
                         if let title = g.group.title { Text(title) }
                     } footer: {
                         if g.group == TypeSchedule.Group.allCases.last(where: { r.settings.schedule?.type(shown)?[$0].isEmpty == false }) {
-                            Text("Toca una hora para cambiarla en todos los días de \(shown.name) o solo en uno. Los minutos de Respira y Lee, igual.")
+                            Text("Tap an hour to change it on every \(shown.name) day or on just one. The same goes for the minutes of \(Letter.silencio.name) and \(Letter.lectura.name).")
                         }
                     }
                 }
             }
         }
-        .navigationTitle("Horario")
+        .navigationTitle("Schedule")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Opens on the kind today is, the first time.
@@ -111,7 +111,7 @@ struct ScheduleSettings: View {
             Button {
                 editing = .windDown
             } label: {
-                SettingsRow(title: "Prepararte", detail: info, chevron: true, sub: true)
+                SettingsRow(title: String(localized: "Wind down"), detail: info, chevron: true, sub: true)
             }
             .cardRow()
         }
@@ -137,7 +137,7 @@ enum ScheduleEdit: Identifiable {
     }
 }
 
-/// "Te paras · 5:20 · jue 5:10 ›"; a letter under its block is indented.
+/// "Get up · 5:20 · Thu 5:10 ›"; a step under its block is indented.
 struct SettingsRow: View {
     let title: String
     let detail: String

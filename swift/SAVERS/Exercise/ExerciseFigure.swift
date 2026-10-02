@@ -68,25 +68,30 @@ struct ExerciseFigure: View {
 
     private func frame(at date: Date) -> Frame {
         let spec = FigSpec.of(fig)
-        if case .ready = mode { return Frame(params: spec.start, label: "Prepárate", trails: 0) }
-        if reduceMotion { return Frame(params: spec.still, label: "Así se hace", trails: 1) }
+        if case .ready = mode { return Frame(params: spec.start, label: Self.getReady, trails: 0) }
+        if reduceMotion { return Frame(params: spec.still, label: Self.howTo, trails: 1) }
         switch mode {
         case .loop:
-            return Frame(params: FigMotion.march(date.timeIntervalSinceReferenceDate), label: "Sube una rodilla, luego la otra", trails: 0)
+            return Frame(params: FigMotion.march(date.timeIntervalSinceReferenceDate), label: Self.marching, trails: 0)
         case let .guided(i):
             guard let plan = GuidePlan(step: i), let el = elapsed(date) else {
-                return Frame(params: spec.still, label: "Así se hace", trails: 1)
+                return Frame(params: spec.still, label: Self.howTo, trails: 1)
             }
             let t = el - Runs.stepStart(Exercise.runSteps, i) - plan.guide.lead
-            guard t >= 0 else { return Frame(params: spec.start, label: "Prepárate", trails: 1) }
+            guard t >= 0 else { return Frame(params: spec.start, label: Self.getReady, trails: 1) }
             let rep = Int(t / plan.cycle), tc = t - Double(rep) * plan.cycle
             var p = FigMotion.rep(fig, plan.d, min(tc, plan.cycle), start: spec.start)
             if plan.guide.sides { p.side = rep % 2 == 1 ? -1 : 1 }
             return Frame(params: p, label: plan.guide.phases[plan.phase(at: tc)].word, trails: 1)
         case .ready:
-            return Frame(params: spec.start, label: "Prepárate", trails: 0)
+            return Frame(params: spec.start, label: Self.getReady, trails: 0)
         }
     }
+
+    // Asked for on every frame, so looked up once.
+    private static let getReady = String(localized: "Get ready")
+    private static let howTo = String(localized: "This is how")
+    private static let marching = String(localized: "One knee up, then the other")
 }
 
 /// The pictogram itself: floor, chair, dotted paths, far limbs, body, head, near limbs.

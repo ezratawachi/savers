@@ -1,11 +1,22 @@
 import Foundation
 
-/// Weekdays as the schedule writes them: 0 = Sunday … 6 = Saturday, keys "dom" … "sáb".
+/// Weekdays as the schedule writes them: 0 = Sunday … 6 = Saturday, keys "dom" … "sáb". What's shown comes
+/// from the app's language.
 enum Weekday {
+    /// How the data names them, in any language: never shown.
     static let keys = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"]
-    static let names = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
+    /// "domingo", "Sunday"
+    static let names: [String] = (symbols.standaloneWeekdaySymbols ?? []).map { AppLanguage.isSpanish ? $0.lowercased() : $0 }
+    /// "dom", "Sun"
+    static let short: [String] = symbols.shortStandaloneWeekdaySymbols ?? keys
     /// The calendar's column heads.
-    static let letters = ["D", "L", "M", "M", "J", "V", "S"]
+    static let letters: [String] = symbols.veryShortStandaloneWeekdaySymbols ?? []
+
+    private static var symbols: DateFormatter {
+        let f = DateFormatter()
+        f.locale = AppLanguage.locale
+        return f
+    }
 
     /// "Mié", "miercoles", "MIE." → "mie": how two day keys are compared.
     static func plain(_ s: String) -> String {
@@ -25,15 +36,16 @@ enum Weekday {
         return dict.keys.first { plain($0) == p }
     }
 
-    /// "los jueves", "los domingos"
+    /// "los jueves", "Thursdays"
     static func plural(_ w: Int) -> String {
         let n = names[w]
+        guard AppLanguage.isSpanish else { return n + "s" }
         return "los " + n + (n.hasSuffix("s") ? "" : "s")
     }
 
     /// "los lunes y los jueves"
-    static func plurals(_ ws: [Int]) -> String { ws.map(plural).joined(separator: " y ") }
+    static func plurals(_ ws: [Int]) -> String { AppLanguage.list(ws.map(plural)) }
 
     /// "lun, mar, jue"
-    static func list(_ ws: [Int]) -> String { ws.map { keys[$0] }.joined(separator: ", ") }
+    static func list(_ ws: [Int]) -> String { ws.map { short[$0] }.joined(separator: ", ") }
 }

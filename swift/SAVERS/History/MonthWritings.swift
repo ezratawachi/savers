@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Lo que escribiste": the month's days with something written, newest first, read in full. Days with
+/// "What you wrote": the month's days with something written, newest first, read in full. Days with
 /// only their letters are in the suns above; tapping a day here opens it too.
 struct MonthWritings: View {
     @Environment(AppStore.self) private var store
@@ -12,18 +12,22 @@ struct MonthWritings: View {
             WritingField.allCases.contains { !(store.days[ds]?[$0].isEmpty ?? true) }
         }
         if list.isEmpty {
-            Text(month.first > store.today
-                 ? "Este mes todavía no llega. Toca un día para preparar su horario."
-                 : "Lo que escribas en Escribe va a aparecer aquí.")
-                .font(.reading())
-                .foregroundStyle(.muted)
+            Group {
+                if month.first > store.today {
+                    Text("This month hasn't come yet. Tap a day to plan its hours.")
+                } else {
+                    Text("Your words from \(Letter.escritura.name) will show up here.")
+                }
+            }
+            .font(.reading())
+            .foregroundStyle(.muted)
         } else {
             VStack(spacing: 10) {
                 ForEach(list, id: \.self) { ds in
                     Button { onOpen(ds) } label: { entry(ds, store.routine.day(ds)) }
                         .buttonStyle(PressScale(scale: 0.98))
-                        .accessibilityLabel("Lo que escribiste el \(DayKey.long(ds).lowercased())")
-                        .accessibilityHint("Abre ese día")
+                        .accessibilityLabel("What you wrote on \(DayKey.long(ds).inSentence)")
+                        .accessibilityHint("Opens that day")
                 }
             }
         }

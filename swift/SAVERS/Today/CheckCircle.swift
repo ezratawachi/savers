@@ -30,7 +30,7 @@ struct CheckCircle: View {
             .contentShape(.circle)
         }
         .buttonStyle(PressScale(scale: 0.9))
-        .accessibilityLabel("Marcar \(letter.name)")
+        .accessibilityLabel("Check off \(letter.name)")
         .accessibilityAddTraits(done ? .isSelected : [])
     }
 }

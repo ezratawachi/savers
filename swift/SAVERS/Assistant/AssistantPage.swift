@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ajustes › Hablar con una IA: notes it always gets, what to talk about, sending it all, and pasting back
+/// Settings › Talk with an AI: notes it always gets, what to talk about, sending it all, and pasting back
 /// the changes it gives.
 struct AssistantPage: View {
     @Environment(AppStore.self) private var store
@@ -15,30 +15,30 @@ struct AssistantPage: View {
     var body: some View {
         CardList {
             Section {
-                TextField("Mi trabajo, lo que no se mueve, lo que quiero lograr", text: $notes, axis: .vertical)
+                TextField("My work, what never moves, what I want to achieve", text: $notes, axis: .vertical)
                     .lineLimit(3...)
                     .focused($notesFocused)
-                    .accessibilityLabel("Notas para la IA")
+                    .accessibilityLabel("Notes for the AI")
             } header: {
-                Text("Notas para la IA")
+                Text("Notes for the AI")
             } footer: {
-                Text("Lo que la app no sabe de ti. Van siempre.")
+                Text("What the app doesn't know about you. They always go along.")
             }
 
             Section {
-                TextField("Opcional. Por ejemplo: no me alcanza el tiempo para leer", text: $question, axis: .vertical)
+                TextField("Optional. For example: I don't have enough time to read", text: $question, axis: .vertical)
                     .lineLimit(2...)
-                    .accessibilityLabel("De qué quieres hablar")
-                ShareLink(item: AIPacket.text(store.routine, question: question), preview: SharePreview("Mi amanecer en Sunling")) {
-                    Label("Mandar a la IA", systemImage: "square.and.arrow.up")
+                    .accessibilityLabel("What you want to talk about")
+                ShareLink(item: AIPacket.text(store.routine, question: question), preview: SharePreview(String(localized: "My sunrise in Sunling"))) {
+                    Label("Send to an AI", systemImage: "square.and.arrow.up")
                         .fontWeight(.bold)
                 }
                 .foregroundStyle(.sky)
                 .cardRow()
             } header: {
-                Text("¿De qué quieres hablar?")
+                Text("What do you want to talk about?")
             } footer: {
-                Text("Se manda con instrucciones, tu horario, tus afirmaciones, tu visualización, tus notas y lo que marcaste en las últimas \(AIPacket.weeks) semanas. Lo que escribes en Escribe, no.")
+                Text("It goes with instructions, your schedule, your affirmations, your Imagine questions, your notes and what you checked off in the last \(AIPacket.weeks) weeks. Not what you write in \(Letter.escritura.name).")
             }
 
             Section {
@@ -50,36 +50,36 @@ struct AssistantPage: View {
                 .tint(.sky)
                 .labelStyle(.titleAndIcon)
             } header: {
-                Text("Cambios de la IA")
+                Text("Changes from the AI")
             } footer: {
-                Text("Cuando aceptes lo que te propone, la IA te da un bloque de cambios. Copia su respuesta entera y toca Pegar: ves cada cambio antes de aplicarlo.")
+                Text("When you accept what it suggests, the AI gives you a change block. Copy its whole reply and tap Paste: you see each change before it's applied.")
             }
 
             if store.aiUndo != nil {
                 Section {
-                    Button("Deshacer los últimos cambios de la IA", role: .destructive) { askingUndo = true }
+                    Button("Undo the AI's last changes", role: .destructive) { askingUndo = true }
                         .foregroundStyle(.warn)
                         .cardRow()
                 }
             }
         }
-        .navigationTitle("Hablar con una IA")
-        .confirmationDialog("¿Deshacer los últimos cambios de la IA?", isPresented: $askingUndo, titleVisibility: .visible) {
-            Button("Deshacer cambios", role: .destructive) {
+        .navigationTitle("Talk with an AI")
+        .confirmationDialog("Undo the AI's last changes?", isPresented: $askingUndo, titleVisibility: .visible) {
+            Button("Undo changes", role: .destructive) {
                 store.undoAI()
-                toast.show("Cambios deshechos")
+                toast.show(String(localized: "Changes undone"))
             }
         } message: {
             Text(store.aiUndo?.changedSince(settings: store.settings, days: store.days) == true
-                 ? "Todo vuelve a como estaba antes de aplicarlos. También se pierde lo que cambiaste después."
-                 : "Todo vuelve a como estaba antes de aplicarlos.")
+                 ? "Everything goes back to how it was before they were applied. What you changed afterwards is lost too."
+                 : "Everything goes back to how it was before they were applied.")
         }
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $proposal) { ChangesSheet(proposal: $0) }
         .onAppear {
             notes = store.settings.aiNotes
             #if DEBUG
-            // `-pegar archivo`: what a tap on Pegar would bring, since the simulator can't tap it.
+            // `-pegar archivo`: what a tap on Paste would bring, since the simulator can't tap it.
             if let path = Scenario.packetPath {
                 try? AIPacket.text(store.routine, question: question).write(toFile: path, atomically: true, encoding: .utf8)
             }
@@ -107,7 +107,7 @@ struct AssistantPage: View {
         do {
             let p = try AIProposal(text: text, routine: store.routine)
             if p.changes.isEmpty && p.problems.isEmpty {
-                toast.show("Esos cambios ya están en tu app")
+                toast.show(String(localized: "Those changes are already in your app"))
             } else {
                 proposal = p
             }

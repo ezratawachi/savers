@@ -17,13 +17,13 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $tab) {
-            Tab("Hoy", systemImage: "sun.horizon", value: .today) {
+            Tab("Today", systemImage: "sun.horizon", value: .today) {
                 TodayView()
             }
-            Tab("Historial", systemImage: "calendar", value: .history) {
+            Tab("History", systemImage: "calendar", value: .history) {
                 HistoryView(opened: historyOpened)
             }
-            Tab("Ajustes", systemImage: "gearshape", value: .settings) {
+            Tab("Settings", systemImage: "gearshape", value: .settings) {
                 SettingsView()
             }
         }

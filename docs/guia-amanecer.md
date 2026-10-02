@@ -80,25 +80,35 @@ Reglas para todas las sesiones:
   *Tú pruebas:* tu mañana normal. Ves "Amanecer" llenarse con cada paso, los nombres nuevos y, en un día libre,
   "Sunling descansa hoy". Abre también la web de la Mac y revisa que tu horario se vea bien.
 
-- [ ] **2. Inglés como idioma base**
+- [x] **2. Inglés como idioma base**
+
+  > **Hecha el 2026-10-02.** El código está en inglés y `SAVERS/Resources/Localizable.xcstrings` tiene el español
+  > de los 452 textos, con plurales ("1 sunrise / 6 sunrises", "1 amanecer / 6 amaneceres"). En español la app
+  > dice exactamente lo mismo que antes, y las frases de la voz no cambiaron, así que Gemini no rehace nada.
+  > Los días y las fechas salen del idioma del iPhone ("Friday, Oct 2"); en español se conservan los formatos de
+  > siempre ("Viernes 2 oct"). La voz del iPhone y el acento que se le pide a Gemini siguen el idioma de la app.
+  > La IA: decidido contigo que el JSON va en el idioma de la app ("hours", "dates", "type" en inglés) y que al
+  > pegar se entienden las dos lenguas. Para revisar traducciones después de compilar:
+  > `python3 swift/tools/traducciones.py` (dice qué texto no tiene español y cuál sobra). `/probar` abre en
+  > español como tu iPhone; con `--en` abre en inglés, con datos inventados en inglés.
 
   **Configuración**
-  - [ ] **El archivo de traducciones:** un `Localizable.xcstrings` con el inglés como idioma de desarrollo y el
+  - [x] **El archivo de traducciones:** un `Localizable.xcstrings` con el inglés como idioma de desarrollo y el
     español completo, más `CFBundleDevelopmentRegion` en `en`.
 
   **Qué se traduce**
-  - [ ] **Todos los textos visibles**, incluidos los de los permisos y los avisos.
-  - [ ] **Plurales:** "1 sunrise / N sunrises" y "1 amanecer / N amaneceres".
-  - [ ] **Fechas y días:** `Weekday.names` y `DayKey` tienen los días en español escritos a mano; tienen que salir
+  - [x] **Todos los textos visibles**, incluidos los de los permisos y los avisos.
+  - [x] **Plurales:** "1 sunrise / N sunrises" y "1 amanecer / N amaneceres".
+  - [x] **Fechas y días:** `Weekday.names` y `DayKey` tienen los días en español escritos a mano; tienen que salir
     del idioma del iPhone.
-  - [ ] **Los pasos y el título:** Breathe, Affirm, Imagine, Move, Read, Write, con las iniciales B A I M R W. El
+  - [x] **Los pasos y el título:** Breathe, Affirm, Imagine, Move, Read, Write, con las iniciales B A I M R W. El
     título dice "Sunrise" en inglés y "Amanecer" en español; en cada idioma se ajusta al ancho.
-  - [ ] **La IA:** el paquete sale en el idioma de la app. Decidir contigo si las claves del JSON (`horas`,
+  - [x] **La IA:** el paquete sale en el idioma de la app. Decidir contigo si las claves del JSON (`horas`,
     `fechas`, `tipo`) aceptan las dos lenguas.
 
   **Cierre**
-  - [ ] Probar el simulador en inglés (`-AppleLanguages (en)`) y en español.
-  - [ ] Instalar en el iPhone.
+  - [x] Probar el simulador en inglés (`-AppleLanguages (en)`) y en español.
+  - [x] Instalar en el iPhone.
 
   *Tú pruebas:* nada debería cambiar en tu iPhone, que sigue en español. Si quieres, cambia el idioma del iPhone a
   inglés un rato para verla.

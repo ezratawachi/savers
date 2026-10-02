@@ -20,10 +20,10 @@ final class GeminiVoice {
     }
 
     static let voices = [
-        Choice(id: "Sulafat", desc: "Mujer · cálida"),
-        Choice(id: "Vindemiatrix", desc: "Mujer · suave"),
-        Choice(id: "Achird", desc: "Hombre · amable"),
-        Choice(id: "Algieba", desc: "Hombre · sereno"),
+        Choice(id: "Sulafat", desc: String(localized: "Woman · warm")),
+        Choice(id: "Vindemiatrix", desc: String(localized: "Woman · soft")),
+        Choice(id: "Achird", desc: String(localized: "Man · kind")),
+        Choice(id: "Algieba", desc: String(localized: "Man · serene")),
     ]
 
     static let model = "gemini-3.8-flash-tts"
@@ -111,14 +111,14 @@ final class GeminiVoice {
 
     /// "Probar" reads your first visualization question in that voice. Returns what went wrong, in plain words.
     func tryVoice(_ v: String) async -> String? {
-        guard hasKey else { return "Primero pega tu clave de Gemini" }
-        let text = phrases().first { $0.1 == .calm }?.0 ?? "Buenos días. Esta es tu voz para Sunling."
+        guard hasKey else { return String(localized: "First paste your Gemini key") }
+        let text = phrases().first { $0.1 == .calm }?.0 ?? String(localized: "Good morning. This is your voice for Sunling.")
         let k = Self.clipKey(text, .calm, v)
         do {
             if !FileManager.default.fileExists(atPath: Self.file(k).path) {
                 try await make(text, .calm, v)
             }
-            guard let data = try? Data(contentsOf: Self.file(k)), let clip = Self.decodeWAV(data) else { return "Gemini no respondió. Mientras, suena la voz del iPhone." }
+            guard let data = try? Data(contentsOf: Self.file(k)), let clip = Self.decodeWAV(data) else { return String(localized: "Gemini didn't answer. Meanwhile, the iPhone's voice plays.") }
             Voice.shared.stop()
             ToneEngine.shared.clip(clip)
             return nil
@@ -259,22 +259,23 @@ final class GeminiVoice {
     }
 
     func message(_ e: TTSError?) -> String {
-        guard let e, !e.offline else { return "Sin conexión. Prueba cuando tengas internet." }
-        if e.status == 429 && (e.daily || Date.now < dailyHold) { return "Ya se usó el límite gratis de hoy. Mañana puedes probar más voces." }
-        if e.status == 429 { return "Google pide una pausa. Espera un minuto y vuelve a probar." }
-        if e.status == 401 || e.status == 403 || e.reason.contains("API_KEY") { return "La clave no funciona. Revisa que esté completa." }
-        return "Gemini no respondió" + (e.status.map { " (código \($0))" } ?? "") + ". Mientras, suena la voz del iPhone."
+        guard let e, !e.offline else { return String(localized: "No connection. Try when you have internet.") }
+        if e.status == 429 && (e.daily || Date.now < dailyHold) { return String(localized: "Today's free quota is used up. Tomorrow you can try more voices.") }
+        if e.status == 429 { return String(localized: "Google asks for a pause. Wait a minute and try again.") }
+        if e.status == 401 || e.status == 403 || e.reason.contains("API_KEY") { return String(localized: "The key doesn't work. Check that it's complete.") }
+        return e.status.map { String(localized: "Gemini didn't answer (code \($0)). Meanwhile, the iPhone's voice plays.") }
+            ?? String(localized: "Gemini didn't answer. Meanwhile, the iPhone's voice plays.")
     }
 
     var statusText: String {
-        guard hasKey else { return "Sin clave, suena la voz del iPhone." }
+        guard hasKey else { return String(localized: "Without a key, the iPhone's voice plays.") }
         if !error.isEmpty { return error }
         let n = total
-        guard n > 0 else { return "Preparando las frases…" }
-        var t = !nextVoice.isEmpty ? "\(nextVoice) se está preparando: \(nextReady) de \(n) frases. Mientras, suena \(voice)."
-            : ready == n ? "Las \(n) frases están listas en este iPhone."
-            : "\(ready) de \(n) frases listas. Las que faltan suenan con la voz del iPhone."
-        if daily && (!nextVoice.isEmpty || ready < n) { t += " Se acabó el límite gratis de hoy: mañana se completan." }
+        guard n > 0 else { return String(localized: "Preparing the phrases…") }
+        var t = !nextVoice.isEmpty ? String(localized: "\(nextVoice) is being prepared: \(nextReady) of \(n) phrases. Meanwhile, \(voice) plays.")
+            : ready == n ? String(localized: "All \(n) phrases are ready on this iPhone.")
+            : String(localized: "\(ready) of \(n) phrases ready. The rest play in the iPhone's voice.")
+        if daily && (!nextVoice.isEmpty || ready < n) { t += " " + String(localized: "Today's free quota ran out: they'll be finished tomorrow.") }
         return t
     }
 

@@ -1,7 +1,7 @@
 import AuthenticationServices
 import SwiftUI
 
-/// Hoy: the day's guide. Letters by the schedule's blocks, "Ahora" on the first one left, and the two finishes.
+/// Today: the day's guide. Steps by the schedule's blocks, "Now" on the first one left, and the two finishes.
 struct TodayView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
@@ -69,7 +69,7 @@ struct TodayView: View {
                         case .shabbat:
                             EmptyView()
                         case .free:
-                            Button("Empezar mi amanecer") {
+                            Button("Start my sunrise") {
                                 withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) }
                             }
                             .buttonStyle(PrimaryButton())
@@ -136,7 +136,7 @@ struct TodayView: View {
         }
         VStack(alignment: .leading, spacing: 8) {
             if !folded.isEmpty {
-                let label = fin == .day && blocks.contains(where: \.isLater) ? "Todo el día" : "Mañana"
+                let label = fin == .day && blocks.contains(where: \.isLater) ? String(localized: "All day") : String(localized: "Morning")
                 FoldCard(label: label, count: folded.reduce(0) { $0 + $1.letters.count }, isOpen: $foldOpen) {
                     blockList(folded, routine, ds: ds, day: day, nested: true)
                 }
@@ -217,24 +217,24 @@ struct TodayView: View {
         }
     }
 
-    /// The quiet line under the title. The streak shows from two days, and not while "Día completo" says it.
+    /// The quiet line under the title. The streak shows from two days, and not while "Day complete" says it.
     private func note(_ title: TodayHeader.Title, _ routine: Routine) -> String? {
         switch title {
-        case .shabbat: return "Nos vemos el domingo"
-        case .free: return "Sunling descansa hoy"
+        case .shabbat: return String(localized: "See you on Sunday")
+        case .free: return String(localized: "Sunling rests today")
         case .letters:
             let streak = routine.streak()
-            return streak >= 2 && shownFinish != .day ? "\(streak) amaneceres seguidos" : nil
+            return streak >= 2 && shownFinish != .day ? String(localized: "\(streak) sunrises in a row") : nil
         }
     }
 
-    /// "Lectura a las 8:50 pm": what "Más tarde" still holds.
+    /// "Read at 8:50 pm": what "Later" still holds.
     private func pending(_ blocks: [Block], _ day: Day) -> String {
         blocks.filter(\.isLater).compactMap { b -> String? in
-            let names = b.letters.filter { !day.isDone($0) }.map(\.name)
+            let names = AppLanguage.list(b.letters.filter { !day.isDone($0) }.map(\.name))
             guard !names.isEmpty else { return nil }
-            let at = b.head.flatMap { $0.count > 1 && !$0[1].isEmpty ? " a las \($0[1])" : nil } ?? ""
-            return names.joined(separator: " y ") + at
+            guard let head = b.head, head.count > 1, !head[1].isEmpty else { return names }
+            return String(localized: "\(names) at \(head[1])")
         }.joined(separator: ", ")
     }
 
@@ -286,7 +286,7 @@ struct TodayView: View {
         withAnimation(motion(Motion.spring)) { proxy.scrollTo(now, anchor: UnitPoint(x: 0.5, y: 0.04)) }
     }
 
-    /// "Hora de leer" opens Lectura ready to start; the monthly review opens Afirmaciones to edit.
+    /// "Time to read" opens Read ready to start; the monthly review opens Affirm to edit.
     private func openTapped(proxy: ScrollViewProxy) async {
         guard let id = notices.tapped else { return }
         notices.tapped = nil

@@ -18,7 +18,7 @@ struct DayEditor: View {
 
         VStack(alignment: .leading, spacing: 18) {
             SegmentedChoice(
-                label: "Este día es",
+                label: String(localized: "This day is"),
                 options: DayType.choosable.map { .init(id: $0, title: $0.name, note: $0 == r.weekType(w) ? Weekday.plural(w) : nil) },
                 selection: Binding { type } set: { new in
                     picking = nil
@@ -26,15 +26,15 @@ struct DayEditor: View {
                 }
             )
             if type == .off {
-                Note("Este día Sunling descansa: no corta tus amaneceres seguidos.")
+                Note(String(localized: "Sunling rests this day: it doesn't break your sunrises in a row."))
             } else if let t = r.settings.schedule?.type(type) {
                 timeline(r, t, editable: editable)
                 minutes(r, type, editable: editable)
                 if editable {
                     VStack(alignment: .leading, spacing: 4) {
-                        Note("Lo que cambies aquí es solo para este día.")
+                        Note(String(localized: "What you change here is just for this day."))
                         if r.dateEdited(ds) {
-                            Button("Volver a lo de siempre") {
+                            Button("Back to the usual") {
                                 withAnimation(motion) {
                                     picking = nil
                                     store.resetDate(ds)
@@ -47,7 +47,7 @@ struct DayEditor: View {
                     }
                 }
             } else {
-                Note("Tu horario se carga al entrar con Google.")
+                Note(String(localized: "Your schedule loads when you sign in with Google."))
             }
         }
     }
@@ -86,7 +86,7 @@ struct DayEditor: View {
                 timeCell(time.isEmpty ? "—" : time, edited: edited, open: picking == id, editable: editable) {
                     toggle(id)
                 }
-                .accessibilityLabel("Hora de \(st.title ?? ""), \(time)\(edited ? ", cambiada para este día" : "")")
+                .accessibilityLabel(edited ? "Time of \(st.title ?? ""), \(time), changed for this day" : "Time of \(st.title ?? ""), \(time)")
                 VStack(alignment: .leading, spacing: 2) {
                     Text(st.title ?? "")
                         .font(.reading().bold())
@@ -119,7 +119,7 @@ struct DayEditor: View {
                 }
             }
             if picking == id {
-                TimeWheel(label: "Hora de \(st.title ?? "")", time: time) { store.setDateTime(ds, stepID: id, $0) }
+                TimeWheel(label: String(localized: "Time of \(st.title ?? "")"), time: time) { store.setDateTime(ds, stepID: id, $0) }
                     .frame(maxWidth: .infinity)
                     .transition(.opacity)
             }
@@ -130,16 +130,16 @@ struct DayEditor: View {
 
     private func minutes(_ r: Routine, _ type: DayType, editable: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            GroupTitle(text: "Minutos")
+            GroupTitle(text: String(localized: "Minutes"))
             ForEach([Letter.silencio, .lectura]) { l in
                 let n = r.minutesOn(type, l, on: ds)
                 let edited = Routine.valid(store.days[ds]?.mins?[l.rawValue]) != nil
                 VStack(spacing: 0) {
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        timeCell("\(n) min", edited: edited, open: picking == l.rawValue, editable: editable) {
+                        timeCell(String(localized: "\(n) min"), edited: edited, open: picking == l.rawValue, editable: editable) {
                             toggle(l.rawValue)
                         }
-                        .accessibilityLabel("Minutos de \(l.name), \(n)\(edited ? ", cambiados para este día" : "")")
+                        .accessibilityLabel(edited ? "Minutes of \(l.name), \(n), changed for this day" : "Minutes of \(l.name), \(n)")
                         Text(l.name)
                             .font(.reading().bold())
                             .foregroundStyle(.ink)
@@ -148,7 +148,7 @@ struct DayEditor: View {
                     }
                     .padding(.vertical, 7)
                     if picking == l.rawValue {
-                        MinutesWheel(label: "Minutos de \(l.name)", minutes: n) { store.setDateMinutes(ds, l, $0) }
+                        MinutesWheel(label: String(localized: "Minutes of \(l.name)"), minutes: n) { store.setDateMinutes(ds, l, $0) }
                             .transition(.opacity)
                     }
                 }
@@ -191,19 +191,19 @@ private struct TimeCell: View {
                     .contentShape(.rect)
             }
             .buttonStyle(PressScale())
-            .accessibilityHint(open ? "Cierra la rueda" : "Abre la rueda para cambiarla")
+            .accessibilityHint(open ? "Closes the wheel" : "Opens the wheel to change it")
         } else {
             label.frame(width: Self.width, alignment: .leading)
         }
     }
 }
 
-/// "La noche anterior", "Más tarde", "Minutos"
+/// "The night before", "Later", "Minutes"
 private struct GroupTitle: View {
     let text: String
 
     var body: some View {
-        // Like every section head in the app: Hoy's blocks, Ajustes' groups.
+        // Like every section head in the app: Today's blocks, Settings' groups.
         Text(text)
             .font(.reading(15, relativeTo: .subheadline).bold())
             .foregroundStyle(.muted)
@@ -216,9 +216,9 @@ private struct GroupTitle: View {
 extension TypeSchedule.Group {
     var title: String? {
         switch self {
-        case .night: "La noche anterior"
+        case .night: String(localized: "The night before")
         case .steps: nil
-        case .later: "Más tarde"
+        case .later: String(localized: "Later")
         }
     }
 }

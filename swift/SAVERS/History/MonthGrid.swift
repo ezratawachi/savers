@@ -74,7 +74,7 @@ struct MonthGrid: View {
         }
     }
 
-    /// The wave: each day a beat after the one before; nothing moves with "Reducir movimiento".
+    /// The wave: each day a beat after the one before; nothing moves with Reduce Motion.
     private func rise(delay: Double) -> Animation? {
         reduceMotion ? nil : Motion.sun.delay(delay)
     }
@@ -83,9 +83,9 @@ struct MonthGrid: View {
         let scheduled = dates.filter { $0 <= today && r.isScheduled($0) }
         let complete = scheduled.count { r.day($0).doneCount == 6 }
         if !scheduled.isEmpty {
-            return "\(complete) de \(scheduled.count) \(scheduled.count == 1 ? "mañana completa" : "mañanas completas")"
+            return scheduled.count == 1 ? String(localized: "\(complete) of 1 morning complete") : String(localized: "\(complete) of \(scheduled.count) mornings complete")
         }
-        return month.first > today ? "Por venir" : "Sin mañanas todavía"
+        return month.first > today ? String(localized: "Still to come") : String(localized: "No mornings yet")
     }
 }
 
@@ -131,7 +131,7 @@ private struct DayCell: View {
 
     private func label(future: Bool, off: Bool, planned: Bool, n: Int) -> String {
         let base = DayKey.long(ds)
-        if future { return planned ? base + ", cambiado" : base }
-        return off ? base : "\(base), \(n) de 6"
+        if future { return planned ? String(localized: "\(base), changed") : base }
+        return off ? base : String(localized: "\(base), \(n) of 6")
     }
 }

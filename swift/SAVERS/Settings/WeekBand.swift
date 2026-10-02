@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The top of Ajustes: your week on the night. Each day with its sun if it has a sunrise, the hour you get up,
-/// and gym marked; a day off and Shabbat are just the horizon. The whole band opens Horario.
+/// The top of Settings: your week on the night. Each day with its sun if it has a sunrise, the hour you get up,
+/// and gym marked; a day off and Shabbat are just the horizon. The whole band opens Schedule.
 struct WeekBand: View {
     @Environment(AppStore.self) private var store
 
@@ -13,7 +13,7 @@ struct WeekBand: View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text("Tu semana")
+                    Text("Your week")
                         .font(.display(44, relativeTo: .largeTitle, weight: .heavy))
                         .tracking(-1)
                         .foregroundStyle(.ink)
@@ -39,8 +39,8 @@ struct WeekBand: View {
         .padding(.bottom, 18)
         .contentShape(.rect)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Tu semana: \(summary(savers.count, gym: gym))")
-        .accessibilityHint("Abre tu horario")
+        .accessibilityLabel("Your week: \(summary(savers.count, gym: gym))")
+        .accessibilityHint("Opens your schedule")
         .accessibilityAddTraits(.isButton)
     }
 
@@ -68,7 +68,7 @@ struct WeekBand: View {
                         .font(.reading(11, relativeTo: .caption2))
                         .foregroundStyle(.muted)
                 default:
-                    Text("Descanso")
+                    Text("Rest")
                         .font(.reading(11, relativeTo: .caption2))
                         .foregroundStyle(.muted)
                 }
@@ -86,7 +86,7 @@ struct WeekBand: View {
     }
 
     private func summary(_ savers: Int, gym: Int) -> String {
-        let days = "\(savers) \(savers == 1 ? "amanecer" : "amaneceres")"
-        return gym > 0 ? "\(days) · \(gym) de gym" : days
+        let days = String(localized: "\(savers) sunrises")
+        return gym > 0 ? String(localized: "\(days) · \(gym) at the gym") : days
     }
 }

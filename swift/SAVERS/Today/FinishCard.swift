@@ -1,24 +1,24 @@
 import SwiftUI
 
-/// "Mañana lista" with what's left for later, or "Día completo" with the streak. No check of its own:
+/// "Morning done" with what's left for later, or "Day complete" with the streak. No check of its own:
 /// Sunling, up and awake on the horizon just above, is the finish.
 struct FinishCard: View {
     let finish: Finish
-    /// "Lee a las 8:50 pm"
+    /// "Read at 8:50 pm"
     let pending: String
     let streak: Int
 
     var body: some View {
         VStack(spacing: 4) {
-            Text(finish == .morning ? "Mañana lista" : "Día completo")
+            Text(finish == .morning ? "Morning done" : "Day complete")
                 .font(.display(26, relativeTo: .title))
                 .foregroundStyle(.ink)
                 .accessibilityAddTraits(.isHeader)
             Group {
                 if finish == .morning {
-                    Text("Falta \(Text(pending).bold())")
+                    Text("Still to go: \(Text(pending).bold())")
                 } else {
-                    Text("Racha: \(Text(streak == 1 ? "1 amanecer" : "\(streak) amaneceres").bold())")
+                    Text("Streak: \(Text(String(localized: "\(streak) sunrises")).bold())")
                 }
             }
             .font(.reading())

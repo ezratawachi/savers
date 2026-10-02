@@ -9,6 +9,7 @@
 #
 # Scenarios: manana abiertas hechas dia-completo shabbat sin-savers historial ajustes (all of them if none is given).
 # "hechas:2" also scrolls down and captures a second screen. --sin-build skips building.
+# The app opens in Spanish, like the iPhone; --en opens it in English (with English made-up data).
 set -euo pipefail
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 HERE=$(cd "$(dirname "$0")/.." && pwd)
@@ -48,9 +49,10 @@ settle() {
 }
 
 # Opens the app in a scenario (or with its real data when none) and waits for it to settle.
+LANG_ARGS=(-AppleLanguages "(es)" -AppleLocale es_MX)
 launch() {
   xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
-  if [ -n "${1:-}" ]; then xcrun simctl launch "$UDID" "$BUNDLE" -escenario "$1" >/dev/null
+  if [ -n "${1:-}" ]; then xcrun simctl launch "$UDID" "$BUNDLE" -escenario "$1" "${LANG_ARGS[@]}" >/dev/null
   else xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null; fi
   settle
 }
@@ -58,7 +60,13 @@ launch() {
 cmd=${1:-hoja}; shift || true
 nobuild=0
 args=()
-for a in "$@"; do [ "$a" = "--sin-build" ] && nobuild=1 || args+=("$a"); done
+for a in "$@"; do
+  case "$a" in
+    --sin-build) nobuild=1 ;;
+    --en) LANG_ARGS=(-AppleLanguages "(en)" -AppleLocale en_US) ;;
+    *) args+=("$a") ;;
+  esac
+done
 
 case "$cmd" in
   hoja)

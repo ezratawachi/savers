@@ -1,7 +1,7 @@
 import AuthenticationServices
 import SwiftUI
 
-/// Ajustes › Copia de seguridad: the cloud.
+/// Settings › Backup: the cloud.
 struct BackupPage: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
@@ -12,12 +12,12 @@ struct BackupPage: View {
         CardList {
             cloudSection
         }
-        .navigationTitle("Copia de seguridad")
+        .navigationTitle("Backup")
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog("¿Cerrar sesión?", isPresented: $askingSignOut, titleVisibility: .visible) {
-            Button("Cerrar sesión", role: .destructive) { cloud.signOut() }
+        .confirmationDialog("Sign out?", isPresented: $askingSignOut, titleVisibility: .visible) {
+            Button("Sign out", role: .destructive) { cloud.signOut() }
         } message: {
-            Text("Tus registros se quedan en este aparato, pero dejan de guardarse en la nube.")
+            Text("Your records stay on this device, but stop being saved to the cloud.")
         }
     }
 
@@ -26,21 +26,21 @@ struct BackupPage: View {
         if cloud.linked {
             Section {
                 TimelineView(.periodic(from: .now, by: 30)) { t in
-                    LabeledContent("Estado") {
+                    LabeledContent("Status") {
                         Text(cloud.statusLabel(now: t.date))
                             .foregroundStyle(cloud.error.isEmpty ? Color.muted : Color.warn)
                     }
                 }
                 if let email = cloud.email, !email.isEmpty {
-                    LabeledContent("Cuenta", value: email)
+                    LabeledContent("Account", value: email)
                 }
-                Button("Cerrar sesión", role: .destructive) { askingSignOut = true }
+                Button("Sign out", role: .destructive) { askingSignOut = true }
                     .foregroundStyle(.warn)
                     .cardRow()
             } header: {
-                Text("Nube")
+                Text("Cloud")
             } footer: {
-                Text("Se guarda solo. Si cambias lo mismo en el iPhone y en la Mac, se queda el último cambio.")
+                Text("It saves by itself. If you change the same thing on the iPhone and on the Mac, the last change stays.")
             }
         } else {
             Section {
@@ -48,7 +48,7 @@ struct BackupPage: View {
                     Task { await cloud.signIn(using: webAuth) }
                 } label: {
                     HStack {
-                        Text("Entrar con Google").bold()
+                        Text("Sign in with Google").bold()
                         if cloud.busy { Spacer(); ProgressView() }
                     }
                 }
@@ -56,11 +56,11 @@ struct BackupPage: View {
                 .disabled(cloud.busy)
                 .cardRow()
             } header: {
-                Text("Nube")
+                Text("Cloud")
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     if !cloud.error.isEmpty { Text(cloud.error).foregroundStyle(.warn) }
-                    Text("Tus registros se guardan solos en la nube y los ves también en la Mac. Solo tu cuenta de Google puede abrirlos.")
+                    Text("Your records save themselves to the cloud, and you see them on the Mac too. Only your Google account can open them.")
                 }
             }
         }

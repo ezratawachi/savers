@@ -14,28 +14,28 @@ struct StepTimeSheet: View {
             let days = r.days(of: kind)
             let own = days.filter { r.ownTime(st, weekday: $0) != nil }
             UsualSheet(title: st.title ?? "", days: days, weekday: $weekday) {
-                TimeWheel(label: "Hora de \(st.title ?? "")", time: r.usualTime(st, weekday: weekday)) {
+                TimeWheel(label: String(localized: "Time of \(st.title ?? "")"), time: r.usualTime(st, weekday: weekday)) {
                     store.setStepTime(kind, id: id, weekday: weekday, $0)
                 }
             } foot: {
                 if let w = weekday {
-                    Note("Solo \(Weekday.plural(w)).")
+                    Note(String(localized: "\(Weekday.plural(w)) only."))
                     if r.ownTime(st, weekday: w) != nil {
-                        UsualButton("Usar la misma hora que los demás") {
+                        UsualButton(String(localized: "Use the same time as the others")) {
                             store.setStepTime(kind, id: id, weekday: w, st.time ?? "")
                         }
                     }
                 } else {
                     Note(own.isEmpty
-                         ? days.isEmpty ? "Ningún día usa este horario ahora." : "Para \(Weekday.list(days))."
-                         : "\(Weekday.plurals(own).capitalizedFirst) tienen otra hora. Si la cambias aquí, todos quedan iguales.")
+                         ? days.isEmpty ? String(localized: "No day uses this schedule now.") : String(localized: "For \(Weekday.list(days)).")
+                         : String(localized: "\(Weekday.plurals(own).capitalizedFirst) have another time. If you change it here, they all end up the same."))
                 }
             }
         }
     }
 }
 
-/// Silencio's or Lectura's minutes, the same way as an hour.
+/// Breathe's or Read's minutes, the same way as an hour.
 struct MinutesSheet: View {
     @Environment(AppStore.self) private var store
     let kind: DayType
@@ -47,42 +47,42 @@ struct MinutesSheet: View {
         let days = r.days(of: kind)
         let own = days.filter { r.ownMinutes(kind, letter, weekday: $0) != nil }
         UsualSheet(title: letter.name, days: days, weekday: $weekday) {
-            MinutesWheel(label: "Minutos de \(letter.name)", minutes: r.usualMinutes(kind, letter, weekday: weekday)) {
+            MinutesWheel(label: String(localized: "Minutes of \(letter.name)"), minutes: r.usualMinutes(kind, letter, weekday: weekday)) {
                 store.setUsualMinutes(kind, letter, weekday: weekday, $0)
             }
         } foot: {
             if let w = weekday {
-                Note("Solo \(Weekday.plural(w)).")
+                Note(String(localized: "\(Weekday.plural(w)) only."))
                 if r.ownMinutes(kind, letter, weekday: w) != nil {
-                    UsualButton("Usar los mismos minutos que los demás") {
+                    UsualButton(String(localized: "Use the same minutes as the others")) {
                         store.setUsualMinutes(kind, letter, weekday: w, nil)
                     }
                 }
             } else {
                 Note(own.isEmpty
-                     ? days.isEmpty ? "Ningún día usa este horario ahora." : "Para \(Weekday.list(days))."
-                     : "\(Weekday.plurals(own).capitalizedFirst) tienen otros minutos. Si los cambias aquí, todos quedan iguales.")
+                     ? days.isEmpty ? String(localized: "No day uses this schedule now.") : String(localized: "For \(Weekday.list(days)).")
+                     : String(localized: "\(Weekday.plurals(own).capitalizedFirst) have other minutes. If you change them here, they all end up the same."))
             }
         }
     }
 }
 
-/// How long before "Dormido" "Prepararte para dormir" arrives: one number for every night.
+/// How long before bedtime ("Dormido") the wind-down notice arrives: one number for every night.
 struct WindDownSheet: View {
     @Environment(AppStore.self) private var store
 
     var body: some View {
-        UsualSheet(title: "Prepararte", days: [], weekday: .constant(nil)) {
-            MinutesWheel(label: "Minutos antes de Dormido", minutes: store.routine.windDown, choices: Routine.windDownChoices) {
+        UsualSheet(title: String(localized: "Wind down"), days: [], weekday: .constant(nil)) {
+            MinutesWheel(label: String(localized: "Minutes before bedtime"), minutes: store.routine.windDown, choices: Routine.windDownChoices) {
                 store.setWindDown($0)
             }
         } foot: {
-            Note("Igual todas las noches. El aviso Prepararte para dormir llega estos minutos antes de Dormido.")
+            Note(String(localized: "The same every night. The wind-down notice arrives this many minutes before bedtime."))
         }
     }
 }
 
-/// Title and Listo, "Todos | lun | mar…", the wheel, and what the choice means.
+/// Title and Done, "All | Mon | Tue…", the wheel, and what the choice means.
 private struct UsualSheet<Wheel: View, Foot: View>: View {
     @Environment(\.dismiss) private var dismiss
     let title: String
@@ -97,8 +97,8 @@ private struct UsualSheet<Wheel: View, Foot: View>: View {
                 VStack(alignment: .leading, spacing: 12) {
                     if days.count > 1 {
                         SegmentedChoice(
-                            label: "Días",
-                            options: [.init(id: nil, title: "Todos")] + days.map { .init(id: Optional($0), title: Weekday.keys[$0]) },
+                            label: String(localized: "Days"),
+                            options: [.init(id: nil, title: String(localized: "All"))] + days.map { .init(id: Optional($0), title: Weekday.short[$0]) },
                             selection: $weekday
                         )
                     }
@@ -114,7 +114,7 @@ private struct UsualSheet<Wheel: View, Foot: View>: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Listo") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }

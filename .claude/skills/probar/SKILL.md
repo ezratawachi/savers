@@ -15,7 +15,13 @@ Nunca hace falta marcar, escribir ni desmarcar en los datos reales del usuario.
 swift/tools/probar.sh hoja                      # compila y captura los 8 escenarios (~80 s)
 swift/tools/probar.sh hoja hechas abiertas:2    # solo esos; ":2" baja y captura una segunda pantalla
 swift/tools/probar.sh hoja manana --sin-build   # sin compilar (si no cambió el código)
+swift/tools/probar.sh hoja --en                 # en inglés, con datos inventados en inglés
 ```
+
+La app abre en español, como el iPhone; `--en` (en `hoja` y `abrir`) la abre en inglés. Después de compilar,
+`python3 swift/tools/traducciones.py` dice qué texto del código no tiene español en
+`SAVERS/Resources/Localizable.xcstrings` y cuál sobra. Ojo: `--sin-build` usa lo último instalado, no lo
+último compilado a mano.
 
 Imprime la ruta de `hoja.png`; léela con Read. Es una imagen para todo, en vez de una captura por paso.
 Escenarios: `manana` (nada marcado, Silencio en Ahora), `abiertas` (Afirmaciones, Visualización y Escritura
