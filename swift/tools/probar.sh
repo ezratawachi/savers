@@ -26,12 +26,29 @@ build() {
   xcrun simctl install "$UDID" "$APP"
 }
 
+# Waits until the app is drawn and still, however long the simulator takes: the launch screen is a plain
+# background (a small capture), and once the app settles two captures in a row are the same. The last
+# capture stays in $SHOT.
+SHOT="$OUT/.ultima.png"
+settle() {
+  local prev="" sum
+  mkdir -p "$OUT"
+  for _ in $(seq 1 30); do
+    sleep 0.3
+    xcrun simctl io "$UDID" screenshot "$SHOT" >/dev/null 2>&1 || continue
+    [ "$(stat -f %z "$SHOT")" -gt 300000 ] || continue
+    sum=$(md5 -q "$SHOT")
+    [ "$sum" = "$prev" ] && return
+    prev=$sum
+  done
+}
+
 # Opens the app in a scenario (or with its real data when none) and waits for it to settle.
 launch() {
   xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
   if [ -n "${1:-}" ]; then xcrun simctl launch "$UDID" "$BUNDLE" -escenario "$1" >/dev/null
   else xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null; fi
-  sleep 2.5
+  settle
 }
 
 cmd=${1:-hoja}; shift || true
@@ -50,9 +67,9 @@ case "$cmd" in
       [ "$spec" != "$name" ] && screens=${spec#*:}
       launch "$name"
       for ((i = 1; i <= screens; i++)); do
-        if [ $i -gt 1 ]; then axe swipe --start-x 340 --start-y 600 --end-x 340 --end-y 180 --udid "$UDID" >/dev/null; sleep 1; fi
+        if [ $i -gt 1 ]; then axe swipe --start-x 340 --start-y 600 --end-x 340 --end-y 180 --udid "$UDID" >/dev/null; settle; fi
         f="$OUT/$name-$i.png"
-        xcrun simctl io "$UDID" screenshot "$f" >/dev/null 2>&1
+        cp "$SHOT" "$f"
         shots+=("$f")
       done
     done
@@ -65,8 +82,10 @@ case "$cmd" in
     launch "${args[0]:?falta el escenario}"
     ;;
   tocar)
-    # AXe's default tap doesn't reach SwiftUI buttons here; a physical touch does.
-    axe tap --label "${args[0]:?falta la etiqueta}" --tap-style physical --wait-timeout 3 --udid "$UDID" >/dev/null
+    # Xcode 27 drops the first gesture of a fresh AXe connection until its touchscreen wakes up
+    # (AXe issue #71); waiting 500 ms first lets it land. A physical touch doesn't land at all there.
+    AXE_HID_STABILIZATION_MS=500 axe tap --label "${args[0]:?falta la etiqueta}" --tap-style simulator \
+      --wait-timeout 3 --udid "$UDID" >/dev/null
     sleep 0.8
     ;;
   ui)

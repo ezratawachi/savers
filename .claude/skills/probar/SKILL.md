@@ -35,7 +35,13 @@ swift/tools/probar.sh real                      # al terminar: vuelve a abrir la
 - `ui` también sirve para **medir**: los marcos dicen dónde empieza cada cosa (p. ej. el círculo en x=26 con
   su zona de 44 pt → dibujo en 30 = 16 de pantalla + 14 de carta). No midas píxeles en capturas.
 - `ui` lista también lo que está fuera de pantalla; para verlo en imagen usa `hoja escenario:2`.
-- Los toques van con `--tap-style physical` (el toque por defecto de AXe no llega a los botones de SwiftUI).
+- El simulador es iOS 26.5, como el iPhone (iOS 26). Con Xcode 27, `tocar` usa `--tap-style simulator` y
+  `AXE_HID_STABILIZATION_MS=500`: sin esa espera AXe dice "completed successfully" y no toca nada (AXe #71).
+  Si escribes `axe tap` a mano, usa lo mismo.
+- Un menú desplegable (`Menu`, p. ej. "Leer en") **no se abre con AXe**. Ábrelo con
+  `mcp__Claude_Code_iOS_Simulator__control` tap: sus coordenadas van en 360x780, no en los 375x812 de `ui`
+  (multiplica x por 0.96 y y por 0.96). Lo de adentro del menú sí se toca con `tocar`.
+- `ui` puede fallar con "No translation object returned" en los primeros minutos tras arrancar: espera y repite.
 - Si falta una etiqueta para tocar algo, agrégale `.accessibilityLabel` en el código: también ayuda a VoiceOver.
 - Los interruptores (Toggle) no cambian con toques simulados, y un botón de fila de lista a veces solo
   responde si el toque cae en su parte de arriba (prueba y-10). No es un error de la app.
