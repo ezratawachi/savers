@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "**5:50** · SAVERS" above a block's letters.
+/// "**5:50** · Amanecer" above a block's letters.
 struct BlockHeader: View {
     let head: [String]
     /// Inside a card ("hechas"), on that card's line.

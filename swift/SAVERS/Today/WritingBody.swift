@@ -17,7 +17,7 @@ struct WritingBody: View {
             if !done {
                 Button("Listo", action: onDone)
                     .buttonStyle(PrimaryButton())
-                    .accessibilityLabel("Listo, marcar Escritura")
+                    .accessibilityLabel("Listo, marcar Escribe")
             }
         }
     }

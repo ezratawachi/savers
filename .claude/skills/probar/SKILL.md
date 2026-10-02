@@ -48,6 +48,8 @@ swift/tools/probar.sh real                      # al terminar: vuelve a abrir la
 - El botón Pegar de iOS (PasteButton) no acepta toques simulados. Para probar "Hablar con una IA" con una
   respuesta de IA: `xcrun simctl launch "$(cat swift/.sim-id)" com.ezratawachi.savers -escenario ajustes -pegar /ruta/respuesta.txt`
   y entra a la página: se lee como si se hubiera pegado.
+- Para leer lo que manda "Mandar a la IA" (la hoja de Compartir tampoco se abre con toques): lanza con
+  `-paquete /ruta/paquete.md` y entra a "Hablar con una IA"; el texto queda en ese archivo.
 
 ## Reglas
 

@@ -19,6 +19,13 @@ enum Scenario: String, CaseIterable {
         return try? String(contentsOfFile: args[i + 1], encoding: .utf8)
     }()
 
+    /// `-paquete archivo`: where Hablar con una IA writes what "Mandar a la IA" would send, to read it.
+    static let packetPath: String? = {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-paquete"), i + 1 < args.count else { return nil }
+        return args[i + 1]
+    }()
+
     /// The prefs every part of the app uses in a scenario, emptied at launch.
     static let prefs: LocalPrefs = {
         let d = UserDefaults(suiteName: "savers.escenario")!

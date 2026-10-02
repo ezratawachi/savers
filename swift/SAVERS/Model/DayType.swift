@@ -1,4 +1,4 @@
-/// What a date is. Normal and gym have SAVERS with their own hours; off has none; Saturday is Shabbat.
+/// What a date is. Normal and gym have the sunrise with their own hours; off (Descanso) has none; Saturday is Shabbat.
 enum DayType: String, Sendable {
     case normal, gym, off, shabbat
 
@@ -14,7 +14,7 @@ enum DayType: String, Sendable {
         switch self {
         case .normal: "Normal"
         case .gym: "Gym"
-        case .off: "Sin SAVERS"
+        case .off: "Descanso"
         case .shabbat: "Shabbat"
         }
     }
@@ -23,7 +23,7 @@ enum DayType: String, Sendable {
         switch self {
         case .normal: "Día normal"
         case .gym: "Día de gym"
-        case .off: "Sin SAVERS"
+        case .off: "Día de descanso"
         case .shabbat: "Shabbat"
         }
     }

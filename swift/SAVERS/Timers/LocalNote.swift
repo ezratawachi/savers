@@ -1,6 +1,6 @@
 import UserNotifications
 
-/// A notification from this same iPhone, with SAVERS' bell. Scheduling an id again replaces it.
+/// A notification from this same iPhone, with Sunling's bell. Scheduling an id again replaces it.
 enum LocalNote {
     /// Asks the first time; afterwards answers what you chose.
     static func allowed() async -> Bool {

@@ -6,7 +6,7 @@ struct AIProposal: Identifiable {
     enum Failure: Error {
         case noBlock
 
-        var message: String { "No encontré cambios de SAVERS en lo que copiaste" }
+        var message: String { "No encontré cambios para Sunling en lo que copiaste" }
     }
 
     let id = UUID()
@@ -33,9 +33,9 @@ struct AIProposal: Identifiable {
 
     private static let topKeys: Set<String> = ["leeren", "afirmaciones", "visualizacion", "semana", "prepararte", "normal", "gym", "fechas"]
 
-    /// The ```savers block, or else the last JSON object in the text that looks like one.
+    /// The ```sunling block (```savers before), or else the last JSON object in the text that looks like one.
     static func block(in text: String) -> [String: JSONValue]? {
-        if let m = text.firstMatch(of: /```[ \t]*savers[ \t]*\n([\s\S]*?)```/), let o = object(String(m.1)) { return o }
+        if let m = text.firstMatch(of: /```[ \t]*(?:sunling|savers)[ \t]*\n([\s\S]*?)```/), let o = object(String(m.1)) { return o }
         return objects(in: text).reversed().lazy.compactMap(object).first
     }
 
@@ -76,7 +76,7 @@ struct AIProposal: Identifiable {
             value = try? JSONDecoder().decode(JSONValue.self, from: Data(s.utf8))
         }
         guard case .object(var o)? = value else { return nil }
-        if o.count == 1, let (k, v) = o.first, ["cambios", "savers", "cambiossavers"].contains(AIText.key(k)), case .object(let inner) = v { o = inner }
+        if o.count == 1, let (k, v) = o.first, ["cambios", "sunling", "savers", "cambiossavers"].contains(AIText.key(k)), case .object(let inner) = v { o = inner }
         return o.keys.contains { topKeys.contains(AIText.key($0)) } ? o : nil
     }
 
@@ -212,7 +212,7 @@ struct AIProposal: Identifiable {
         for (k, x) in o.sorted(by: { (AIText.weekday($0.key) ?? 9) < (AIText.weekday($1.key) ?? 9) }) {
             guard let w = AIText.weekday(k) else { problem("\(AIText.quoted(k)) no es un día de la semana."); continue }
             guard w != 6 else { problem("El sábado es Shabbat y no se cambia."); continue }
-            guard let t = AIText.dayType(x) else { problem("\(AIText.quoted(x.text ?? "")) no es un tipo de día (\(Weekday.names[w])): usa normal, gym o sin savers."); continue }
+            guard let t = AIText.dayType(x) else { problem("\(AIText.quoted(x.text ?? "")) no es un tipo de día (\(Weekday.names[w])): usa normal, gym o descanso."); continue }
             let old = r.weekType(w)
             if t != old {
                 add(.weekType(w, t), Weekday.names[w].capitalizedFirst, "Cada semana", "\(old.name) → \(t.name)")
@@ -286,7 +286,7 @@ struct AIProposal: Identifiable {
 
     /// Silencio or Lectura, or a problem saying why not.
     private mutating func editableLetter(_ name: String, _ where_: String) -> Letter? {
-        guard let l = AIText.letter(name) else { problem("\(AIText.quoted(name)) no es una letra (\(where_))."); return nil }
+        guard let l = AIText.letter(name) else { problem("\(AIText.quoted(name)) no es un paso (\(where_))."); return nil }
         guard l.usualMinutes != nil else { problem("Los minutos de \(l.name) salen de su contenido y no se pueden cambiar."); return nil }
         return l
     }
@@ -300,7 +300,7 @@ struct AIProposal: Identifiable {
     }
 
     private mutating func readMinutes(_ kind: DayType, _ v: JSONValue) {
-        guard case .object(let o) = v else { return problem("En \(kind.name), \"minutos\" va como {\"lectura\": 15}.") }
+        guard case .object(let o) = v else { return problem("En \(kind.name), \"minutos\" va como {\"lee\": 15}.") }
         for (name, x) in o.sorted(by: { $0.key < $1.key }) {
             guard let l = editableLetter(name, kind.name), let n = minutesValue(x, l, kind.name) else { continue }
             let old = r.usualMinutes(kind, l, weekday: nil)
@@ -309,7 +309,7 @@ struct AIProposal: Identifiable {
     }
 
     private mutating func readMinutesPerDay(_ kind: DayType, _ v: JSONValue) {
-        guard case .object(let o) = v else { return problem("En \(kind.name), \"minutosPorDia\" va como {\"lectura\": {\"jueves\": 10}}.") }
+        guard case .object(let o) = v else { return problem("En \(kind.name), \"minutosPorDia\" va como {\"lee\": {\"jueves\": 10}}.") }
         for (name, x) in o.sorted(by: { $0.key < $1.key }) {
             guard let l = editableLetter(name, kind.name) else { continue }
             guard case .object(let perDay) = x else { problem("En \(kind.name), los minutos por día de \(l.name) van como {\"jueves\": 10}."); continue }
@@ -352,14 +352,14 @@ struct AIProposal: Identifiable {
                     if t != was { add(.dateType(ds, t), title, "Esa fecha", "\(was.name) → \(t.name)") }
                     type = t
                 } else {
-                    problem("\(AIText.quoted(raw.text ?? "")) no es un tipo de día (\(title)): usa normal, gym o sin savers.")
+                    problem("\(AIText.quoted(raw.text ?? "")) no es un tipo de día (\(title)): usa normal, gym o descanso.")
                 }
             }
             let sameType = type == was
             for (k, y) in d.sorted(by: { $0.key < $1.key }) {
                 let key = AIText.key(k)
                 if (key == "horas" || key == "minutos") && !type.hasSavers {
-                    problem("\(title) es \(type.name): no tiene horas ni minutos de SAVERS.")
+                    problem("\(title) es \(type.name): no tiene horas ni minutos del amanecer.")
                     continue
                 }
                 switch key {
@@ -373,7 +373,7 @@ struct AIProposal: Identifiable {
     }
 
     private mutating func readDateHours(_ ds: String, _ title: String, _ type: DayType, _ sameType: Bool, _ v: JSONValue) {
-        guard case .object(let o) = v else { return problem("\(title): \"horas\" va como {\"SAVERS\": \"7:00\"}.") }
+        guard case .object(let o) = v else { return problem("\(title): \"horas\" va como {\"Amanecer\": \"7:00\"}.") }
         let kind: DayType = type == .gym ? .gym : .normal
         for (name, y) in o.sorted(by: { $0.key < $1.key }) {
             guard let b = block(kind, name), let id = b.step.id else { continue }
@@ -390,7 +390,7 @@ struct AIProposal: Identifiable {
     }
 
     private mutating func readDateMinutes(_ ds: String, _ title: String, _ type: DayType, _ sameType: Bool, _ v: JSONValue) {
-        guard case .object(let o) = v else { return problem("\(title): \"minutos\" va como {\"lectura\": 20}.") }
+        guard case .object(let o) = v else { return problem("\(title): \"minutos\" va como {\"lee\": 20}.") }
         let kind: DayType = type == .gym ? .gym : .normal
         for (name, y) in o.sorted(by: { $0.key < $1.key }) {
             guard let l = editableLetter(name, title) else { continue }

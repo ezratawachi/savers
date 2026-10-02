@@ -78,7 +78,7 @@ struct ChangesSheet: View {
     }
 }
 
-/// "SAVERS" / "Normal · solo los jueves" / "5:55 → 5:45", and a list's lines under it.
+/// "Amanecer" / "Normal · solo los jueves" / "5:55 → 5:45", and a list's lines under it.
 private struct ChangeRow: View {
     let change: AIChange
 

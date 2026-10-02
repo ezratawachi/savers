@@ -92,8 +92,8 @@ extension Routine {
 
     /// Each letter at the hour it starts: the block's hour plus the minutes of the letters before it.
     private func letterLines(_ kind: DayType, _ st: Step, _ keys: [Letter]) -> [LetterLine] {
-        // A block that is just its letter ("Más tarde · Lectura") already shows the hour above it.
-        var at = keys.count == 1 && keys[0].name == st.title ? nil : TimeText.minutes(st.time)
+        // A block that is just its step ("Más tarde · Lectura") already shows the hour above it.
+        var at = keys.count == 1 && st.onlyStep != nil ? nil : TimeText.minutes(st.time)
         return keys.map { k in
             let min = letterMinutes(k, kind, weekday: nil)
             let mins = k.usualMinutes != nil ? minutesSummary(kind, k) : min > 0 ? "\(min) min" : ""

@@ -84,4 +84,24 @@ struct Schedule: Codable, Equatable, Sendable {
         }
         self.types = types
     }
+
+    /// The morning block that held the letters was called "SAVERS"; it's "Amanecer" now. Done once, on what
+    /// arrives from this iPhone or the cloud. Returns whether anything changed.
+    mutating func renameSaversBlock() -> Bool {
+        guard var types else { return false }
+        var changed = false
+        for (kind, var t) in types {
+            guard var list = t.steps else { continue }
+            for i in list.indices where !list[i].letterKeys.isEmpty {
+                for field in [\Step.title, \Step.short] where list[i][keyPath: field]?.lowercased() == "savers" {
+                    list[i][keyPath: field] = "Amanecer"
+                    changed = true
+                }
+            }
+            t.steps = list
+            types[kind] = t
+        }
+        if changed { self.types = types }
+        return changed
+    }
 }

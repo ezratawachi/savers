@@ -112,7 +112,7 @@ final class GeminiVoice {
     /// "Probar" reads your first visualization question in that voice. Returns what went wrong, in plain words.
     func tryVoice(_ v: String) async -> String? {
         guard hasKey else { return "Primero pega tu clave de Gemini" }
-        let text = phrases().first { $0.1 == .calm }?.0 ?? "Buenos días. Esta es tu voz para SAVERS."
+        let text = phrases().first { $0.1 == .calm }?.0 ?? "Buenos días. Esta es tu voz para Sunling."
         let k = Self.clipKey(text, .calm, v)
         do {
             if !FileManager.default.fileExists(atPath: Self.file(k).path) {

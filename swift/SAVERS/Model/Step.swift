@@ -1,3 +1,5 @@
+import Foundation
+
 /// One line of the schedule: "5:20 · Te paras". A step with `letters` is a block holding those letters.
 struct Step: Codable, Equatable, Identifiable, Sendable {
     var id: String?
@@ -42,4 +44,11 @@ struct Step: Codable, Equatable, Identifiable, Sendable {
 
     /// The letters this step holds, known ones only, in its order.
     var letterKeys: [Letter] { (letters ?? []).compactMap(Letter.init(rawValue:)) }
+
+    /// The one step it holds, when the block is named after it: "Lee", or "Lectura" from before.
+    var onlyStep: Letter? {
+        guard letterKeys.count == 1, let k = letterKeys.first, let title else { return nil }
+        let plain = title.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: nil)
+        return [k.rawValue, k.name.folding(options: .diacriticInsensitive, locale: nil)].contains { plain.caseInsensitiveCompare($0) == .orderedSame } ? k : nil
+    }
 }

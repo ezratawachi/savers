@@ -24,26 +24,35 @@ Reglas para todas las sesiones:
 
 ## Las sesiones
 
-- [ ] **1. El método dentro de la app** (en español; los textos pasan al archivo de traducciones en la 2).
+- [x] **1. El método dentro de la app** (en español; los textos pasan al archivo de traducciones en la 2).
+
+  > **Hecha el 2026-10-02.** El título dice **AMANECER** en mayúsculas: así cada sexto de altura es un sexto de la
+  > palabra (en minúsculas, las letras bajas se llenaban antes que la A). El tipo de día se llama **Descanso** y Tu
+  > semana dice "5 amaneceres · 2 de gym" (los dos confirmados contigo). El subtítulo de Respira se escribe en
+  > Ajustes › Respira (`breatheNote`), y la web de la Mac ya lo guarda. Tu bloque "SAVERS" pasa a "Amanecer" al
+  > abrir la app y se guarda en la nube; el bloque se reconoce por tener más pasos. Los nombres de bloque "Lectura"
+  > siguen igual, porque son tuyos. Algunos textos usan todavía "lectura" o "visualización" como sustantivos
+  > ("Lectura terminada"); se revisan en la 2, al pasar al archivo de traducciones. Para probar el paquete de la IA
+  > existe `-paquete archivo` (ver `/probar`).
 
   **El título**
-  - [ ] **"Amanecer" reemplaza a SAVERS** (`Today/HeroLetters.swift`). La palabra va de borde a borde y se llena de
+  - [x] **"Amanecer" reemplaza a SAVERS** (`Today/HeroWord.swift`, antes `HeroLetters`). La palabra va de borde a borde y se llena de
     ámbar de abajo hacia arriba según los pasos hechos (`doneCount / 6`). El resto queda en `nightLetter`. Corte
     duro, sin degradado.
     - Animación: `Motion.sun`; con Reducir movimiento, fundido.
     - Accesibilidad: "Amanecer, 3 de 6".
 
   **Los pasos**
-  - [ ] **Nombres:** `Letter.name` pasa a Respira, Afirma, Imagina, Muévete, Lee y Escribe.
-  - [ ] **Iniciales del círculo:** pasan a R A I M L E. El círculo (`CheckCircle`) sigue mostrando la inicial;
+  - [x] **Nombres:** `Letter.name` pasa a Respira, Afirma, Imagina, Muévete, Lee y Escribe.
+  - [x] **Iniciales del círculo:** pasan a R A I M L E. El círculo (`CheckCircle`) sigue mostrando la inicial;
     ahora ninguna se repite.
-  - [ ] **Subtítulo de Respira:** por defecto, "Medita, reza o solo respira". Cada persona puede escribir el suyo
+  - [x] **Subtítulo de Respira:** por defecto, "Medita, reza o solo respira". Cada persona puede escribir el suyo
     (el tuyo sería "Daily Calm").
     - Es un campo nuevo en ajustes, que se sincroniza.
     - Revisar que el `normalizeSettings` de la web de la Mac no lo borre.
 
   **Los textos**
-  - [ ] **Se cambian:**
+  - [x] **Se cambian:**
     - "Hacer mis SAVERS hoy"
     - "Hoy no toca SAVERS" → "Sunling descansa hoy"
     - "N días seguidos" → "N amaneceres seguidos"
@@ -52,21 +61,21 @@ Reglas para todas las sesiones:
     - "N días de SAVERS" (Tu semana)
     - el texto del editor del día
     - la frase de respaldo de la voz (`GeminiVoice`)
-  - [ ] **Textos a confirmar contigo al empezar:** el nombre del tipo de día "Sin SAVERS" (¿"Descanso"?) y la línea
+  - [x] **Textos a confirmar contigo al empezar:** el nombre del tipo de día "Sin SAVERS" (¿"Descanso"?) y la línea
     de Tu semana.
 
   **Tus datos y la IA**
-  - [ ] **Tu bloque "SAVERS":** en tu horario, el bloque se llama "SAVERS". Hay que cambiarlo una sola vez a
+  - [x] **Tu bloque "SAVERS":** en tu horario, el bloque se llama "SAVERS". Hay que cambiarlo una sola vez a
     "Amanecer". Además, `Schedule/DayEditor.swift` hoy lo encuentra buscando "savers" en el título; tiene que
     encontrarlo con una regla estable, como "el bloque que tiene pasos". Verificar que la web de la Mac lo muestre bien.
-  - [ ] **El paquete de la IA** (`Assistant/AIPacket.swift`) explica el método: Amanecer, los seis verbos, frases
+  - [x] **El paquete de la IA** (`Assistant/AIPacket.swift`) explica el método: Amanecer, los seis verbos, frases
     creíbles, e imaginar con obstáculo y plan. Las IA conocen SAVERS de memoria, así que el paquete pide no usarlo.
     - Se acepta el tipo de día nuevo y también "sin savers".
     - El bloque de cambios se llama `sunling`, pero ```` ```savers ```` se sigue aceptando.
 
   **Cierre**
-  - [ ] Probar con `/probar` los escenarios mañana, hechas, día completo, sin amanecer, historial y ajustes.
-  - [ ] Instalar en el iPhone.
+  - [x] Probar con `/probar` los escenarios mañana, hechas, día completo, sin amanecer, historial y ajustes.
+  - [x] Instalar en el iPhone.
 
   *Tú pruebas:* tu mañana normal. Ves "Amanecer" llenarse con cada paso, los nombres nuevos y, en un día libre,
   "Sunling descansa hoy". Abre también la web de la Mac y revisa que tu horario se vea bien.

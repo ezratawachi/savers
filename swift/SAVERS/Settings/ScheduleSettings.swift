@@ -61,7 +61,7 @@ struct ScheduleSettings: View {
                         if let title = g.group.title { Text(title) }
                     } footer: {
                         if g.group == TypeSchedule.Group.allCases.last(where: { r.settings.schedule?.type(shown)?[$0].isEmpty == false }) {
-                            Text("Toca una hora para cambiarla en todos los días de \(shown.name) o solo en uno. Los minutos de Silencio y Lectura, igual.")
+                            Text("Toca una hora para cambiarla en todos los días de \(shown.name) o solo en uno. Los minutos de Respira y Lee, igual.")
                         }
                     }
                 }

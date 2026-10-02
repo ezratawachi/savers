@@ -1,7 +1,7 @@
 import Foundation
 
 /// What "Mandar a la IA" sends: the instructions, the notes, the question, each day as it is, the last
-/// weeks' marks and the configuration the AI can change. Never what was written in Escritura.
+/// weeks' marks and the configuration the AI can change. Never what was written in Escribe.
 enum AIPacket {
     static let weeks = 8
 
@@ -9,8 +9,8 @@ enum AIPacket {
         let q = question.trimmingCharacters(in: .whitespacesAndNewlines)
         let notes = r.settings.aiNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
-        parts.append("# Mi rutina SAVERS\n\n" +
-            "Hoy es \(DayKey.long(r.today).lowercased()) (\(r.today)). Te paso todo lo de Sunling, mi app de SAVERS, para que me ayudes.")
+        parts.append("# Mi amanecer en Sunling\n\n" +
+            "Hoy es \(DayKey.long(r.today).lowercased()) (\(r.today)). Te paso todo lo de Sunling, mi app para empezar el día, para que me ayudes.")
         parts.append("## Lo que quiero\n\n" + (q.isEmpty ? "Todavía no lo sé. Pregúntame de qué quiero hablar." : q))
         parts.append("## Mis notas (lo que la app no sabe)\n\n" + (notes.isEmpty ? "Sin notas." : notes))
         parts.append(howToWork)
@@ -30,28 +30,36 @@ enum AIPacket {
     - Primero conversa: entiende lo que te pido, pregúntame lo que no sepas y propón ideas. No siempre quiero cambiar algo; a veces quiero pensar o discutir.
     - Respeta mis notas: lo que dicen que no se mueve, no se mueve.
     - Dame el bloque de cambios solo cuando yo acepte una propuesta o te pida los cambios. Antes no.
-    - Antes de proponer una hora, revisa que las letras del bloque terminen antes del bloque siguiente.
+    - Antes de proponer una hora, revisa que los pasos del bloque terminen antes del bloque siguiente.
     """
 
     private static let howItWorks = """
     ## Cómo funciona la app
 
-    - SAVERS son seis letras: Silencio, Afirmaciones, Visualización, Ejercicio, Lectura y Escritura.
-    - Cada día de la semana es Normal, Gym o Sin SAVERS. El sábado es Shabbat y no se cambia.
-    - Normal y Gym tienen su propio horario de bloques con hora (por ejemplo Te paras, SAVERS, Baño, Dormido). Algunos bloques tienen letras dentro, en orden.
-    - La hora de cada letra es la hora de su bloque más los minutos de las letras que van antes. Para mover una letra, se mueve su bloque o se cambian minutos.
-    - Solo Silencio y Lectura tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de las otras letras salen de su contenido (Afirmaciones unos 25 segundos por frase, Visualización 1 minuto por pregunta, Escritura 2, Ejercicio 8 o lo que dura el gym).
+    - Mi amanecer son seis pasos cortos cada mañana, para empezar el día conmigo antes que con el mundo. Son siempre los seis: si falta tiempo, se acortan, no se quitan.
+      - Respira: unos minutos quieto, para respirar, meditar o rezar.
+      - Afirma: en voz alta, pocas frases que me crea sobre quién elijo ser. Nada exagerado como "soy increíble": a quien no se lo cree lo hace sentir peor.
+      - Imagina: lo más importante de hoy, el obstáculo probable y qué haré si pasa ("si pasa X, hago Y"). El camino, no solo la meta cumplida.
+      - Muévete: unos minutos de movimiento en casa, o el gym.
+      - Lee: unas páginas de algo que me haga crecer.
+      - Escribe: agradecer algo concreto y anotar una idea de lo que leí.
+    - Es un método propio con estos nombres. Aunque se parezca a otros que conoces, no lo llames con otro nombre ni uses sus siglas.
+    - Descansar también cuenta: un día de descanso no corta mis amaneceres seguidos.
+    - Cada día de la semana es Normal, Gym o Descanso. El sábado es Shabbat y no se cambia.
+    - Normal y Gym tienen su propio horario de bloques con hora (por ejemplo Te paras, Amanecer, Baño, Dormido). Algunos bloques tienen pasos dentro, en orden.
+    - La hora de cada paso es la hora de su bloque más los minutos de los pasos que van antes. Para mover un paso, se mueve su bloque o se cambian minutos.
+    - Solo Respira y Lee tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de los otros pasos salen de su contenido (Afirma unos 25 segundos por frase, Imagina 1 minuto por pregunta, Escribe 2, Muévete 8 o lo que dura el gym).
     - "Dormido" está en "La noche anterior": es la hora de dormir de la noche antes de ese día. "Prepararte" son los minutos antes de Dormido en que me llega el aviso para prepararme: de 15 a 90, de 5 en 5, el mismo todas las noches.
     - Una hora o unos minutos pueden ser distintos un día de la semana ("horasPorDia", "minutosPorDia") o una fecha ("fechas", desde hoy hasta un año adelante).
-    - No se pueden agregar, quitar ni renombrar bloques, ni mover letras de un bloque a otro. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios.
+    - No se pueden agregar, quitar ni renombrar bloques, ni mover pasos de un bloque a otro. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios.
     """
 
     private static func changeBlock(_ r: Routine) -> String {
-        let block = r.aiBlocks(.normal).first { !$0.step.letterKeys.isEmpty }?.name ?? "SAVERS"
+        let block = r.aiBlocks(.normal).first { !$0.step.letterKeys.isEmpty }?.name ?? "Amanecer"
         return """
         ## El bloque de cambios
 
-        Cuando yo te lo pida, al final de tu respuesta pon un bloque de código marcado `savers` con un JSON que tenga **solo lo que cambia**, con la misma forma que mi configuración. Lo que no pongas se queda igual.
+        Cuando yo te lo pida, al final de tu respuesta pon un bloque de código marcado `sunling` con un JSON que tenga **solo lo que cambia**, con la misma forma que mi configuración. Lo que no pongas se queda igual.
 
         - Las horas de la mañana se escriben "5:20"; las de la tarde y la noche, con pm: "8:50 pm".
         - Para que la hora o los minutos de un día de la semana o de una fecha vuelvan a ser como siempre, ponles null. Para quitar todos los cambios de una fecha: "AAAA-MM-DD": null.
@@ -60,11 +68,11 @@ enum AIPacket {
 
         Ejemplo de la forma (no es una propuesta):
 
-        ```savers
+        ```sunling
         {
-          "normal": {"horas": {"\(block)": "5:45"}, "minutos": {"lectura": 15}},
+          "normal": {"horas": {"\(block)": "5:45"}, "minutos": {"lee": 15}},
           "semana": {"jueves": "gym"},
-          "fechas": {"AAAA-MM-DD": {"tipo": "sin savers"}}
+          "fechas": {"AAAA-MM-DD": {"tipo": "descanso"}}
         }
         ```
 
@@ -74,12 +82,12 @@ enum AIPacket {
 }
 
 extension DayType {
-    /// How the configuration writes it: "normal", "gym", "sin savers".
+    /// How the configuration writes it: "normal", "gym", "descanso".
     var aiName: String {
         switch self {
         case .normal: "normal"
         case .gym: "gym"
-        case .off: "sin savers"
+        case .off: "descanso"
         case .shabbat: "shabbat"
         }
     }
@@ -119,10 +127,10 @@ extension Routine {
         }
         if !perDay.isEmpty { out.append(("horasPorDia", .object(perDay))) }
         let letters = [Letter.silencio, .lectura]
-        out.append(("minutos", .object(letters.map { ($0.rawValue, .number(usualMinutes(kind, $0, weekday: nil))) })))
+        out.append(("minutos", .object(letters.map { ($0.aiKey, .number(usualMinutes(kind, $0, weekday: nil))) })))
         let minsPerDay: [(String, OrderedJSON)] = letters.compactMap { l in
             let own = (0...5).compactMap { w in ownMinutes(kind, l, weekday: w).map { (Weekday.names[w], OrderedJSON.number($0)) } }
-            return own.isEmpty ? nil : (l.rawValue, .object(own))
+            return own.isEmpty ? nil : (l.aiKey, .object(own))
         }
         if !minsPerDay.isEmpty { out.append(("minutosPorDia", .object(minsPerDay))) }
         return .object(out)
@@ -148,7 +156,7 @@ extension Routine {
             }
             if !hours.isEmpty { out.append(("horas", .object(hours))) }
             let mins: [(String, OrderedJSON)] = [Letter.silencio, .lectura].compactMap { l in
-                Self.valid(d.mins?[l.rawValue]).map { (l.rawValue, .number($0)) }
+                Self.valid(d.mins?[l.rawValue]).map { (l.aiKey, .number($0)) }
             }
             if !mins.isEmpty { out.append(("minutos", .object(mins))) }
         }
@@ -191,7 +199,7 @@ extension Routine {
         }.joined(separator: "\n\n")
     }
 
-    /// "La noche anterior / 10:25 pm Dormido", "Mañana / 5:55 SAVERS / 5:55 Silencio · 10 min", "Más tarde / …".
+    /// "La noche anterior / 10:25 pm Dormido", "Mañana / 5:55 Amanecer / 5:55 Respira · 10 min", "Más tarde / …".
     private func aiTimeline(_ kind: DayType, time: (Step) -> String, minutes: (Letter) -> Int) -> String {
         guard let t = settings.schedule?.type(kind) else { return "" }
         let bedID = bedStep(kind)?.id
@@ -227,7 +235,7 @@ extension Routine {
 
     // MARK: The record
 
-    /// Totals per letter, then each day with SAVERS: what was marked and when. From the first day with a
+    /// Totals per step, then each day with a sunrise: what was marked and when. From the first day with a
     /// mark, so the weeks before the app don't read as days missed.
     func aiRecord(weeks: Int) -> String {
         let first = days.filter { $0.value.doneCount > 0 }.keys.min() ?? today
@@ -244,14 +252,14 @@ extension Routine {
             count += 1
             if d.doneCount == 6 { complete += 1 }
             for l in Letter.allCases where d.isDone(l) { perLetter[l, default: 0] += 1 }
-            var line = "- \(DayKey.short(ds)) · \(type.name)" + (type.hasSavers ? "" : " (los hice igual)")
+            var line = "- \(DayKey.short(ds)) · \(type.name)" + (type.hasSavers ? "" : " (lo hice igual)")
             let done = Letter.allCases.filter(d.isDone)
             let hours = done.map { l in (l, aiHour(d.checkedAt?[l.rawValue], ds: ds)) }
             if hours.contains(where: { $0.1 != nil }) {
                 anyHour = true
                 line += " · " + hours.map { [$0.0.name, $0.1].compactMap { $0 }.joined(separator: " ") }.joined(separator: ", ")
             } else if done.count == 6 {
-                line += " · las 6"
+                line += " · los 6"
             } else if !done.isEmpty {
                 line += " · " + done.map(\.name).joined(separator: ", ")
             }
@@ -266,11 +274,11 @@ extension Routine {
         }
         guard count > 0 else { return "Todavía no hay días registrados." }
         let totals = Letter.allCases.map { "\($0.name) \(perLetter[$0, default: 0])" }.joined(separator: ", ")
-        var head = "Días con SAVERS: \(count). Completos: \(complete). Por letra: \(totals)."
+        var head = "Días con amanecer: \(count). Completos: \(complete). Por paso: \(totals)."
         head += anyHour
-            ? " La hora junto a cada letra es cuando la marqué en la app (puede ser después de hacerla)."
-            : " La app todavía no guardaba a qué hora marco cada letra."
-        return head + " Los sábados y los días sin SAVERS solo aparecen si los hice igual.\n\n" + lines.joined(separator: "\n")
+            ? " La hora junto a cada paso es cuando lo marqué en la app (puede ser después de hacerlo)."
+            : " La app todavía no guardaba a qué hora marco cada paso."
+        return head + " Los sábados y los días de descanso solo aparecen si hice mi amanecer igual.\n\n" + lines.joined(separator: "\n")
     }
 
     /// "6:02", or "11:40 pm del Lun 28 sept" when it was marked on another day.

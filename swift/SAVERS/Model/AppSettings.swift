@@ -10,8 +10,14 @@ struct AppSettings: Codable, Equatable, Sendable {
     var readApp: String = "libros"
     /// "Notas para la IA": what the app doesn't know (work, what never moves, goals). Always in the packet.
     var aiNotes: String = ""
+    /// The line under Respira, in your words ("Daily Calm"). Empty: the app's own.
+    var breatheNote: String = ""
 
     static let readApps = ["libros", "kindle", "papel"]
+    static let breatheDefault = "Medita, reza o solo respira"
+
+    /// What Respira's card says under its name.
+    var breatheLine: String { breatheNote.isEmpty ? Self.breatheDefault : breatheNote }
 
     init() {}
 
@@ -26,6 +32,7 @@ struct AppSettings: Codable, Equatable, Sendable {
         }
         if let r = c.lenient(String.self, "readApp"), Self.readApps.contains(r) { readApp = r }
         if let n = c.lenient(String.self, "aiNotes") { aiNotes = n }
+        if let n = c.lenient(String.self, "breatheNote") { breatheNote = n }
     }
 
     func encode(to encoder: Encoder) throws {
@@ -37,6 +44,7 @@ struct AppSettings: Codable, Equatable, Sendable {
         if let schedule { try c.encode(schedule, forKey: AnyKey("schedule")) } else { try c.encodeNil(forKey: AnyKey("schedule")) }
         try c.encode(readApp, forKey: AnyKey("readApp"))
         if !aiNotes.isEmpty { try c.encode(aiNotes, forKey: AnyKey("aiNotes")) }
+        if !breatheNote.isEmpty { try c.encode(breatheNote, forKey: AnyKey("breatheNote")) }
     }
 
     /// Name, a schedule or an affirmation: something that came from a copy or the cloud.

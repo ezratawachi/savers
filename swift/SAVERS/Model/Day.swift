@@ -7,7 +7,7 @@ struct Day: Codable, Equatable, Sendable {
     var gratitude = ""
     var bookIdea = ""
     var notes = ""
-    /// SAVERS done on a "Sin SAVERS" day.
+    /// The sunrise done on a day of rest.
     var extra = false
     /// Set on every change; the newest wins a conflict.
     var updatedAt: String?

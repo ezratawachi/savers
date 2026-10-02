@@ -52,3 +52,10 @@ struct TypeSchedule: Codable, Equatable, Sendable {
         }
     }
 }
+
+extension TypeSchedule {
+    /// The sunrise's own block: the morning one holding the most steps (on a gym day, not the gym).
+    var sunriseBlockID: String? {
+        (steps ?? []).filter { !$0.letterKeys.isEmpty }.max { $0.letterKeys.count < $1.letterKeys.count }?.id
+    }
+}

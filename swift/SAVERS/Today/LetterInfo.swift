@@ -11,7 +11,7 @@ extension Routine {
         let mins = "\(letterMinutes(letter, kind, on: ds)) min"
         switch letter {
         case .silencio:
-            return LetterInfo(subtitle: "Daily Calm", time: mins, opens: false)
+            return LetterInfo(subtitle: settings.breatheLine, time: mins, opens: false)
         case .afirmaciones:
             let review = !settings.affirmations.filled.isEmpty && reviewDue
             return LetterInfo(subtitle: review ? "Toca revisarlas" : "En voz alta", time: mins, opens: true)

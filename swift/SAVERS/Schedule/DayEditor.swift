@@ -26,7 +26,7 @@ struct DayEditor: View {
                 }
             )
             if type == .off {
-                Note("Este día no hay SAVERS y no cuenta para tu racha.")
+                Note("Este día Sunling descansa: no corta tus amaneceres seguidos.")
             } else if let t = r.settings.schedule?.type(type) {
                 timeline(r, t, editable: editable)
                 minutes(r, type, editable: editable)
@@ -80,7 +80,7 @@ struct DayEditor: View {
         let id = st.id ?? st.label
         let time = r.time(of: st, on: ds)
         let edited = !(store.days[ds]?.times?[id] ?? "").isEmpty
-        let key = g == .steps && (st.short ?? st.title ?? "").localizedCaseInsensitiveContains("savers")
+        let key = g == .steps && st.id != nil && st.id == r.settings.schedule?.type(r.dayType(ds))?.sunriseBlockID
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 timeCell(time.isEmpty ? "—" : time, edited: edited, open: picking == id, editable: editable) {

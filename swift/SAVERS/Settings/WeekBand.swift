@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The top of Ajustes: your week on the night. Each day with its sun if it has SAVERS, the hour you get up,
+/// The top of Ajustes: your week on the night. Each day with its sun if it has a sunrise, the hour you get up,
 /// and gym marked; a day off and Shabbat are just the horizon. The whole band opens Horario.
 struct WeekBand: View {
     @Environment(AppStore.self) private var store
@@ -68,7 +68,7 @@ struct WeekBand: View {
                         .font(.reading(11, relativeTo: .caption2))
                         .foregroundStyle(.muted)
                 default:
-                    Text("Libre")
+                    Text("Descanso")
                         .font(.reading(11, relativeTo: .caption2))
                         .foregroundStyle(.muted)
                 }
@@ -86,7 +86,7 @@ struct WeekBand: View {
     }
 
     private func summary(_ savers: Int, gym: Int) -> String {
-        let days = "\(savers) \(savers == 1 ? "día" : "días") de SAVERS"
+        let days = "\(savers) \(savers == 1 ? "amanecer" : "amaneceres")"
         return gym > 0 ? "\(days) · \(gym) de gym" : days
     }
 }

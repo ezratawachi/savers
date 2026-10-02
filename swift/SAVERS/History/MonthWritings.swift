@@ -14,7 +14,7 @@ struct MonthWritings: View {
         if list.isEmpty {
             Text(month.first > store.today
                  ? "Este mes todavía no llega. Toca un día para preparar su horario."
-                 : "Lo que escribas en Escritura va a aparecer aquí.")
+                 : "Lo que escribas en Escribe va a aparecer aquí.")
                 .font(.reading())
                 .foregroundStyle(.muted)
         } else {

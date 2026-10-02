@@ -7,7 +7,7 @@ final class AppStore {
     private(set) var settings: AppSettings
     private(set) var days: [String: Day]
     private(set) var today: String
-    /// Today is a day without SAVERS and "Hacer mis SAVERS hoy" was tapped.
+    /// Today is a day of rest and "Empezar mi amanecer" was tapped.
     var showOff = false
     private(set) var affReviewed: String
     /// The last changes from an AI, until undone or replaced by the next ones.
@@ -39,6 +39,13 @@ final class AppStore {
         prefs["affReviewed"] = reviewed
         affReviewed = reviewed
         aiUndo = prefs["aiUndo"].flatMap { try? JSONDecoder().decode(AIUndo.self, from: Data($0.utf8)) }
+        renameSaversBlock()
+    }
+
+    /// Saved at once, so the cloud and the Mac get "Amanecer" too.
+    private func renameSaversBlock() {
+        guard var sc = settings.schedule, sc.renameSaversBlock() else { return }
+        changeSettings(delay: .zero) { $0.schedule = sc }
     }
 
     /// After midnight or when the app comes back.
@@ -88,7 +95,7 @@ final class AppStore {
         return true
     }
 
-    /// "Hacer mis SAVERS hoy" / "Registrar mis SAVERS" on a day without them.
+    /// "Empezar mi amanecer" / "Registrar mi amanecer" on a day of rest.
     func doSaversAnyway(on ds: String) {
         if ds == today { showOff = true }
         change(ds, delay: .milliseconds(150)) { $0.extra = true }
@@ -143,6 +150,8 @@ final class AppStore {
     func setReadApp(_ app: String) { changeSettings(delay: .zero) { $0.readApp = app } }
 
     func setAINotes(_ notes: String) { changeSettings { $0.aiNotes = notes } }
+
+    func setBreatheNote(_ note: String) { changeSettings { $0.breatheNote = note } }
 
     /// Empty ones are dropped; at least one (maybe empty) stays.
     func setAffirmations(_ items: [Item]) { changeSettings(delay: .zero) { $0.affirmations = Self.clean(items) } }
@@ -291,6 +300,7 @@ final class AppStore {
         prefs["settingsAt"] = at
         prefs["settingsPushed"] = at
         flush()
+        renameSaversBlock()
     }
 
     /// The cloud's days. The same version (often this iPhone's own write coming back) changes nothing; an older

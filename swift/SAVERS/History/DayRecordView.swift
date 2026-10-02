@@ -35,9 +35,9 @@ struct DayRecordView: View {
                         RestCard(title: "Shabbat Shalom", text: "Shabbat no tiene registro.")
                     } else if !showRoutine {
                         RestCard(
-                            title: "Sin SAVERS",
-                            text: "Ese día no tocaba SAVERS. Si igual los hiciste, puedes registrarlos.",
-                            button: ("Registrar mis SAVERS", { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
+                            title: "Descanso",
+                            text: "Ese día Sunling descansaba. Si igual hiciste tu amanecer, puedes registrarlo.",
+                            button: ("Registrar mi amanecer", { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
                         )
                     } else {
                         letters(r, d)
@@ -72,7 +72,7 @@ struct DayRecordView: View {
     }
 
     /// The date, what the day was and how far it went, and Sunling as that morning left him: up and
-    /// awake if it was complete, heavy-eyed if not, asleep on a day to come or without SAVERS.
+    /// awake if it was complete, heavy-eyed if not, asleep on a day to come or of rest.
     private func header(_ r: Routine, type: DayType, d: Day, future: Bool, showRoutine: Bool) -> some View {
         let asleep = future || type == .shabbat || !showRoutine
         let pose = asleep ? SunlingPose.asleep : .morning(d.doneCount)

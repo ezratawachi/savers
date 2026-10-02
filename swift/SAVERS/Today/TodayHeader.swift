@@ -17,7 +17,7 @@ struct TodayHeader: View {
     let ds: String
     let type: DayType
     let title: Title
-    /// "6 días seguidos", "Hoy no toca SAVERS"; nil hides the line.
+    /// "6 amaneceres seguidos", "Sunling descansa hoy"; nil hides the line.
     let note: String?
     /// A save that failed takes the line, in the warning color.
     let status: String?
@@ -135,7 +135,7 @@ struct TodayHeader: View {
     private var titleView: some View {
         switch title {
         case .letters(let day):
-            HeroLetters(day: day)
+            HeroWord(day: day)
         case .shabbat:
             restTitle("Shabbat Shalom")
         case .free:

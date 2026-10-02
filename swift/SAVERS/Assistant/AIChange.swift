@@ -21,7 +21,7 @@ struct AIChange: Identifiable {
 
     let id: Int
     let edit: Edit
-    /// "SAVERS"
+    /// "Amanecer"
     let title: String
     /// "Normal · solo los jueves"
     let context: String

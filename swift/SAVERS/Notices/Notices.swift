@@ -163,7 +163,7 @@ final class Notices {
         DayKey.calendar.date(byAdding: .minute, value: minute, to: DayKey.date(ds)) ?? DayKey.date(ds)
     }
 
-    /// The night before a SAVERS day, `windDown` minutes before its "Dormido".
+    /// The night before a sunrise day, `windDown` minutes before its "Dormido".
     static func bedNote(_ r: Routine, _ ds: String) -> PlannedNote? {
         guard r.isScheduled(ds) else { return nil }
         let kind = r.scheduleKind(ds)
@@ -206,13 +206,13 @@ final class Notices {
     }
 }
 
-/// iOS's side: a notice shows even with SAVERS open, and a tap says which one it was.
+/// iOS's side: a notice shows even with Sunling open, and a tap says which one it was.
 /// Kept apart because iOS calls it off the main thread.
 nonisolated final class NoteDelegate: NSObject, UNUserNotificationCenterDelegate, @unchecked Sendable {
     @MainActor var onTap: ((String) -> Void)?
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        // With SAVERS open, the reading marks itself with its own sound; a second bell would be too much.
+        // With Sunling open, the reading marks itself with its own sound; a second bell would be too much.
         notification.request.identifier == "lectura" ? [] : [.banner, .list, .sound]
     }
 

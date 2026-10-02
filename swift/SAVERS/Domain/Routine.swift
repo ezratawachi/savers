@@ -28,7 +28,7 @@ struct Routine {
 
     func isScheduled(_ ds: String) -> Bool { dayType(ds).hasSavers }
 
-    /// Whose hours a date uses: gym on a gym day, normal otherwise (an off day with SAVERS uses normal).
+    /// Whose hours a date uses: gym on a gym day, normal otherwise (a day of rest done anyway uses normal).
     func scheduleKind(_ ds: String) -> DayType { dayType(ds) == .gym ? .gym : .normal }
 
     // MARK: Hours and minutes
@@ -143,7 +143,7 @@ struct Routine {
         return bs.contains(where: \.isLater) && morningDone ? .morning : .none
     }
 
-    /// Days in a row with SAVERS complete; days without SAVERS don't break it. If today's isn't done yet, from yesterday.
+    /// Sunrises in a row, complete; days of rest don't break it. If today's isn't done yet, from yesterday.
     func streak() -> Int {
         var ds = today
         if isScheduled(ds) && day(ds).doneCount < 6 { ds = DayKey.adding(-1, to: ds) }

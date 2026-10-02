@@ -27,17 +27,23 @@ struct SettingsView: View {
                     CardSections {
                         Section("Lo que dices y ves") {
                             NavigationLink {
+                                BreathePage()
+                            } label: {
+                                RowLabel(title: "Respira", value: s.breatheLine)
+                            }
+                            .cardRow()
+                            NavigationLink {
                                 ItemsPage(kind: .affirmations)
                             } label: {
                                 let n = s.affirmations.filled.count
-                                RowLabel(title: "Afirmaciones", value: n > 0 ? count(n, "frase", "frases") : "Vacío")
+                                RowLabel(title: Letter.afirmaciones.name, value: n > 0 ? count(n, "frase", "frases") : "Vacío")
                             }
                             .cardRow()
                             NavigationLink {
                                 ItemsPage(kind: .visualization)
                             } label: {
                                 let n = s.visualization.items.filled.count
-                                RowLabel(title: "Visualización", value: n > 0 ? count(n, "pregunta", "preguntas") : "Vacío")
+                                RowLabel(title: Letter.visualizacion.name, value: n > 0 ? count(n, "pregunta", "preguntas") : "Vacío")
                             }
                             .cardRow()
                             ReadAppPicker()

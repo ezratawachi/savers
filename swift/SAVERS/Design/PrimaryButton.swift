@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The filled button: "Hacer mis SAVERS hoy", "Listo".
+/// The filled button: "Empezar mi amanecer", "Listo".
 struct PrimaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

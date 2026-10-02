@@ -698,6 +698,8 @@ function normalizeSettings(s){
   if(READ_APPS[s.readApp]) out.readApp = s.readApp;
   // Written on the iPhone ("Notas para la IA"); kept here so the Mac never erases it.
   if(typeof s.aiNotes === "string" && s.aiNotes) out.aiNotes = s.aiNotes;
+  // The line under Respira, also written on the iPhone.
+  if(typeof s.breatheNote === "string" && s.breatheNote) out.breatheNote = s.breatheNote;
   return out;
 }
 
@@ -3782,7 +3784,7 @@ function dayTimelineHTML(ds, editable){
     return (g[1] ? '<p class="tgroup">' + g[1] + '</p>' : '') +
       '<ol class="tlist' + (g[0] === "night" ? " muted" : "") + '">' + list.map(function(st){
         const time = stepTime(st, ds), edited = !!(d && d.times && d.times[st.id]);
-        const key = g[0] === "steps" && /savers/i.test(st.short || st.title || "");
+        const key = g[0] === "steps" && /savers|amanecer/i.test(st.short || st.title || "");
         return '<li class="tstep' + (key ? " key" : "") + (edited ? " edited" : "") + '">' +
           '<span class="tt">' + (editable
             ? timePickHTML("", time, 'data-dstep="' + esc(st.id) + '" aria-label="Hora de ' + esc(st.title) + (edited ? ", cambiada para este día" : "") + '"')

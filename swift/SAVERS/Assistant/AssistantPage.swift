@@ -29,7 +29,7 @@ struct AssistantPage: View {
                 TextField("Opcional. Por ejemplo: no me alcanza el tiempo para leer", text: $question, axis: .vertical)
                     .lineLimit(2...)
                     .accessibilityLabel("De qué quieres hablar")
-                ShareLink(item: AIPacket.text(store.routine, question: question), preview: SharePreview("Mi rutina SAVERS")) {
+                ShareLink(item: AIPacket.text(store.routine, question: question), preview: SharePreview("Mi amanecer en Sunling")) {
                     Label("Mandar a la IA", systemImage: "square.and.arrow.up")
                         .fontWeight(.bold)
                 }
@@ -38,7 +38,7 @@ struct AssistantPage: View {
             } header: {
                 Text("¿De qué quieres hablar?")
             } footer: {
-                Text("Se manda con instrucciones, tu horario, tus afirmaciones, tu visualización, tus notas y lo que marcaste en las últimas \(AIPacket.weeks) semanas. Lo que escribes en Escritura, no.")
+                Text("Se manda con instrucciones, tu horario, tus afirmaciones, tu visualización, tus notas y lo que marcaste en las últimas \(AIPacket.weeks) semanas. Lo que escribes en Escribe, no.")
             }
 
             Section {
@@ -80,6 +80,9 @@ struct AssistantPage: View {
             notes = store.settings.aiNotes
             #if DEBUG
             // `-pegar archivo`: what a tap on Pegar would bring, since the simulator can't tap it.
+            if let path = Scenario.packetPath {
+                try? AIPacket.text(store.routine, question: question).write(toFile: path, atomically: true, encoding: .utf8)
+            }
             if let text = Scenario.pasted {
                 Scenario.pasted = nil
                 read(text)

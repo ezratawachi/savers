@@ -6,8 +6,8 @@ enum ItemsKind: Hashable {
 
     var title: String {
         switch self {
-        case .affirmations: "Afirmaciones"
-        case .visualization: "Visualización"
+        case .affirmations: Letter.afirmaciones.name
+        case .visualization: Letter.visualizacion.name
         }
     }
 

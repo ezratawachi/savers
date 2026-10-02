@@ -18,13 +18,13 @@ enum AIText {
         return TimeText.minutes("\(h):00 \(p.2)m").map(TimeText.label)
     }
 
-    /// "Silencio", "lectura (R)" → the letter.
+    /// "Respira", "lee (L)", and the old "silencio", "lectura" → the step.
     static func letter(_ s: String) -> Letter? {
         let k = key(s)
-        return Letter.allCases.first { k.hasPrefix($0.rawValue) }
+        return Letter.allCases.first { k.hasPrefix($0.aiKey) || k.hasPrefix($0.rawValue) }
     }
 
-    /// "normal", "Gym", "sin SAVERS", "off" → the kind a weekday or a date can be.
+    /// "normal", "Gym", "descanso", "sin savers", "off" → the kind a weekday or a date can be.
     static func dayType(_ v: JSONValue?) -> DayType? {
         guard let s = v?.text else { return nil }
         switch key(s) {
@@ -49,6 +49,11 @@ enum AIText {
     }
 
     static func quoted(_ s: String) -> String { "«\(s)»" }
+}
+
+extension Letter {
+    /// "respira", "lee": how the AI's configuration names it.
+    var aiKey: String { AIText.key(name) }
 }
 
 extension Routine {

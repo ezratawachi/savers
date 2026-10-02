@@ -4,7 +4,7 @@ import SwiftUI
 /// Sunling, up and awake on the horizon just above, is the finish.
 struct FinishCard: View {
     let finish: Finish
-    /// "Lectura a las 8:50 pm"
+    /// "Lee a las 8:50 pm"
     let pending: String
     let streak: Int
 
@@ -18,7 +18,7 @@ struct FinishCard: View {
                 if finish == .morning {
                     Text("Falta \(Text(pending).bold())")
                 } else {
-                    Text("Racha: \(Text(streak == 1 ? "1 día" : "\(streak) días").bold())")
+                    Text("Racha: \(Text(streak == 1 ? "1 amanecer" : "\(streak) amaneceres").bold())")
                 }
             }
             .font(.reading())

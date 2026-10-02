@@ -69,7 +69,7 @@ struct TodayView: View {
                         case .shabbat:
                             EmptyView()
                         case .free:
-                            Button("Hacer mis SAVERS hoy") {
+                            Button("Empezar mi amanecer") {
                                 withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) }
                             }
                             .buttonStyle(PrimaryButton())
@@ -221,10 +221,10 @@ struct TodayView: View {
     private func note(_ title: TodayHeader.Title, _ routine: Routine) -> String? {
         switch title {
         case .shabbat: return "Nos vemos el domingo"
-        case .free: return "Hoy no toca SAVERS"
+        case .free: return "Sunling descansa hoy"
         case .letters:
             let streak = routine.streak()
-            return streak >= 2 && shownFinish != .day ? "\(streak) días seguidos" : nil
+            return streak >= 2 && shownFinish != .day ? "\(streak) amaneceres seguidos" : nil
         }
     }
 
