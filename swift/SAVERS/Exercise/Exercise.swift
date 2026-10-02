@@ -29,62 +29,91 @@ struct ExStep {
     var fig: Fig?
 }
 
-/// Move at home: 8 minutes. March, two rounds of four drills with a switch between them, then breathing.
+/// Move at home: the whole routine (8 minutes) or the short one (2), for a 10- or 20-minute sunrise.
+/// March, the four drills (twice in the whole one) with a switch between them, then breathing.
+struct Workout: Equatable {
+    /// "full" or "short": two workouts are the same routine when this is.
+    let id: String
+    let steps: [ExStep]
+    /// Each step as the timer runs it.
+    let runSteps: [RunStep]
+    /// Every sound of the guide, in routine seconds.
+    let events: [GuideEvent]
+
+    static let full = Workout(id: "full", march: 60, drill: 40, rounds: 2, breathe: 65)
+    static let short = Workout(id: "short", march: 15, drill: 20, rounds: 1, breathe: 15)
+
+    static func of(_ settings: AppSettings) -> Workout { settings.length?.shortMove == true ? .short : .full }
+
+    static func == (a: Workout, b: Workout) -> Bool { a.id == b.id }
+
+    private init(id: String, march: Double, drill: Double, rounds: Int, breathe: Double) {
+        var s = [ExStep(name: String(localized: "March in place"), secs: march, fig: .marcha)]
+        for r in 1...rounds {
+            for (i, c) in Exercise.circuit.enumerated() {
+                let name = rounds == 1 ? c.0 : String(localized: "\(c.0) (round \(r))")
+                s.append(ExStep(name: name, ex: c.0, round: r, secs: drill, fig: c.1))
+                if !(r == rounds && i == Exercise.circuit.count - 1) { s.append(ExStep(name: String(localized: "Switch"), secs: 5, rest: true)) }
+            }
+        }
+        s.append(ExStep(name: String(localized: "Breathing with your legs on the chair"), secs: breathe, fig: .descanso))
+        self.id = id
+        steps = s
+        runSteps = s.map { RunStep(secs: $0.secs, text: $0.name) }
+        events = GuideEvent.all(s)
+    }
+
+    /// How long it lasts, as its card says it.
+    var minutes: Int { max(1, Int((Runs.total(runSteps) / 60).rounded())) }
+
+    var marchCue: String { steps[0].secs >= 60 ? Exercise.marchCue : String(localized: "March in place.") }
+
+    // MARK: Cues
+
+    func cue(_ i: Int) -> String {
+        guard steps.indices.contains(i) else { return "" }
+        if i == 0 { return marchCue }
+        let s = steps[i]
+        if i == steps.count - 1 { return String(localized: "Last one: legs on the chair, breathe slowly.") }
+        let name = (s.ex ?? "").lowercased()
+        if s.round == 2 && s.ex == Exercise.circuit[0].0 { return String(localized: "Round two: \(name).") }
+        return String(localized: "Next up: \(name).")
+    }
+
+    /// The cue plus the step's tip ("Next up: dead bug. Lower back pressed to the floor."); the last step already says it.
+    func cueFull(_ i: Int) -> String {
+        guard let fig = steps[safe: i]?.fig, fig != .descanso else { return cue(i) }
+        return cue(i) + " " + fig.tip + "."
+    }
+
+    /// A change belongs to the part that comes next.
+    func part(of i: Int) -> Int {
+        let fig = steps[safe: i]?.fig ?? steps[safe: i + 1]?.fig
+        return Exercise.map.firstIndex { $0.fig == fig } ?? -1
+    }
+
+    /// Everything the voice can say in it, for Gemini to prepare.
+    var phrases: [String] {
+        [marchCue] + steps.indices.filter { $0 > 0 && !steps[$0].rest }.map(cue) + steps.indices.filter { !steps[$0].rest }.map(cueFull)
+    }
+}
+
+/// What both routines share: the drills, the cues and the map of their six parts.
 enum Exercise {
     static let circuit: [(String, Fig)] = [
         (String(localized: "Bird dog"), .birddog), (String(localized: "Dead bug"), .deadbug),
         (String(localized: "Glute bridge"), .puente), (String(localized: "Chair squat"), .sentadilla),
     ]
 
-    static let steps: [ExStep] = {
-        var s = [ExStep(name: String(localized: "March in place"), secs: 60, fig: .marcha)]
-        for r in 1...2 {
-            for (i, c) in circuit.enumerated() {
-                s.append(ExStep(name: String(localized: "\(c.0) (round \(r))"), ex: c.0, round: r, secs: 40, fig: c.1))
-                if !(r == 2 && i == circuit.count - 1) { s.append(ExStep(name: String(localized: "Switch"), secs: 5, rest: true)) }
-            }
-        }
-        s.append(ExStep(name: String(localized: "Breathing with your legs on the chair"), secs: 65, fig: .descanso))
-        return s
-    }()
-
-    static let runSteps = steps.map { RunStep(secs: $0.secs, text: $0.name) }
-
-    // MARK: Cues
-
     static let marchCue = String(localized: "March in place, one minute.")
 
-    static func cue(_ i: Int) -> String {
-        guard steps.indices.contains(i) else { return "" }
-        if i == 0 { return marchCue }
-        let s = steps[i]
-        if i == steps.count - 1 { return String(localized: "Last one: legs on the chair, breathe slowly.") }
-        let name = (s.ex ?? "").lowercased()
-        if s.round == 2 && s.ex == circuit[0].0 { return String(localized: "Round two: \(name).") }
-        return String(localized: "Next up: \(name).")
-    }
-
-    /// The cue plus the step's tip ("Next up: dead bug. Lower back pressed to the floor."); the last step already says it.
-    static func cueFull(_ i: Int) -> String {
-        guard let fig = steps[safe: i]?.fig, fig != .descanso else { return cue(i) }
-        return cue(i) + " " + fig.tip + "."
-    }
-
     static let doneCue = String(localized: "All done. Move is checked off.")
-
-    // MARK: The map
 
     /// Six parts in a row; the width of each is its name's bold width, so all fit on a 375-pt iPhone.
     static let map: [(fig: Fig, name: String, weight: Double)] = [
         (.marcha, String(localized: "March"), 37), (.birddog, String(localized: "Bird dog"), 43), (.deadbug, String(localized: "Dead bug"), 48),
         (.puente, String(localized: "Bridge"), 35), (.sentadilla, String(localized: "Squat"), 52), (.descanso, Letter.silencio.name, 39),
     ]
-
-    /// A change belongs to the part that comes next.
-    static func part(of i: Int) -> Int {
-        let fig = steps[safe: i]?.fig ?? steps[safe: i + 1]?.fig
-        return map.firstIndex { $0.fig == fig } ?? -1
-    }
 }
 
 extension Array {

@@ -5,6 +5,10 @@ import Foundation
 /// with no cloud and no notices, so nothing real is read or changed. Debug builds only.
 enum Scenario: String, CaseIterable {
     case manana, abiertas, hechas, diaCompleto = "dia-completo", shabbat, sinSavers = "sin-savers", historial, ajustes
+    /// A new install: nothing on it, so the welcome shows.
+    case nuevo
+    /// Someone new on their seventh sunrise, done: "Want more time?".
+    case siete
 
     static let current: Scenario? = {
         let args = ProcessInfo.processInfo.arguments
@@ -63,16 +67,27 @@ enum Scenario: String, CaseIterable {
         let folder = URL.temporaryDirectory.appending(path: "escenario", directoryHint: .isDirectory)
         try? FileManager.default.removeItem(at: folder)
         let persistence = Persistence(folder: folder)
-        let settings = try! JSONDecoder().decode(AppSettings.self, from: Data(Self.settingsJSON.utf8))
-        try? persistence.save(settings: settings, days: days())
+        switch self {
+        case .nuevo:
+            try? persistence.save(settings: AppSettings(), days: [:])
+        case .siete:
+            var settings = AppSettings()
+            settings.length = .ten
+            settings.schedule = .starter(wake: "6:30")
+            settings.affirmations = AppSettings.exampleAffirmations
+            try? persistence.save(settings: settings, days: days())
+        default:
+            let settings = try! JSONDecoder().decode(AppSettings.self, from: Data(Self.settingsJSON.utf8))
+            try? persistence.save(settings: settings, days: days())
+        }
         return AppStore(persistence: persistence, prefs: Self.prefs)
     }
 
     private func days() -> [String: Day] {
         let today = DayKey.today
         var out: [String: Day] = [:]
-        // Three weeks behind, all done but two days, for the streak and Historial.
-        for back in 1...21 {
+        // Three weeks behind, all done but two days, for the streak and Historial (six days for the seventh).
+        for back in 1...(self == .siete ? 6 : 21) {
             let ds = DayKey.adding(-back, to: today)
             var d = Day(date: ds)
             let skipped = back == 9 || back == 16
@@ -96,9 +111,11 @@ enum Scenario: String, CaseIterable {
         case .diaCompleto:
             d.type = "gym"
             for l in Letter.allCases { d.checks[l.rawValue] = true }
+        case .siete:
+            for l in Letter.allCases { d.checks[l.rawValue] = true }
         case .sinSavers:
             d.type = "off"
-        case .shabbat, .historial, .ajustes:
+        case .shabbat, .historial, .ajustes, .nuevo:
             break
         }
         out[today] = d

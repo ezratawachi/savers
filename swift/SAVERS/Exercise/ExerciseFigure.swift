@@ -8,7 +8,7 @@ struct ExerciseFigure: View {
         /// A change: the next drill's first pose, held.
         case ready(Fig)
         /// A drill following the routine's clock.
-        case guided(step: Int)
+        case guided(step: Int, Workout)
     }
 
     let fig: Fig
@@ -73,11 +73,11 @@ struct ExerciseFigure: View {
         switch mode {
         case .loop:
             return Frame(params: FigMotion.march(date.timeIntervalSinceReferenceDate), label: Self.marching, trails: 0)
-        case let .guided(i):
-            guard let plan = GuidePlan(step: i), let el = elapsed(date) else {
+        case let .guided(i, workout):
+            guard let plan = GuidePlan(step: i, of: workout.steps), let el = elapsed(date) else {
                 return Frame(params: spec.still, label: Self.howTo, trails: 1)
             }
-            let t = el - Runs.stepStart(Exercise.runSteps, i) - plan.guide.lead
+            let t = el - Runs.stepStart(workout.runSteps, i) - plan.guide.lead
             guard t >= 0 else { return Frame(params: spec.start, label: Self.getReady, trails: 1) }
             let rep = Int(t / plan.cycle), tc = t - Double(rep) * plan.cycle
             var p = FigMotion.rep(fig, plan.d, min(tc, plan.cycle), start: spec.start)

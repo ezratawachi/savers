@@ -14,6 +14,11 @@ struct LetterCard<Content: View>: View {
     let onOpen: () -> Void
     /// Inside another card (the done ones): no card of its own, on that card's line.
     var nested = false
+    /// Its first-time note shows (what it is, why, "Learn more").
+    var showsNote = false
+    /// The ⓘ that brings the note back; nil hides it.
+    var onInfo: (() -> Void)?
+    var onLearnMore: () -> Void = {}
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -28,6 +33,20 @@ struct LetterCard<Content: View>: View {
                     rowText
                 }
             }
+            // Under the minutes and the chevron, on the subtitle's line: room the row already has.
+            .overlay(alignment: .bottomTrailing) {
+                if let onInfo {
+                    Button("About \(letter.name)", systemImage: showsNote ? "info.circle.fill" : "info.circle", action: onInfo)
+                        .labelStyle(.iconOnly)
+                        .font(.system(size: 16))
+                        .foregroundStyle(showsNote ? Color.sky : Color.muted)
+                        .frame(width: 44, height: 36)
+                        .contentShape(.rect)
+                        .buttonStyle(.plain)
+                        .offset(x: 14, y: 6)
+                        .accessibilityValue(showsNote ? Text("Shown") : Text(verbatim: ""))
+                }
+            }
             // The circle's drawing, not its target, sits on the card's line.
             .padding(EdgeInsets(top: -CardLayout.circleSlack, leading: -CardLayout.circleSlack,
                                 bottom: -CardLayout.circleSlack, trailing: 0))
@@ -35,6 +54,11 @@ struct LetterCard<Content: View>: View {
                 SunLine(start: sun.start, length: sun.length, next: sunNext)
                     .padding(.leading, CardLayout.titleIndent)
                     .padding(.top, 6)
+                    .transition(.opacity)
+            }
+            if showsNote {
+                StepNote(letter: letter, onMore: onLearnMore)
+                    .padding(.top, 10)
                     .transition(.opacity)
             }
             if isOpen {

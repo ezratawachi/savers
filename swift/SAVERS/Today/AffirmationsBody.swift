@@ -4,6 +4,8 @@ import SwiftUI
 struct AffirmationsBody: View {
     let items: [Item]
     let reviewDue: Bool
+    /// Still the welcome's example phrases: an invitation to make them yours.
+    var examples = false
     /// "Review affirmations" (the monthly review) or "Add affirmations" when there are none.
     let onEdit: (_ review: Bool) -> Void
 
@@ -19,8 +21,14 @@ struct AffirmationsBody: View {
                         .font(.reading(19, relativeTo: .body))
                         .lineSpacing(3)
                 }
-                Note(reviewDue ? String(localized: "New month: do they still feel like yours?") : String(localized: "Slowly, feeling each phrase."))
-                if reviewDue {
+                if examples {
+                    Note(String(localized: "These are examples. Write phrases you can believe, in your own words."))
+                    Button("Make them mine") { onEdit(false) }
+                        .buttonStyle(PrimaryButton())
+                } else {
+                    Note(reviewDue ? String(localized: "New month: do they still feel like yours?") : String(localized: "Slowly, feeling each phrase."))
+                }
+                if reviewDue && !examples {
                     Button("Review affirmations") { onEdit(true) }
                         .buttonStyle(PrimaryButton())
                 }

@@ -61,12 +61,12 @@
         }
       }
     },
-    "## How the app works\n\n- My sunrise is six short steps each morning, to start the day with myself before the world. It's always all six: when time is short, they get shorter, they don't get dropped.\n  - Breathe: a few minutes still, to breathe, meditate or pray.\n  - Affirm: out loud, a few phrases I believe about who I choose to be. Nothing over the top like \"I'm amazing\": for someone who doesn't believe it, it makes things worse.\n  - Imagine: today's most important thing, the likely obstacle and what I'll do if it comes up (\"if X happens, I'll do Y\"). The path, not just the goal reached.\n  - Move: a few minutes of movement at home, or the gym.\n  - Read: a few pages of something that helps me grow.\n  - Write: give thanks for something specific and jot down an idea from what I read.\n- It's a method of its own, with these names. Even if it looks like others you know, don't call it by another name or use their acronyms.\n- Rest counts too: a rest day doesn't break my sunrises in a row.\n- Each weekday is Normal, Gym or Rest. Saturday is Shabbat and doesn't change.\n- Normal and Gym each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep). Some blocks hold steps, in order.\n- Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.\n- Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine 1 minute per question, Write 2, Move 8 or however long the gym lasts).\n- The bedtime block is in \"The night before\": it's when I go to sleep the night before that day. \"windDown\" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.\n- A time or some minutes can be different on one weekday (\"hoursByDay\", \"minutesByDay\") or on one date (\"dates\", from today up to a year ahead).\n- Blocks can't be added, removed or renamed, and steps can't move from one block to another. If that would suit me, tell me in the conversation, not in the change block." : {
+    "## How the app works\n\n- My sunrise is six short steps each morning, to start the day with myself before the world. It's always all six: when time is short, they get shorter, they don't get dropped.\n  - Breathe: a few minutes still, to breathe, meditate or pray.\n  - Affirm: out loud, a few phrases I believe about who I choose to be. Nothing over the top like \"I'm amazing\": for someone who doesn't believe it, it makes things worse.\n  - Imagine: today's most important thing, the likely obstacle and what I'll do if it comes up (\"if X happens, I'll do Y\"). The path, not just the goal reached.\n  - Move: a few minutes of movement at home, or the gym.\n  - Read: a few pages of something that helps me grow.\n  - Write: give thanks for something specific and jot down an idea from what I read.\n- It's a method of its own, with these names. Even if it looks like others you know, don't call it by another name or use their acronyms.\n- Rest counts too: a rest day doesn't break my sunrises in a row.\n- Each weekday is Normal, Gym or Rest. Saturday is Shabbat and doesn't change.\n- Normal and Gym each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep). Some blocks hold steps, in order.\n- Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.\n- Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine up to a minute per question, Write 1 or 2, Move 2 or 8 at home or however long the gym lasts). The schedule below has the real ones.\n- The bedtime block is in \"The night before\": it's when I go to sleep the night before that day. \"windDown\" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.\n- A time or some minutes can be different on one weekday (\"hoursByDay\", \"minutesByDay\") or on one date (\"dates\", from today up to a year ahead).\n- Blocks can't be added, removed or renamed, and steps can't move from one block to another. If that would suit me, tell me in the conversation, not in the change block." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "## Cómo funciona la app\n\n- Mi amanecer son seis pasos cortos cada mañana, para empezar el día conmigo antes que con el mundo. Son siempre los seis: si falta tiempo, se acortan, no se quitan.\n  - Respira: unos minutos quieto, para respirar, meditar o rezar.\n  - Afirma: en voz alta, pocas frases que me crea sobre quién elijo ser. Nada exagerado como \"soy increíble\": a quien no se lo cree lo hace sentir peor.\n  - Imagina: lo más importante de hoy, el obstáculo probable y qué haré si pasa (\"si pasa X, hago Y\"). El camino, no solo la meta cumplida.\n  - Muévete: unos minutos de movimiento en casa, o el gym.\n  - Lee: unas páginas de algo que me haga crecer.\n  - Escribe: agradecer algo concreto y anotar una idea de lo que leí.\n- Es un método propio con estos nombres. Aunque se parezca a otros que conoces, no lo llames con otro nombre ni uses sus siglas.\n- Descansar también cuenta: un día de descanso no corta mis amaneceres seguidos.\n- Cada día de la semana es Normal, Gym o Descanso. El sábado es Shabbat y no se cambia.\n- Normal y Gym tienen su propio horario de bloques con hora (por ejemplo Te paras, Amanecer, Baño, Dormido). Algunos bloques tienen pasos dentro, en orden.\n- La hora de cada paso es la hora de su bloque más los minutos de los pasos que van antes. Para mover un paso, se mueve su bloque o se cambian minutos.\n- Solo Respira y Lee tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de los otros pasos salen de su contenido (Afirma unos 25 segundos por frase, Imagina 1 minuto por pregunta, Escribe 2, Muévete 8 o lo que dura el gym).\n- \"Dormido\" está en \"La noche anterior\": es la hora de dormir de la noche antes de ese día. \"Prepararte\" son los minutos antes de Dormido en que me llega el aviso para prepararme: de 15 a 90, de 5 en 5, el mismo todas las noches.\n- Una hora o unos minutos pueden ser distintos un día de la semana (\"horasPorDia\", \"minutosPorDia\") o una fecha (\"fechas\", desde hoy hasta un año adelante).\n- No se pueden agregar, quitar ni renombrar bloques, ni mover pasos de un bloque a otro. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios."
+            "value" : "## Cómo funciona la app\n\n- Mi amanecer son seis pasos cortos cada mañana, para empezar el día conmigo antes que con el mundo. Son siempre los seis: si falta tiempo, se acortan, no se quitan.\n  - Respira: unos minutos quieto, para respirar, meditar o rezar.\n  - Afirma: en voz alta, pocas frases que me crea sobre quién elijo ser. Nada exagerado como \"soy increíble\": a quien no se lo cree lo hace sentir peor.\n  - Imagina: lo más importante de hoy, el obstáculo probable y qué haré si pasa (\"si pasa X, hago Y\"). El camino, no solo la meta cumplida.\n  - Muévete: unos minutos de movimiento en casa, o el gym.\n  - Lee: unas páginas de algo que me haga crecer.\n  - Escribe: agradecer algo concreto y anotar una idea de lo que leí.\n- Es un método propio con estos nombres. Aunque se parezca a otros que conoces, no lo llames con otro nombre ni uses sus siglas.\n- Descansar también cuenta: un día de descanso no corta mis amaneceres seguidos.\n- Cada día de la semana es Normal, Gym o Descanso. El sábado es Shabbat y no se cambia.\n- Normal y Gym tienen su propio horario de bloques con hora (por ejemplo Te paras, Amanecer, Baño, Dormido). Algunos bloques tienen pasos dentro, en orden.\n- La hora de cada paso es la hora de su bloque más los minutos de los pasos que van antes. Para mover un paso, se mueve su bloque o se cambian minutos.\n- Solo Respira y Lee tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de los otros pasos salen de su contenido (Afirma unos 25 segundos por frase, Imagina hasta un minuto por pregunta, Escribe 1 o 2, Muévete 2 u 8 en casa o lo que dura el gym). El horario de abajo tiene los reales.\n- \"Dormido\" está en \"La noche anterior\": es la hora de dormir de la noche antes de ese día. \"Prepararte\" son los minutos antes de Dormido en que me llega el aviso para prepararme: de 15 a 90, de 5 en 5, el mismo todas las noches.\n- Una hora o unos minutos pueden ser distintos un día de la semana (\"horasPorDia\", \"minutosPorDia\") o una fecha (\"fechas\", desde hoy hasta un año adelante).\n- No se pueden agregar, quitar ni renombrar bloques, ni mover pasos de un bloque a otro. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios."
           }
         }
       }
@@ -1001,6 +1001,16 @@
         }
       }
     },
+    "%lld sunrises done. If you like, each step can last a little longer: %lld minutes in all." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llevas %1$lld amaneceres. Si quieres, cada paso puede durar un poco más: %2$lld minutos en total."
+          }
+        }
+      }
+    },
     "%lld sunrises in a row" : {
       "localizations" : {
         "en" : {
@@ -1097,6 +1107,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld. Nueva: %2$@"
+          }
+        }
+      }
+    },
+    "10, 20 or 30 minutes, always the six steps: when time is short they get shorter, never fewer. You change each step's minutes in Schedule." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10, 20 o 30 minutos, siempre los seis pasos: si falta tiempo se acortan, nunca se quitan. Los minutos de cada paso se cambian en Horario."
+          }
+        }
+      }
+    },
+    "A few minutes of movement at home, or your gym." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unos minutos de movimiento en casa, o tu gym."
+          }
+        }
+      }
+    },
+    "A few minutes still: breathe, meditate or pray." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unos minutos quieto: respira, medita o reza."
+          }
+        }
+      }
+    },
+    "A few pages of something that helps you grow." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unas páginas de algo que te haga crecer."
+          }
+        }
+      }
+    },
+    "About %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobre %@"
           }
         }
       }
@@ -1211,6 +1271,16 @@
         }
       }
     },
+    "Aim" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rumbo"
+          }
+        }
+      }
+    },
     "All" : {
       "localizations" : {
         "es" : {
@@ -1261,6 +1331,26 @@
         }
       }
     },
+    "Allow notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir avisos"
+          }
+        }
+      }
+    },
+    "Always the six steps: shorter, not fewer. You can change the minutes later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre los seis pasos: más cortos, no menos. Los minutos se pueden cambiar después."
+          }
+        }
+      }
+    },
     "Apply %lld changes" : {
       "localizations" : {
         "en" : {
@@ -1307,6 +1397,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dormido a las %@."
+          }
+        }
+      }
+    },
+    "At your hour: your sunrise starts when you wake up, not at 5." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tu hora: tu amanecer empieza cuando despiertas, no a las 5."
           }
         }
       }
@@ -1397,6 +1497,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pueden quitar bloques (%1$@ en %2$@)."
+          }
+        }
+      }
+    },
+    "Body, mind and memory, a little each day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuerpo, mente y memoria, un poco cada día."
           }
         }
       }
@@ -1541,6 +1651,16 @@
         }
       }
     },
+    "Choose who you'll be and what matters today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige quién vas a ser y qué importa hoy."
+          }
+        }
+      }
+    },
     "Close without changes" : {
       "localizations" : {
         "es" : {
@@ -1597,6 +1717,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conectando…"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir"
           }
         }
       }
@@ -1771,6 +1901,16 @@
         }
       }
     },
+    "Each morning, six short steps to start the day with yourself before the world. Sunling rises with each one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada mañana, seis pasos cortos para empezar el día contigo antes que con el mundo. Sunling sube con cada uno."
+          }
+        }
+      }
+    },
     "Edit" : {
       "localizations" : {
         "es" : {
@@ -1831,6 +1971,16 @@
         }
       }
     },
+    "Examples of notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejemplos de avisos"
+          }
+        }
+      }
+    },
     "Eyes closed, guided" : {
       "localizations" : {
         "es" : {
@@ -1877,6 +2027,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Para un solo día, como un feriado o un gym cancelado, tócalo en Hoy o en Historial."
+          }
+        }
+      }
+    },
+    "Four principles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuatro principios"
           }
         }
       }
@@ -1951,6 +2111,16 @@
         }
       }
     },
+    "Give thanks for something specific, and jot down one idea from what you read." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agradece algo concreto y anota una idea de lo que leíste."
+          }
+        }
+      }
+    },
     "Glute bridge" : {
       "localizations" : {
         "es" : {
@@ -2001,6 +2171,16 @@
         }
       }
     },
+    "Grow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crecer"
+          }
+        }
+      }
+    },
     "Gym" : {
       "localizations" : {
         "es" : {
@@ -2037,6 +2217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ayuda"
+          }
+        }
+      }
+    },
+    "Help me write 3 to 5 affirmations I can believe, about who I choose to be. Ask me a few questions first." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayúdame a escribir de 3 a 5 afirmaciones que me crea, sobre quién elijo ser. Primero hazme unas preguntas."
           }
         }
       }
@@ -2101,6 +2291,26 @@
         }
       }
     },
+    "How long" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuánto dura"
+          }
+        }
+      }
+    },
+    "How long?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuánto tiempo?"
+          }
+        }
+      }
+    },
     "How they look and whether they make a sound, you choose in Settings › Notifications › Sunling. With Sleep or another Focus they arrive silently and hidden, unless Sunling is one of its allowed apps." : {
       "localizations" : {
         "es" : {
@@ -2117,6 +2327,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cómo respiras, meditas o rezas cada mañana: una app, una oración, un lugar. Vacío, dice «%@»."
+          }
+        }
+      }
+    },
+    "I already use Sunling" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya uso Sunling"
+          }
+        }
+      }
+    },
+    "I can do what matters today, even if it isn't perfect." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedo hacer lo importante de hoy, aunque no salga perfecto."
           }
         }
       }
@@ -2157,6 +2387,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ya terminé"
+          }
+        }
+      }
+    },
+    "I'm learning to keep the promises I make to myself, one at a time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estoy aprendiendo a cumplir lo que me prometo, de a una cosa a la vez."
           }
         }
       }
@@ -2461,6 +2701,26 @@
         }
       }
     },
+    "Learn more" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saber más"
+          }
+        }
+      }
+    },
+    "Learning a little every day adds up. The evidence here is weaker, and we say so." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprender un poco cada día suma. Aquí la evidencia es más débil, y lo decimos."
+          }
+        }
+      }
+    },
     "Log my sunrise" : {
       "localizations" : {
         "es" : {
@@ -2487,6 +2747,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Baja despacio"
+          }
+        }
+      }
+    },
+    "Make them mine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacerlas mías"
           }
         }
       }
@@ -2537,6 +2807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Marchar en el sitio, un minuto."
+          }
+        }
+      }
+    },
+    "March in place." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcha en el lugar."
           }
         }
       }
@@ -2657,6 +2937,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ejercicio terminado y marcado"
+          }
+        }
+      }
+    },
+    "Moving lifts your mood and your energy." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moverte mejora tu ánimo y tu energía."
           }
         }
       }
@@ -2841,6 +3131,16 @@
         }
       }
     },
+    "Not now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        }
+      }
+    },
     "Note" : {
       "localizations" : {
         "es" : {
@@ -3011,6 +3311,16 @@
         }
       }
     },
+    "Opens The method" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre El método"
+          }
+        }
+      }
+    },
     "Opens that day" : {
       "localizations" : {
         "es" : {
@@ -3091,6 +3401,16 @@
         }
       }
     },
+    "Out loud, a few phrases you believe about who you choose to be." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En voz alta, pocas frases que te creas sobre quién eliges ser."
+          }
+        }
+      }
+    },
     "Paper book" : {
       "localizations" : {
         "es" : {
@@ -3137,6 +3457,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pausar"
+          }
+        }
+      }
+    },
+    "Picturing the path, with an “if this happens, I'll do that” plan, helps you follow through more than picturing the goal alone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imaginar el camino, con un plan de “si pasa esto, hago aquello”, te ayuda a cumplir más que imaginar solo la meta."
           }
         }
       }
@@ -3241,6 +3571,16 @@
         }
       }
     },
+    "Remembering your values steadies you. Over-the-top phrases can make you feel worse, so keep them believable." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordar tus valores te da firmeza. Las frases exageradas pueden hacerte sentir peor: que sean creíbles."
+          }
+        }
+      }
+    },
     "Removed: %@" : {
       "localizations" : {
         "es" : {
@@ -3267,6 +3607,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descanso"
+          }
+        }
+      }
+    },
+    "Rest counts too: a day off doesn't break anything." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descansar también cuenta: un día libre no rompe nada."
           }
         }
       }
@@ -3441,6 +3791,26 @@
         }
       }
     },
+    "Short every day beats long once in a while." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corto cada día gana a largo de vez en cuando."
+          }
+        }
+      }
+    },
+    "Shown" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visible"
+          }
+        }
+      }
+    },
     "Shows what's done" : {
       "localizations" : {
         "es" : {
@@ -3511,12 +3881,32 @@
         }
       }
     },
+    "Six short steps each morning, to start the day with yourself before the world. Sunling rises with each one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seis pasos cortos cada mañana, para empezar el día contigo antes que con el mundo. Sunling sube con cada uno."
+          }
+        }
+      }
+    },
     "Slowly, feeling each phrase." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Despacio, sintiendo cada frase."
+          }
+        }
+      }
+    },
+    "So you know when your reading minutes are up, even with the app closed, and once a month, to review your phrases." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para avisarte cuando terminan tus minutos de lectura, aunque la app esté cerrada, y una vez al mes, para revisar tus frases."
           }
         }
       }
@@ -3591,12 +3981,42 @@
         }
       }
     },
+    "Start without noise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar sin ruido."
+          }
+        }
+      }
+    },
+    "Starting without noise lowers stress and lets you choose how your day begins." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar sin ruido baja el estrés y te deja elegir cómo empieza tu día."
+          }
+        }
+      }
+    },
     "Status" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estado"
+          }
+        }
+      }
+    },
+    "Still" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calma"
           }
         }
       }
@@ -3657,6 +4077,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sunling habla el idioma del iPhone. Para elegir otro solo para Sunling, toca Idioma en su Configuración."
+          }
+        }
+      }
+    },
+    "Sunling started as my way of practicing the morning routine from Hal Elrod's book *The Miracle Morning*. Over time it changed, following research and what worked in real life. Sunling isn't affiliated with Hal Elrod or The Miracle Morning." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunling empezó como mi forma de practicar la rutina de la mañana del libro *The Miracle Morning* (*Mañanas milagrosas*) de Hal Elrod. Con el tiempo cambió, siguiendo la investigación y lo que funcionaba en la vida real. Sunling no está afiliada a Hal Elrod ni a The Miracle Morning."
           }
         }
       }
@@ -3771,6 +4201,16 @@
         }
       }
     },
+    "Thanking something specific lifts your mood a little; writing down what you read helps you remember it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agradecer algo concreto sube un poco el ánimo; escribir lo que leíste te ayuda a recordarlo."
+          }
+        }
+      }
+    },
     "That date" : {
       "localizations" : {
         "es" : {
@@ -3831,6 +4271,16 @@
         }
       }
     },
+    "The method" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El método"
+          }
+        }
+      }
+    },
     "The night before" : {
       "localizations" : {
         "es" : {
@@ -3847,6 +4297,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambia el orden"
+          }
+        }
+      }
+    },
+    "The path, not just the goal, and phrases you believe." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El camino, no solo la meta, y frases que te creas."
           }
         }
       }
@@ -3917,6 +4377,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No existe el bloque %1$@ en %2$@. Los bloques son: %3$@."
+          }
+        }
+      }
+    },
+    "These are examples. Write phrases you can believe, in your own words." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son ejemplos. Escribe frases que te creas, con tus palabras."
           }
         }
       }
@@ -4101,6 +4571,16 @@
         }
       }
     },
+    "Today I choose to start calmly." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy elijo empezar con calma."
+          }
+        }
+      }
+    },
     "Today you read later, at %@." : {
       "localizations" : {
         "es" : {
@@ -4147,6 +4627,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se acabó el límite gratis de hoy: mañana se completan."
+          }
+        }
+      }
+    },
+    "Today's most important thing, the obstacle most likely to get in the way, and what you'll do if it comes up." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo más importante de hoy, el obstáculo más probable y qué harás si aparece."
           }
         }
       }
@@ -4301,6 +4791,16 @@
         }
       }
     },
+    "Want more time?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Quieres más tiempo?"
+          }
+        }
+      }
+    },
     "What do you want to talk about?" : {
       "localizations" : {
         "es" : {
@@ -4381,6 +4881,16 @@
         }
       }
     },
+    "When do you wake up?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿A qué hora despiertas?"
+          }
+        }
+      }
+    },
     "When you accept what it suggests, the AI gives you a change block. Copy its whole reply and tap Paste: you see each change before it's applied." : {
       "localizations" : {
         "es" : {
@@ -4391,12 +4901,32 @@
         }
       }
     },
+    "When you wake up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A qué hora despiertas"
+          }
+        }
+      }
+    },
     "When your minutes are up, even if Sunling is closed." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cuando terminan tus minutos, aunque Sunling esté cerrada."
+          }
+        }
+      }
+    },
+    "Where it comes from" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De dónde viene"
           }
         }
       }
@@ -4481,6 +5011,16 @@
         }
       }
     },
+    "Write phrases you can believe, about who you choose to be. Nothing over the top like “I'm amazing”: if you don't believe it, it makes things worse." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe frases que te creas, sobre quién eliges ser. Nada exagerado como “soy increíble”: si no te lo crees, empeora las cosas."
+          }
+        }
+      }
+    },
     "Write the question" : {
       "localizations" : {
         "es" : {
@@ -4491,12 +5031,32 @@
         }
       }
     },
+    "Write them with an AI" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escríbelas con una IA"
+          }
+        }
+      }
+    },
     "Write your affirmation" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escribe tu afirmación"
+          }
+        }
+      }
+    },
+    "Yes, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí, %@"
           }
         }
       }
@@ -4711,6 +5271,26 @@
         }
       }
     },
+    "Your sunrise now lasts %lld minutes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu amanecer ahora dura %lld minutos"
+          }
+        }
+      }
+    },
+    "Your sunrise starts when you wake up, not at 5." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu amanecer empieza cuando despiertas, no a las 5."
+          }
+        }
+      }
+    },
     "Your week" : {
       "localizations" : {
         "es" : {
@@ -4883,6 +5463,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "algo concreto de ayer y por qué"
+          }
+        }
+      }
+    },
+    "to start" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "para empezar"
           }
         }
       }

@@ -27,7 +27,7 @@ struct OpeningCurtain: View {
                 Color.horizon
                     .frame(width: w, height: 1.5)
                     .offset(y: horizon - 1.5)
-                Sunling(pose: landed ? opening.pose : .icon, lit: landed && opening.lit)
+                Sunling(pose: landed ? opening.pose : opening.startPose, lit: landed && opening.lit)
                     .frame(width: bird.width, height: bird.height)
                     .offset(x: bird.minX, y: bird.minY)
             }
@@ -37,7 +37,11 @@ struct OpeningCurtain: View {
         .opacity(gone ? 0 : 1)
         .allowsHitTesting(!gone)
         .accessibilityHidden(true)
-        .task { await play() }
+        .animation(Motion.pick(Motion.sun, reduce: reduceMotion), value: opening.startPose)
+        .task(id: opening.welcoming) {
+            guard !opening.welcoming else { return }
+            await play()
+        }
     }
 
     /// Sunling as the launch image draws him: a 250-pt half disc, centered, on the screen's middle line.

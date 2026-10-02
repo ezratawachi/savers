@@ -27,6 +27,8 @@ Imprime la ruta de `hoja.png`; léela con Read. Es una imagen para todo, en vez 
 Escenarios: `manana` (nada marcado, Silencio en Ahora), `abiertas` (Afirmaciones, Visualización y Escritura
 abiertas con texto), `hechas` (mañana completa, bloque "hechas" abierto con una letra abierta), `dia-completo`,
 `shabbat`, `sin-savers`, `historial`, `ajustes` (la pestaña Ajustes, para entrar a Horario o Notificaciones con `tocar`).
+Fuera de la hoja de siempre: `nuevo` (instalación nueva: las 3 pantallas de inicio) y `siete` (alguien nuevo en su
+séptimo amanecer completo: "¿Quieres más tiempo?").
 
 ## Probar una interacción: texto, no imágenes
 
@@ -48,6 +50,8 @@ swift/tools/probar.sh real                      # al terminar: vuelve a abrir la
   `mcp__Claude_Code_iOS_Simulator__control` tap: sus coordenadas van en 360x780, no en los 375x812 de `ui`
   (multiplica x por 0.96 y y por 0.96). Lo de adentro del menú sí se toca con `tocar`.
 - `ui` puede fallar con "No translation object returned" en los primeros minutos tras arrancar: espera y repite.
+- `tocar` (y `axe tap` con `--tap-style simulator`) cae unos 4 % más abajo de lo pedido: cerca del borde de abajo
+  puede tocar el botón de debajo. Ahí toca por coordenadas multiplicadas por 0.96 (x e y de `ui`).
 - Si falta una etiqueta para tocar algo, agrégale `.accessibilityLabel` en el código: también ayuda a VoiceOver.
 - Los interruptores (Toggle) no cambian con toques simulados, y un botón de fila de lista a veces solo
   responde si el toque cae en su parte de arriba (prueba y-10). No es un error de la app.

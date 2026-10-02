@@ -23,6 +23,20 @@ struct Schedule: Codable, Equatable, Sendable {
 
     private init() {}
 
+    /// Someone new: Normal every weekday, and the sunrise as the morning's only block, when they wake up.
+    static func starter(wake: String) -> Schedule {
+        var s = Schedule()
+        s.week = Dictionary(uniqueKeysWithValues: (0...5).map { (String($0), DayType.normal.rawValue) })
+        var types: [String: TypeSchedule] = [:]
+        for kind in [DayType.normal, .gym] {
+            var t = TypeSchedule()
+            t.steps = [Step(id: "\(kind.rawValue)-steps-0", title: String(localized: "Sunrise"), time: wake, letters: Letter.allCases.map(\.rawValue))]
+            types[kind.rawValue] = t
+        }
+        s.types = types
+        return s
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: AnyKey.self)
         week = c.lenient([String: String].self, "week") ?? [:]

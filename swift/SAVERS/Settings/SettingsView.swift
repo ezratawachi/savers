@@ -51,6 +51,12 @@ struct SettingsView: View {
                         }
                         Section("Help") {
                             NavigationLink {
+                                MethodPage()
+                            } label: {
+                                RowLabel(title: String(localized: "The method"))
+                            }
+                            .cardRow()
+                            NavigationLink {
                                 AssistantPage()
                             } label: {
                                 RowLabel(title: String(localized: "Talk with an AI"))

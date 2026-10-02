@@ -15,6 +15,13 @@ struct Step: Codable, Equatable, Identifiable, Sendable {
 
     private static let known: Set<String> = ["id", "title", "short", "detail", "time", "times", "letters"]
 
+    init(id: String, title: String, time: String, letters: [String]) {
+        self.id = id
+        self.title = title
+        self.time = time
+        self.letters = letters
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: AnyKey.self)
         id = c.lenient(String.self, "id")

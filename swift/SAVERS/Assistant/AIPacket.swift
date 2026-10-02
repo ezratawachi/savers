@@ -51,7 +51,7 @@ enum AIPacket {
         - Each weekday is Normal, Gym or Rest. Saturday is Shabbat and doesn't change.
         - Normal and Gym each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep). Some blocks hold steps, in order.
         - Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.
-        - Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine 1 minute per question, Write 2, Move 8 or however long the gym lasts).
+        - Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine up to a minute per question, Write 1 or 2, Move 2 or 8 at home or however long the gym lasts). The schedule below has the real ones.
         - The bedtime block is in "The night before": it's when I go to sleep the night before that day. "windDown" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.
         - A time or some minutes can be different on one weekday ("hoursByDay", "minutesByDay") or on one date ("dates", from today up to a year ahead).
         - Blocks can't be added, removed or renamed, and steps can't move from one block to another. If that would suit me, tell me in the conversation, not in the change block.

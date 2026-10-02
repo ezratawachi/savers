@@ -89,7 +89,7 @@ extension AIChange.Edit {
             var own = perDay[key] ?? [:]
             if let w {
                 if let k = Weekday.key(in: own, for: w) { own[k] = nil }
-                let all = Routine.valid(t.minutes?[key]) ?? letter.usualMinutes
+                let all = Routine.valid(t.minutes?[key]) ?? s.length?.minutes(letter) ?? letter.usualMinutes
                 if let n, n != all { own[Weekday.keys[w]] = .number(Double(n)) }
             } else if let n {
                 var all = t.minutes ?? [:]

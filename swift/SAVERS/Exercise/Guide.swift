@@ -47,8 +47,8 @@ struct GuidePlan {
 
     var cycle: Double { d.reduce(0, +) }
 
-    init?(step i: Int) {
-        guard let s = Exercise.steps[safe: i], !s.rest, let fig = s.fig, let g = Guide.of(fig) else { return nil }
+    init?(step i: Int, of steps: [ExStep]) {
+        guard let s = steps[safe: i], !s.rest, let fig = s.fig, let g = Guide.of(fig) else { return nil }
         let span = s.secs - g.lead
         let cycle = g.phases.reduce(0) { $0 + $1.secs }
         // Sides come in pairs, so both sides get the same number of reps.
@@ -80,12 +80,12 @@ struct GuideEvent {
     var at: Double
     var kind: Kind
 
-    static let all: [GuideEvent] = {
+    static func all(_ steps: [ExStep]) -> [GuideEvent] {
         var out: [GuideEvent] = []
         var start = 0.0
-        for (i, s) in Exercise.steps.enumerated() {
+        for (i, s) in steps.enumerated() {
             defer { start += s.secs }
-            guard let plan = GuidePlan(step: i) else { continue }
+            guard let plan = GuidePlan(step: i, of: steps) else { continue }
             let g = plan.guide
             var t = start + g.lead
             for rep in 0..<plan.n {
@@ -105,15 +105,15 @@ struct GuideEvent {
                 }
             }
             // The last step ends with the routine's own sound.
-            if i < Exercise.steps.count - 1 { out.append(GuideEvent(at: start + s.secs, kind: .end)) }
+            if i < steps.count - 1 { out.append(GuideEvent(at: start + s.secs, kind: .end)) }
         }
         return out.sorted { $0.at < $1.at }
-    }()
+    }
 
-    /// Every guide word with its tone, once.
+    /// Every guide word with its tone, once (both routines say the same ones).
     static let words: [(String, SpeechTone)] = {
         var seen = Set<String>(), out: [(String, SpeechTone)] = []
-        for e in all {
+        for e in Workout.full.events {
             if case let .word(w, tone) = e.kind, seen.insert(tone.id + w).inserted { out.append((w, tone)) }
         }
         return out

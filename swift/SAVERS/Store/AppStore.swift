@@ -10,6 +10,8 @@ final class AppStore {
     /// Today is a day of rest and "Empezar mi amanecer" was tapped.
     var showOff = false
     private(set) var affReviewed: String
+    /// "Want more time?" was answered: it's asked once.
+    private(set) var moreTimeAsked: Bool
     /// The last changes from an AI, until undone or replaced by the next ones.
     private(set) var aiUndo: AIUndo?
     /// Set when saving to the phone fails, shown next to the greeting.
@@ -38,6 +40,7 @@ final class AppStore {
         let reviewed = prefs["affReviewed"] ?? DayKey.month(now)
         prefs["affReviewed"] = reviewed
         affReviewed = reviewed
+        moreTimeAsked = prefs["moreTimeAsked"] != nil
         aiUndo = prefs["aiUndo"].flatMap { try? JSONDecoder().decode(AIUndo.self, from: Data($0.utf8)) }
         renameSaversBlock()
     }
@@ -153,6 +156,26 @@ final class AppStore {
 
     func setBreatheNote(_ note: String) { changeSettings { $0.breatheNote = note } }
 
+    /// "Want more time?": the steps get longer, unless their minutes were set by hand in Schedule.
+    func setLength(_ length: SunriseLength) { changeSettings(delay: .zero) { $0.length = length } }
+
+    /// "Want more time?", answered once: yes makes the sunrise the next length up.
+    func answerMoreTime(_ yes: Bool) {
+        if yes, let longer = settings.length?.longer { setLength(longer) }
+        prefs["moreTimeAsked"] = "1"
+        moreTimeAsked = true
+    }
+
+    /// The welcome's answers on a new install: one sunrise block at the hour you wake up, every day but
+    /// Shabbat, its length, and three example phrases to make your own.
+    func startFresh(wake: String, length: SunriseLength) {
+        changeSettings(delay: .zero) { s in
+            s.length = length
+            s.schedule = .starter(wake: wake)
+            if s.affirmations.filled.isEmpty { s.affirmations = AppSettings.exampleAffirmations }
+        }
+    }
+
     /// Empty ones are dropped; at least one (maybe empty) stays.
     func setAffirmations(_ items: [Item]) { changeSettings(delay: .zero) { $0.affirmations = Self.clean(items) } }
 
@@ -227,7 +250,7 @@ final class AppStore {
             if let w {
                 var own = days[key] ?? [:]
                 if let k = Weekday.key(in: own, for: w) { own[k] = nil }
-                let all = Routine.valid(t.minutes?[key]) ?? letter.usualMinutes
+                let all = Routine.valid(t.minutes?[key]) ?? routine.defaultMinutes(letter)
                 if let minutes, minutes != all { own[Weekday.keys[w]] = .number(Double(minutes)) }
                 days[key] = own.isEmpty ? nil : own
             } else if let minutes {

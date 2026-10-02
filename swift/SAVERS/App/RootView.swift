@@ -13,7 +13,7 @@ struct RootView: View {
     @State private var tab = AppTab.today
     #endif
     @State private var historyOpened = 0
-    @State private var opening = Opening()
+    @Environment(Opening.self) private var opening
 
     var body: some View {
         TabView(selection: $tab) {
@@ -27,6 +27,8 @@ struct RootView: View {
                 SettingsView()
             }
         }
+        // Under the welcome, Today isn't there yet for VoiceOver.
+        .accessibilityHidden(opening.welcoming)
         .onChange(of: tab) { _, new in
             if new == .history { historyOpened += 1 }
         }
@@ -35,7 +37,9 @@ struct RootView: View {
         .overlay {
             if !opening.done { OpeningCurtain() }
         }
-        .environment(opening)
+        .overlay {
+            if opening.welcoming { WelcomeView().accessibilityAddTraits(.isModal).transition(.opacity) }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 store.refreshToday()

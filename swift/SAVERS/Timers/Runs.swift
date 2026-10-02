@@ -62,7 +62,6 @@ final class Runs {
     /// Where the exercise guide has queued its sounds up to, in routine seconds.
     @ObservationIgnored private var guideFrom: Double?
 
-    static let visSecs = 60.0
     /// Guide sounds are queued this far ahead on the audio clock, so the rhythm doesn't depend on the ticker.
     private static let guideAhead = 0.6
 
@@ -77,10 +76,14 @@ final class Runs {
     // MARK: Steps
 
     var visSteps: [RunStep] {
-        store.settings.visualization.items.filled.map { RunStep(secs: Self.visSecs, text: $0.text.trimmingCharacters(in: .whitespacesAndNewlines)) }
+        let secs = store.settings.length?.imagineSeconds ?? 60
+        return store.settings.visualization.items.filled.map { RunStep(secs: secs, text: $0.text.trimmingCharacters(in: .whitespacesAndNewlines)) }
     }
 
-    func steps(_ k: RunKind) -> [RunStep] { k == .ejercicio ? Exercise.runSteps : visSteps }
+    /// Move at home: the short routine or the whole one, as the sunrise's length says.
+    var workout: Workout { .of(store.settings) }
+
+    func steps(_ k: RunKind) -> [RunStep] { k == .ejercicio ? workout.runSteps : visSteps }
 
     func run(_ k: RunKind) -> GuidedRun? { k == .ejercicio ? ex : vis }
 
@@ -184,7 +187,7 @@ final class Runs {
         case .ejercicio:
             // Drills are guided by their own sounds and a bell closes each one; a change's cue waits for the bell,
             // and the breathing has 5 quiet seconds for its cue.
-            let steps = Exercise.steps
+            let steps = workout.steps
             if i == 0 {
                 Sounds.beep(880, 0.15)
                 if how == .start { sayEx(0) }
@@ -205,8 +208,8 @@ final class Runs {
         case .visualizacion:
             if remain == 10 { Sounds.softTone() }
         case .ejercicio:
-            guard GuidePlan(step: i) == nil else { return }
-            let steps = Exercise.steps
+            let steps = workout.steps
+            guard GuidePlan(step: i, of: steps) == nil else { return }
             if remain > 0 && remain <= 3 { Sounds.beep(660, 0.08) }
             // The marcha has no change after it, so the first drill is announced a few seconds early.
             if remain == 6, let next = steps[safe: i + 1], !next.rest, !steps[i].rest { sayEx(i + 1) }
@@ -214,7 +217,8 @@ final class Runs {
     }
 
     private func sayEx(_ i: Int) {
-        Voice.shared.say(full: Exercise.cueFull(i), short: Exercise.cue(i), .energetic)
+        let w = workout
+        Voice.shared.say(full: w.cueFull(i), short: w.cue(i), .energetic)
     }
 
     private func finish(_ k: RunKind) {
@@ -270,7 +274,7 @@ final class Runs {
         let from = guideFrom ?? el, to = el + Self.guideAhead
         let engine = ToneEngine.shared
         // Anything that went by while the app was asleep is dropped, not played in a burst.
-        for e in GuideEvent.all where e.at >= from && e.at < to && e.at >= el - 0.5 {
+        for e in workout.events where e.at >= from && e.at < to && e.at >= el - 0.5 {
             let delay = max(0, e.at - el)
             switch e.kind {
             case let .glide(move, dur, under):

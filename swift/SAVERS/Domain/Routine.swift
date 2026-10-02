@@ -74,7 +74,12 @@ struct Routine {
     func usualMinutes(_ kind: DayType, _ letter: Letter, weekday w: Int?) -> Int {
         let t = settings.schedule?.type(kind)
         if let w, let own = t?.minutesDays?[letter.rawValue], let k = Weekday.key(in: own, for: w), let n = Self.valid(own[k]) { return n }
-        return Self.valid(t?.minutes?[letter.rawValue]) ?? letter.usualMinutes ?? 0
+        return Self.valid(t?.minutes?[letter.rawValue]) ?? defaultMinutes(letter)
+    }
+
+    /// Breathe's and Read's minutes when the schedule doesn't set them: the sunrise's length decides.
+    func defaultMinutes(_ letter: Letter) -> Int {
+        settings.length?.minutes(letter) ?? letter.usualMinutes ?? 0
     }
 
     func minutesOn(_ kind: DayType, _ letter: Letter, on ds: String) -> Int {
@@ -94,11 +99,12 @@ struct Routine {
     /// The letters whose minutes come from what's in them, not from a setting.
     private func fixedMinutes(_ letter: Letter, _ kind: DayType) -> Int {
         switch letter {
-        case .silencio, .lectura: letter.usualMinutes ?? 0
+        case .silencio, .lectura: defaultMinutes(letter)
         case .afirmaciones: max(1, Int((Double(settings.affirmations.filled.count * 25) / 60).rounded(.up)))
-        case .visualizacion: max(1, settings.visualization.items.filled.count)
-        case .ejercicio: kind == .gym ? TimeText.span(settings.schedule?.gymTime) ?? 0 : 8
-        case .escritura: 2
+        case .visualizacion:
+            max(1, Int((Double(settings.visualization.items.filled.count) * (settings.length?.imagineSeconds ?? 60) / 60).rounded(.up)))
+        case .ejercicio: kind == .gym ? TimeText.span(settings.schedule?.gymTime) ?? 0 : Workout.of(settings).minutes
+        case .escritura: settings.length?.writeMinutes ?? 2
         }
     }
 
@@ -190,6 +196,12 @@ struct Routine {
     }
 
     // MARK: Other
+
+    /// Checked off on some day: its first-time note has done its job.
+    func everDone(_ letter: Letter) -> Bool { days.values.contains { $0.isDone(letter) } }
+
+    /// Complete sunrises, ever.
+    var sunrisesDone: Int { days.values.count { $0.doneCount == 6 } }
 
     func affirmationReviewDue(reviewed: String?) -> Bool { reviewed != DayKey.month(today) }
 }

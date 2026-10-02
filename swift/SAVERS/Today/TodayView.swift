@@ -6,6 +6,7 @@ struct TodayView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
     @Environment(Notices.self) private var notices
+    @Environment(Toast.self) private var toast
     @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -35,6 +36,9 @@ struct TodayView: View {
     @FocusState private var focus: WritingField?
     @State private var sheetDay: String?
     @State private var editingItems: ItemsSheet.Mode?
+    /// A step's note shown or hidden with its ⓘ, over what its first time decides.
+    @State private var noteShown: [Letter: Bool] = [:]
+    @State private var methodAt: Letter?
 
     var body: some View {
         let routine = store.routine
@@ -106,10 +110,12 @@ struct TodayView: View {
         .sensoryFeedback(.success, trigger: finishTick)
         .daySheet($sheetDay)
         .sheet(item: $editingItems) { ItemsSheet(mode: $0, settings: store.settings) }
+        .sheet(item: $methodAt) { MethodSheet(focus: $0) }
         .onChange(of: store.today) {
             // A new day starts like the app does: everything closed, nothing animated.
             let fresh = store.routine
             openCards = []
+            noteShown = [:]
             foldOpen = false
             shownNow = fresh.nextLetter(fresh.blocks(fresh.today), fresh.day(fresh.today))
             shownFinish = fresh.finish(fresh.today)
@@ -133,6 +139,14 @@ struct TodayView: View {
         if fin != .none {
             FinishCard(finish: fin, pending: pending(blocks, day), streak: routine.streak())
                 .transition(.scale(scale: 0.96, anchor: .top).combined(with: .opacity))
+        }
+        // After the seventh complete sunrise, once.
+        if fin == .day, !store.moreTimeAsked, let longer = routine.settings.length?.longer, routine.sunrisesDone >= 7 {
+            MoreTimeCard(done: routine.sunrisesDone, longer: longer) { yes in
+                withAnimation(motion(Motion.height)) { store.answerMoreTime(yes) }
+                if yes { toast.show(String(localized: "Your sunrise now lasts \(longer.rawValue) minutes")) }
+            }
+            .transition(.opacity)
         }
         VStack(alignment: .leading, spacing: 8) {
             if !folded.isEmpty {
@@ -165,12 +179,16 @@ struct TodayView: View {
         let reviewDue = routine.affirmationReviewDue(reviewed: store.affReviewed)
         let info = routine.info(letter, on: ds, reviewDue: reviewDue)
         let isNow = letter == shownNow
+        let done = day.isDone(letter)
+        let isOpen = info.opens && openCards.contains(letter)
+        // The first time, the step that's now (or open) explains itself; the ⓘ shows or hides it.
+        let showsNote = !done && (noteShown[letter] ?? (!routine.everDone(letter) && (isNow || isOpen)))
         return LetterCard(
             letter: letter,
             info: info,
-            done: day.isDone(letter),
+            done: done,
             isNow: isNow,
-            isOpen: info.opens && openCards.contains(letter),
+            isOpen: isOpen,
             sun: isNow ? routine.sunPlan(letter) : nil,
             sunNext: isNow ? routine.sunNext(after: letter) : "",
             onToggle: { toggle(letter, ds: ds) },
@@ -179,7 +197,12 @@ struct TodayView: View {
                     if openCards.contains(letter) { openCards.remove(letter) } else { openCards.insert(letter) }
                 }
             },
-            nested: nested
+            nested: nested,
+            showsNote: showsNote,
+            onInfo: isNow && !done ? {
+                withAnimation(motion(Motion.height)) { noteShown[letter] = !showsNote }
+            } : nil,
+            onLearnMore: { methodAt = letter }
         ) {
             cardBody(letter, routine, ds: ds, day: day, reviewDue: reviewDue)
         }
@@ -190,7 +213,8 @@ struct TodayView: View {
         let kind = routine.scheduleKind(ds)
         switch letter {
         case .afirmaciones:
-            AffirmationsBody(items: routine.settings.affirmations.filled, reviewDue: reviewDue) { review in
+            let items = routine.settings.affirmations.filled
+            AffirmationsBody(items: items, reviewDue: reviewDue, examples: items == AppSettings.exampleAffirmations) { review in
                 editingItems = review ? .review : .affirmations
             }
         case .visualizacion:
@@ -244,7 +268,10 @@ struct TodayView: View {
         var on = false
         withAnimation(motion(Motion.height)) {
             on = store.toggle(letter, on: ds)
-            if on { openCards.remove(letter) }
+            if on {
+                openCards.remove(letter)
+                noteShown[letter] = nil
+            }
         }
         justMarked = true
         checkTick += 1

@@ -7,6 +7,7 @@ struct SAVERSApp: App {
     @State private var cloud: CloudSync
     @State private var runs: Runs
     @State private var notices: Notices
+    @State private var opening: Opening
 
     init() {
         ToneEngine.mixFromLaunch()
@@ -20,6 +21,8 @@ struct SAVERSApp: App {
         }
         #endif
         let toast = Toast()
+        // A new install, with nothing on it and no account: the welcome first.
+        _opening = State(initialValue: Opening(welcoming: !store.settings.hasPersonalData && store.days.isEmpty && prefs["cloudUid"] == nil))
         _store = State(initialValue: store)
         _toast = State(initialValue: toast)
         _cloud = State(initialValue: CloudSync(store: store, prefs: prefs))
@@ -31,9 +34,8 @@ struct SAVERSApp: App {
 
     /// Everything the app can say today, with the tone it's said in: what Gemini prepares.
     private static func spokenPhrases(_ settings: AppSettings) -> [(String, SpeechTone)] {
-        var out: [(String, SpeechTone)] = [(Exercise.marchCue, .energetic), (Exercise.doneCue, .notice), (Runs.visualizationDoneCue, .notice)]
-        for (i, s) in Exercise.steps.enumerated() where i > 0 && !s.rest { out.append((Exercise.cue(i), .energetic)) }
-        for (i, s) in Exercise.steps.enumerated() where !s.rest { out.append((Exercise.cueFull(i), .energetic)) }
+        var out: [(String, SpeechTone)] = [(Exercise.doneCue, .notice), (Runs.visualizationDoneCue, .notice)]
+        out += Workout.of(settings).phrases.map { ($0, .energetic) }
         out += GuideEvent.words
         out += settings.visualization.items.filled.map { ($0.text.trimmingCharacters(in: .whitespacesAndNewlines), .calm) }
         return out
@@ -48,6 +50,7 @@ struct SAVERSApp: App {
                 .environment(cloud)
                 .environment(runs)
                 .environment(notices)
+                .environment(opening)
         }
     }
 }

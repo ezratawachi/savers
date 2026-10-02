@@ -700,6 +700,8 @@ function normalizeSettings(s){
   if(typeof s.aiNotes === "string" && s.aiNotes) out.aiNotes = s.aiNotes;
   // The line under Respira, also written on the iPhone.
   if(typeof s.breatheNote === "string" && s.breatheNote) out.breatheNote = s.breatheNote;
+  // How long the sunrise lasts (10, 20 or 30), chosen on the iPhone's first open.
+  if([10, 20, 30].indexOf(s.length) >= 0) out.length = s.length;
   return out;
 }
 

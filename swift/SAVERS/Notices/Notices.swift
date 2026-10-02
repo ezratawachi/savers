@@ -89,6 +89,13 @@ final class Notices {
         planSoon()
     }
 
+    /// The welcome's "Allow notifications": iOS asks once, and every switch stays on.
+    func askPermission() async {
+        _ = await LocalNote.allowed()
+        await readPermission()
+        planSoon()
+    }
+
     func readPermission() async {
         switch await UNUserNotificationCenter.current().notificationSettings().authorizationStatus {
         case .authorized, .provisional, .ephemeral: permission = .allowed

@@ -12,9 +12,21 @@ struct AppSettings: Codable, Equatable, Sendable {
     var aiNotes: String = ""
     /// The line under Breathe, in your words ("Daily Calm"). Empty: the app's own.
     var breatheNote: String = ""
+    /// 10, 20 or 30 minutes, chosen on the first open. None on copies from before: the usual minutes.
+    var length: SunriseLength?
 
     static let readApps = ["libros", "kindle", "papel"]
     static var breatheDefault: String { String(localized: "Meditate, pray or breathe") }
+
+    /// Phrases someone can believe from the first day, to edit until they're theirs: about choosing and
+    /// practicing, never "I'm amazing".
+    static var exampleAffirmations: [Item] {
+        [
+            Item(text: String(localized: "Today I choose to start calmly.")),
+            Item(text: String(localized: "I'm learning to keep the promises I make to myself, one at a time.")),
+            Item(text: String(localized: "I can do what matters today, even if it isn't perfect.")),
+        ]
+    }
 
     /// What Breathe's card says under its name.
     var breatheLine: String { breatheNote.isEmpty ? Self.breatheDefault : breatheNote }
@@ -33,6 +45,7 @@ struct AppSettings: Codable, Equatable, Sendable {
         if let r = c.lenient(String.self, "readApp"), Self.readApps.contains(r) { readApp = r }
         if let n = c.lenient(String.self, "aiNotes") { aiNotes = n }
         if let n = c.lenient(String.self, "breatheNote") { breatheNote = n }
+        length = c.lenient(SunriseLength.self, "length")
     }
 
     func encode(to encoder: Encoder) throws {
@@ -45,6 +58,7 @@ struct AppSettings: Codable, Equatable, Sendable {
         try c.encode(readApp, forKey: AnyKey("readApp"))
         if !aiNotes.isEmpty { try c.encode(aiNotes, forKey: AnyKey("aiNotes")) }
         if !breatheNote.isEmpty { try c.encode(breatheNote, forKey: AnyKey("breatheNote")) }
+        try c.encodeIfPresent(length, forKey: AnyKey("length"))
     }
 
     /// Name, a schedule or an affirmation: something that came from a copy or the cloud.

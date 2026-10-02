@@ -7,7 +7,8 @@
 #   probar.sh tocar "<etiqueta>"                 taps the element with that accessibility label
 #   probar.sh real                               opens the app again with its real data
 #
-# Scenarios: manana abiertas hechas dia-completo shabbat sin-savers historial ajustes (all of them if none is given).
+# Scenarios: manana abiertas hechas dia-completo shabbat sin-savers historial ajustes (all of them if none is given),
+# plus nuevo (a new install: the welcome) and siete (someone new on their 7th sunrise).
 # "hechas:2" also scrolls down and captures a second screen. --sin-build skips building.
 # The app opens in Spanish, like the iPhone; --en opens it in English (with English made-up data).
 set -euo pipefail

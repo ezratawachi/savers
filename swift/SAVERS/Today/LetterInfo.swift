@@ -24,7 +24,7 @@ extension Routine {
                 let span = TimeText.span(settings.schedule?.gymTime).map { String(localized: "\($0) min") } ?? String(localized: "Gym")
                 return LetterInfo(subtitle: String(localized: "Gym with your trainer"), time: span, opens: false)
             }
-            return LetterInfo(subtitle: String(localized: "Home routine"), time: String(localized: "\(8) min"), opens: true)
+            return LetterInfo(subtitle: String(localized: "Home routine"), time: mins, opens: true)
         case .lectura:
             return LetterInfo(subtitle: kind == .gym ? String(localized: "Your book") : String(localized: "With your coffee"), time: mins, opens: true)
         case .escritura:

@@ -113,31 +113,49 @@ Reglas para todas las sesiones:
   *Tú pruebas:* nada debería cambiar en tu iPhone, que sigue en español. Si quieres, cambia el idioma del iPhone a
   inglés un rato para verla.
 
-- [ ] **3. Enseñar desde cero**
+- [x] **3. Enseñar desde cero**
+
+  > **Hecha el 2026-10-02.** En una instalación nueva, sin datos ni cuenta, aparecen 3 pantallas sobre la noche
+  > del arranque, con Sunling dormido en el horizonte; se despierta un poco en cada una y al final baja a Hoy
+  > como en cualquier apertura. La 1 dice qué es y muestra Calma, Rumbo y Crecer, y trae "Ya uso Sunling" para
+  > entrar con Google. La 2 crea un horario con un solo bloque Amanecer a la hora en que despiertas, todos los
+  > días Normal salvo Shabbat. La 3 muestra dos avisos de ejemplo.
+  > Minutos que decidí yo (`Model/SunriseLength.swift`, el campo `length`, que la web de la Mac ya guarda):
+  > 10 = Respira 2 · Afirma 2 · Imagina 2 · Muévete 2 · Lee 1 · Escribe 1; 20 = 5 · 2 · 3 · 2 · 6 · 2;
+  > 30 = 8 · 2 · 3 · 8 · 7 · 2. Imagina da 40 s por pregunta en el de 10. Muévete tiene una rutina corta de unos
+  > 2 min (marcha, los 4 ejercicios una vez y respirar); la de 8 queda para 30. Lo que pongas a mano en Horario
+  > gana. Tus datos no tienen `length`, así que tus minutos no cambian.
+  > Las notas de primera vez están hechas a mano, no con TipKit: TipKit no deja volver a mostrar una nota con la
+  > ⓘ, y así la regla es simple: la nota sale mientras ese paso no se ha marcado nunca. A ti no te sale ninguna;
+  > solo ves una ⓘ chica en la carta Ahora. "Saber más" abre El método en una hoja.
+  > Afirma trae 3 frases de ejemplo con "Hacerlas mías"; el editor dice "Escribe frases que te creas" y tiene
+  > "Escríbelas con una IA", que abre Hablar con una IA con la pregunta escrita. "¿Quieres más tiempo?" sale una
+  > vez, en el día completo, desde el séptimo amanecer completo. Escenarios nuevos de `/probar`: `nuevo` y `siete`.
+  > También: el botón lleno, sobre la noche, lleva el texto azul noche (el blanco no se leía).
 
   **Lo primero que ve alguien nuevo**
-  - [ ] **Las 3 pantallas de inicio**, sobre la noche y con Sunling dormido. Solo aparecen en una instalación nueva
+  - [x] **Las 3 pantallas de inicio**, sobre la noche y con Sunling dormido. Solo aparecen en una instalación nueva
     sin datos, nunca a ti.
     1. Qué es, en una frase.
     2. A qué hora despiertas, y 10, 20 o 30 minutos (10 marcado por defecto).
     3. El permiso de avisos, explicando para qué sirve.
-  - [ ] **10, 20 o 30 minutos:** los minutos de cada paso para cada opción.
-  - [ ] **La rutina corta de Muévete,** de unos 2 minutos, para la versión de 10. Va en `Exercise/`.
+  - [x] **10, 20 o 30 minutos:** los minutos de cada paso para cada opción.
+  - [x] **La rutina corta de Muévete,** de unos 2 minutos, para la versión de 10. Va en `Exercise/`.
 
   **Lo que va aprendiendo**
-  - [ ] **Las notas de primera vez:** dentro de cada carta, qué es, cómo y por qué, más "Saber más". Se van al
+  - [x] **Las notas de primera vez:** dentro de cada carta, qué es, cómo y por qué, más "Saber más". Se van al
     marcarla y vuelven con ⓘ. Decidir si se hacen con TipKit o a mano.
-  - [ ] **Afirma con ejemplos:** tres frases creíbles para editar, la línea "Escribe frases que te creas" y el botón
+  - [x] **Afirma con ejemplos:** tres frases creíbles para editar, la línea "Escribe frases que te creas" y el botón
     "Escríbelas con una IA", que abre la página de la IA con la pregunta ya escrita.
-  - [ ] **A los 7 amaneceres,** una sola vez: "¿Quieres más tiempo?".
+  - [x] **A los 7 amaneceres,** una sola vez: "¿Quieres más tiempo?".
 
   **La página The method** (en Ajustes)
-  - [ ] Still, Aim y Grow, el porqué de cada paso con sus fuentes (de `metodo-sunling.md`), y "Where it comes
+  - [x] Still, Aim y Grow, el porqué de cada paso con sus fuentes (de `metodo-sunling.md`), y "Where it comes
     from" con el crédito a Hal y la frase de que no estamos afiliados.
 
   **Cierre**
-  - [ ] Probar como alguien nuevo: app recién instalada en el simulador, en inglés y en español.
-  - [ ] Instalar en el iPhone.
+  - [x] Probar como alguien nuevo: app recién instalada en el simulador, en inglés y en español.
+  - [x] Instalar en el iPhone.
 
   *Tú pruebas:* abrir The method y leerla. Si quieres verte como alguien nuevo, se hace en el simulador, nunca
   borrando tu app.

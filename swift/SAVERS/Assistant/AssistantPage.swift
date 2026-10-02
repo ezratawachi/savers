@@ -5,6 +5,8 @@ import SwiftUI
 struct AssistantPage: View {
     @Environment(AppStore.self) private var store
     @Environment(Toast.self) private var toast
+    /// A question to start with ("Write them with an AI" in Affirm), in place of the draft.
+    var ask: String?
     @State private var notes = ""
     /// What to talk about stays here as a draft, until it's sent and beyond.
     @AppStorage("savers:aiQuestion") private var question = ""
@@ -78,6 +80,7 @@ struct AssistantPage: View {
         .sheet(item: $proposal) { ChangesSheet(proposal: $0) }
         .onAppear {
             notes = store.settings.aiNotes
+            if let ask { question = ask }
             #if DEBUG
             // `-pegar archivo`: what a tap on Paste would bring, since the simulator can't tap it.
             if let path = Scenario.packetPath {

@@ -94,6 +94,7 @@ struct ItemsEditor: View {
     let kind: ItemsKind
     @Binding var draft: ItemsDraft
     @FocusState private var focused: UUID?
+    @State private var askingAI = false
 
     var body: some View {
         AppList {
@@ -127,6 +128,22 @@ struct ItemsEditor: View {
                         .font(.reading().bold())
                 }
                 .foregroundStyle(.sky)
+            } footer: {
+                if kind == .affirmations {
+                    Text("Write phrases you can believe, about who you choose to be. Nothing over the top like “I'm amazing”: if you don't believe it, it makes things worse.")
+                }
+            }
+            if kind == .affirmations {
+                Section {
+                    // A button, not a link: links are off while the list is being edited.
+                    Button {
+                        askingAI = true
+                    } label: {
+                        Label("Write them with an AI", systemImage: "sparkles")
+                            .font(.reading().bold())
+                    }
+                    .foregroundStyle(.sky)
+                }
             }
             if kind == .visualization {
                 Section {
@@ -139,6 +156,9 @@ struct ItemsEditor: View {
             }
         }
         .environment(\.editMode, .constant(.active))
+        .navigationDestination(isPresented: $askingAI) {
+            AssistantPage(ask: String(localized: "Help me write 3 to 5 affirmations I can believe, about who I choose to be. Ask me a few questions first."))
+        }
         .scrollDismissesKeyboard(.interactively)
     }
 

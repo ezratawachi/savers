@@ -6,11 +6,12 @@ struct ExerciseTimer: View {
     let done: Bool
 
     var body: some View {
-        let steps = Exercise.runSteps, run = runs.ex
+        let workout = runs.workout
+        let steps = workout.runSteps, run = runs.ex
         let total = Runs.total(steps)
         let el = min(run?.elapsed(runs.now) ?? 0, total - 0.001)
         let idx = run == nil ? 0 : Runs.stepAt(steps, el)
-        let step = Exercise.steps[idx]
+        let step = workout.steps[idx]
         // Already marked and not running again: it steps back and offers a repeat.
         let rest = run == nil && done
 
@@ -25,13 +26,13 @@ struct ExerciseTimer: View {
                     .foregroundStyle(.muted)
                     .padding(.top, 2)
             } else {
-                figure(run: run, idx: idx)
+                figure(workout, run: run, idx: idx)
                     .padding(.top, 10)
                     .padding(.bottom, 2)
                 TimerClock(secs: run == nil ? Int(total) : max(0, Int((Runs.stepStart(steps, idx) + step.secs - el).rounded(.up))))
                     .padding(.top, 8)
                 ExerciseMap(
-                    current: run == nil ? -1 : Exercise.part(of: idx),
+                    current: run == nil ? -1 : workout.part(of: idx),
                     fill: run == nil || step.rest ? 0 : min(1, max(0, (el - Runs.stepStart(steps, idx)) / step.secs))
                 )
                 .padding(.top, 8)
@@ -48,12 +49,12 @@ struct ExerciseTimer: View {
 
     /// The first step before starting, the next one (held) during a change.
     @ViewBuilder
-    private func figure(run: GuidedRun?, idx: Int) -> some View {
-        let step = Exercise.steps[idx]
+    private func figure(_ workout: Workout, run: GuidedRun?, idx: Int) -> some View {
+        let steps = workout.steps, step = steps[idx]
         let (fig, mode): (Fig, ExerciseFigure.Mode) =
             run == nil || idx == 0 ? (.marcha, .loop)
-            : step.rest ? (Exercise.steps[idx + 1].fig ?? .marcha, .ready(Exercise.steps[idx + 1].fig ?? .marcha))
-            : (step.fig ?? .marcha, .guided(step: idx))
+            : step.rest ? (steps[idx + 1].fig ?? .marcha, .ready(steps[idx + 1].fig ?? .marcha))
+            : (step.fig ?? .marcha, .guided(step: idx, workout))
         ExerciseFigure(fig: fig, mode: mode, elapsed: { runs.ex?.elapsed($0) }, moving: run?.running == true)
             .id(fig)
     }

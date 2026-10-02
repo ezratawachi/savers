@@ -15,6 +15,8 @@ struct TypeSchedule: Codable, Equatable, Sendable {
 
     private static let known: Set<String> = ["night", "steps", "later", "minutes", "minutesDays"]
 
+    init() {}
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: AnyKey.self)
         night = c.lenient([Step].self, "night")
