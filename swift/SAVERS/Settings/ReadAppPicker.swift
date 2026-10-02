@@ -15,7 +15,7 @@ struct ReadAppPicker: View {
                     Label {
                         Text(app.name)
                     } icon: {
-                        Image(app.icon).renderingMode(.original)
+                        Self.menuIcons[key]
                     }
                     .tag(key)
                 }
@@ -39,4 +39,14 @@ struct ReadAppPicker: View {
             }
         }
     }
+
+    /// A menu shows an image at its own size, so it gets each icon redrawn at 22 pt. The assets are bigger
+    /// so the row stays sharp when the text is large.
+    private static let menuIcons: [String: Image] = Dictionary(uniqueKeysWithValues: AppSettings.readApps.map { key in
+        let size = CGSize(width: 22, height: 22)
+        let icon = UIGraphicsImageRenderer(size: size).image { _ in
+            UIImage(named: ReadApp(key).icon)?.draw(in: CGRect(origin: .zero, size: size))
+        }
+        return (key, Image(uiImage: icon).renderingMode(.original))
+    })
 }
