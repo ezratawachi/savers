@@ -321,6 +321,7 @@ final class Runs {
     }
 
     private func scheduleReadingNote(_ run: ReadingRun) async {
+        guard !notices.quiet else { return }
         let min = run.min
         await LocalNote.schedule(
             id: "lectura",
@@ -332,7 +333,14 @@ final class Runs {
     }
 
     /// The "End of reading" switch changed while a reading runs.
+    /// Another world takes this one's place: its clock stops (the run itself stays saved for when it's back).
+    func halt() {
+        ticker?.cancel()
+        ticker = nil
+    }
+
     func readingNoteChanged() {
+        guard !notices.quiet else { return }
         guard let r = reading, r.left(.now) > 0 else { return }
         if notices.isOn(.lectura) { Task { await scheduleReadingNote(r) } } else { LocalNote.cancel("lectura") }
     }

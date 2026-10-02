@@ -1841,6 +1841,26 @@
         }
       }
     },
+    "Developer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desarrollador"
+          }
+        }
+      }
+    },
+    "Developer mode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo desarrollador"
+          }
+        }
+      }
+    },
     "Discard changes" : {
       "localizations" : {
         "es" : {
@@ -1977,6 +1997,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ejemplos de avisos"
+          }
+        }
+      }
+    },
+    "Exit developer mode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salir del modo desarrollador"
           }
         }
       }
@@ -3131,6 +3161,16 @@
         }
       }
     },
+    "Not available in developer mode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No disponible en modo desarrollador"
+          }
+        }
+      }
+    },
     "Not now" : {
       "localizations" : {
         "es" : {
@@ -3731,16 +3771,6 @@
         }
       }
     },
-    "See the welcome" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ver la bienvenida"
-          }
-        }
-      }
-    },
     "See you on Sunday" : {
       "localizations" : {
         "es" : {
@@ -3961,6 +3991,16 @@
         }
       }
     },
+    "Start from zero" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar de cero"
+          }
+        }
+      }
+    },
     "Start it here and it checks itself off." : {
       "localizations" : {
         "es" : {
@@ -3987,6 +4027,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empezar lectura"
+          }
+        }
+      }
+    },
+    "Start the test app from zero?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Empezar de cero la app de prueba?"
           }
         }
       }
@@ -4057,6 +4107,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Racha: %@"
+          }
+        }
+      }
+    },
+    "Sunling as a new install of its own, to live what someone new sees. Your data, notices, cloud and voice aren't touched. Only in the version installed from the Mac." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunling como una instalación nueva y aparte, para vivir lo que ve alguien nuevo. Tus datos, avisos, nube y voz no se tocan. Solo en la versión instalada desde la Mac."
           }
         }
       }
@@ -4337,16 +4397,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todavía no amanece"
-          }
-        }
-      }
-    },
-    "The three screens someone new sees the first time. Nothing you choose there changes your app." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las tres pantallas que ve alguien nuevo la primera vez. Nada de lo que elijas ahí cambia tu app."
           }
         }
       }
@@ -4861,6 +4911,16 @@
         }
       }
     },
+    "What you did in developer mode is erased and the welcome shows again. Your real app isn't touched." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se borra lo que hiciste en el modo desarrollador y vuelve la bienvenida. Tu app real no se toca."
+          }
+        }
+      }
+    },
     "What you say and see" : {
       "localizations" : {
         "es" : {
@@ -5147,6 +5207,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "You're in the test app. It stays until you exit, even if you close Sunling." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estás en la app de prueba. Sigue así hasta que salgas, aunque cierres Sunling."
           }
         }
       }

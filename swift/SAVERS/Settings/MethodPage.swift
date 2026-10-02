@@ -5,7 +5,6 @@ import SwiftUI
 struct MethodPage: View {
     /// A step to open the page at ("Learn more" in its card).
     var focus: Letter?
-    @State private var showingWelcome = false
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -50,17 +49,6 @@ struct MethodPage: View {
                     }
 
                     Section {
-                        Button {
-                            showingWelcome = true
-                        } label: {
-                            RowLabel(title: String(localized: "See the welcome"))
-                        }
-                        .cardRow()
-                    } footer: {
-                        Text("The three screens someone new sees the first time. Nothing you choose there changes your app.")
-                    }
-
-                    Section {
                         Text("Sunling started as my way of practicing the morning routine from Hal Elrod's book *The Miracle Morning*. Over time it changed, following research and what worked in real life. Sunling isn't affiliated with Hal Elrod or The Miracle Morning.")
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.vertical, 6)
@@ -77,7 +65,6 @@ struct MethodPage: View {
                 if let focus { proxy.scrollTo(focus, anchor: .top) }
             }
         }
-        .fullScreenCover(isPresented: $showingWelcome) { WelcomeView(preview: true) }
         .navigationTitle("The method")
         .navigationBarTitleDisplayMode(.inline)
     }

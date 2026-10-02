@@ -110,6 +110,9 @@ struct SettingsView: View {
                         } footer: {
                             Text("Sunling speaks the iPhone's language. To choose another one just for Sunling, tap Language in its Settings.")
                         }
+                        #if DEBUG
+                        DeveloperSection()
+                        #endif
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 24)

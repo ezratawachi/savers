@@ -52,14 +52,17 @@ final class Notices {
 
     @ObservationIgnored private let store: AppStore
     @ObservationIgnored private let prefs: LocalPrefs
+    /// The developer mode's test app plans nothing, so your real notices stay as they are.
+    @ObservationIgnored let quiet: Bool
     @ObservationIgnored private var planTask: Task<Void, Never>?
     @ObservationIgnored private let delegate = NoteDelegate()
 
     static let planDays = 14
 
-    init(store: AppStore, prefs: LocalPrefs = .standard) {
+    init(store: AppStore, prefs: LocalPrefs = .standard, quiet: Bool = false) {
         self.store = store
         self.prefs = prefs
+        self.quiet = quiet
         wanted = prefs["avisos"].flatMap { try? JSONDecoder().decode([String: Bool].self, from: Data($0.utf8)) } ?? [:]
         // Set before the app finishes launching, so a tap that opens it isn't lost.
         UNUserNotificationCenter.current().delegate = delegate
@@ -91,7 +94,7 @@ final class Notices {
 
     /// The welcome's "Allow notifications": iOS asks once, and every switch stays on.
     func askPermission() async {
-        _ = await LocalNote.allowed()
+        if !quiet { _ = await LocalNote.allowed() }
         await readPermission()
         planSoon()
     }
@@ -116,6 +119,7 @@ final class Notices {
         // A scenario's made-up days never touch the real notices.
         if Scenario.current != nil { return }
         #endif
+        guard !quiet else { return }
         planTask?.cancel()
         planTask = Task {
             try? await Task.sleep(for: .seconds(1.5))

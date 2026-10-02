@@ -21,6 +21,8 @@ final class CloudSync {
 
     @ObservationIgnored private let store: AppStore
     @ObservationIgnored private let prefs: LocalPrefs
+    /// The developer mode's test app: it never signs in, so nothing of it reaches your cloud.
+    @ObservationIgnored private let blocked: Bool
     @ObservationIgnored private var session: Firebase.Session?
     /// Date -> the `updatedAt` the cloud already has.
     @ObservationIgnored private var pushed: [String: String]
@@ -30,9 +32,10 @@ final class CloudSync {
 
     private static let refreshKey = "cloudRefresh"
 
-    init(store: AppStore, prefs: LocalPrefs = .standard) {
+    init(store: AppStore, prefs: LocalPrefs = .standard, blocked: Bool = false) {
         self.store = store
         self.prefs = prefs
+        self.blocked = blocked
         linked = prefs["cloudUid"] != nil && Keychain.get(Self.refreshKey) != nil
         email = prefs["cloudEmail"]
         lastAt = Date(iso: prefs["cloudAt"])
@@ -43,6 +46,10 @@ final class CloudSync {
     // MARK: Signing in and out
 
     func signIn(using web: WebAuthenticationSession) async {
+        guard !blocked else {
+            error = String(localized: "Not available in developer mode")
+            return
+        }
         busy = true
         error = ""
         defer { busy = false }

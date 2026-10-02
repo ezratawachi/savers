@@ -35,7 +35,10 @@ final class GeminiVoice {
     private(set) var nextReady = 0
     private(set) var error = ""
     private(set) var daily = false
-    private(set) var key = Keychain.get("geminiKey") ?? ""
+    private var savedKey = Keychain.get("geminiKey") ?? ""
+    /// The developer mode's test app hears the iPhone's voice, like someone new, and never touches your key.
+    var sandboxed = false
+    var key: String { sandboxed ? "" : savedKey }
     private(set) var voice = ""
     /// The voice that was picked and is still being made; the current one keeps speaking until it's complete.
     private(set) var nextVoice = ""
@@ -69,8 +72,8 @@ final class GeminiVoice {
 
     func setKey(_ raw: String) {
         let k = raw.filter { !$0.isWhitespace }
-        guard k != key else { return }
-        key = k
+        guard !sandboxed, k != savedKey else { return }
+        savedKey = k
         Keychain.set("geminiKey", k.isEmpty ? nil : k)
         error = ""
         total = 0
@@ -80,6 +83,7 @@ final class GeminiVoice {
     }
 
     func choose(_ v: String) {
+        guard !sandboxed else { return }
         let complete = total > 0 && ready == total
         // Until the current voice is complete there's nothing worth keeping on: switch right away.
         if v == voice || !complete {
@@ -137,6 +141,7 @@ final class GeminiVoice {
         // A scenario's made-up phrases don't go to Gemini or the real cache.
         if Scenario.current != nil { return }
         #endif
+        if sandboxed { return }
         if preparing { again = true; return }
         preparing = true
         Task {
