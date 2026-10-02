@@ -9,7 +9,7 @@ struct BackupPage: View {
     @State private var askingSignOut = false
 
     var body: some View {
-        AppList {
+        CardList {
             cloudSection
         }
         .navigationTitle("Copia de seguridad")
@@ -35,6 +35,8 @@ struct BackupPage: View {
                     LabeledContent("Cuenta", value: email)
                 }
                 Button("Cerrar sesión", role: .destructive) { askingSignOut = true }
+                    .foregroundStyle(.warn)
+                    .cardRow()
             } header: {
                 Text("Nube")
             } footer: {
@@ -52,6 +54,7 @@ struct BackupPage: View {
                 }
                 .foregroundStyle(.sky)
                 .disabled(cloud.busy)
+                .cardRow()
             } header: {
                 Text("Nube")
             } footer: {

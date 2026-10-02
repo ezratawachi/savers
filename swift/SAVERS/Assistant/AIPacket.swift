@@ -8,9 +8,8 @@ enum AIPacket {
     static func text(_ r: Routine, question: String) -> String {
         let q = question.trimmingCharacters(in: .whitespacesAndNewlines)
         let notes = r.settings.aiNotes.trimmingCharacters(in: .whitespacesAndNewlines)
-        let name = r.settings.name.trimmingCharacters(in: .whitespaces)
         var parts: [String] = []
-        parts.append("# Mi rutina SAVERS\n\n" + (name.isEmpty ? "" : "Me llamo \(name). ") +
+        parts.append("# Mi rutina SAVERS\n\n" +
             "Hoy es \(DayKey.long(r.today).lowercased()) (\(r.today)). Te paso todo lo de mi app de SAVERS para que me ayudes.")
         parts.append("## Lo que quiero\n\n" + (q.isEmpty ? "Todavía no lo sé. Pregúntame de qué quiero hablar." : q))
         parts.append("## Mis notas (lo que la app no sabe)\n\n" + (notes.isEmpty ? "Sin notas." : notes))
@@ -91,7 +90,6 @@ extension Routine {
 
     func aiConfig() -> OrderedJSON {
         var top: [(String, OrderedJSON)] = [
-            ("nombre", .string(settings.name)),
             ("leerEn", .string(settings.readApp)),
             ("afirmaciones", .array(settings.affirmations.filled.map(Self.aiItem))),
             ("visualizacion", .object([

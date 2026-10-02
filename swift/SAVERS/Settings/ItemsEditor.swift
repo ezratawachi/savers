@@ -137,7 +137,7 @@ struct ItemsReader: View {
 
     var body: some View {
         let items = (kind == .affirmations ? settings.affirmations : settings.visualization.items).filled
-        AppList {
+        CardList {
             Section {
                 if items.isEmpty {
                     Text(kind == .affirmations ? "Todavía no tienes afirmaciones. Toca Editar para agregarlas." : "Toca Editar para agregar preguntas.")
@@ -152,11 +152,13 @@ struct ItemsReader: View {
                                 .font(.reading(15, relativeTo: .subheadline).bold())
                                 .foregroundStyle(.muted)
                         }
+                        // As it's said in Hoy.
                         Text(items[i].text)
-                            .font(.reading())
+                            .font(.reading(19, relativeTo: .body))
+                            .lineSpacing(3)
                             .foregroundStyle(.ink)
                     }
-                    .padding(.vertical, 3)
+                    .padding(.vertical, 6)
                 }
             } footer: {
                 if kind == .visualization, !settings.visualization.note.trimmingCharacters(in: .whitespaces).isEmpty {

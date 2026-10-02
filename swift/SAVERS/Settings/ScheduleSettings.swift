@@ -13,13 +13,16 @@ struct ScheduleSettings: View {
         let kinds = [DayType.normal, .gym].filter { r.settings.schedule?.type($0) != nil }
         let shown = kinds.contains(tab) ? tab : kinds.first ?? .normal
 
-        AppList {
+        CardList {
             Section {
                 ForEach(0..<6, id: \.self) { w in
-                    Picker(Weekday.names[w].capitalizedFirst, selection: Binding { r.weekType(w) } set: { store.setWeekType(w, $0) }) {
-                        ForEach(DayType.choosable, id: \.self) { Text($0.name).tag($0) }
+                    LabeledContent(Weekday.names[w].capitalizedFirst) {
+                        Picker(Weekday.names[w].capitalizedFirst, selection: Binding { r.weekType(w) } set: { store.setWeekType(w, $0) }) {
+                            ForEach(DayType.choosable, id: \.self) { Text($0.name).tag($0) }
+                        }
+                        .labelsHidden()
+                        .tint(.muted)
                     }
-                    .tint(.muted)
                 }
                 LabeledContent("Sábado", value: "Shabbat")
             } header: {
@@ -44,12 +47,11 @@ struct ScheduleSettings: View {
                             },
                             selection: Binding { shown } set: { tab = $0 }
                         )
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
                     }
                 } header: {
                     Text("Horas")
                 }
+                .cardPlain()
                 ForEach(r.stepLines(shown), id: \.group) { g in
                     Section {
                         ForEach(g.lines) { line in
@@ -92,6 +94,7 @@ struct ScheduleSettings: View {
         } label: {
             SettingsRow(title: line.step.title ?? "", detail: line.summary, chevron: true)
         }
+        .cardRow()
         ForEach(line.letters) { l in
             if l.letter.usualMinutes != nil {
                 Button {
@@ -99,6 +102,7 @@ struct ScheduleSettings: View {
                 } label: {
                     SettingsRow(title: l.letter.name, detail: l.info, chevron: true, sub: true)
                 }
+                .cardRow()
             } else {
                 SettingsRow(title: l.letter.name, detail: l.info, chevron: false, sub: true)
             }
@@ -109,6 +113,7 @@ struct ScheduleSettings: View {
             } label: {
                 SettingsRow(title: "Prepararte", detail: info, chevron: true, sub: true)
             }
+            .cardRow()
         }
         ForEach(line.warnings, id: \.self) { w in
             Label(w, systemImage: "exclamationmark.triangle.fill")

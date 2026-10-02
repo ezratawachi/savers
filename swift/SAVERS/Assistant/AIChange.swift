@@ -3,7 +3,6 @@ import Foundation
 /// One change from the AI's block, already checked: only what Ajustes lets you do yourself.
 struct AIChange: Identifiable {
     enum Edit {
-        case name(String)
         case readApp(String)
         case affirmations([Item])
         case visualization([Item])
@@ -42,7 +41,7 @@ struct AIChange: Identifiable {
     /// Kinds of days before their hours, all days before one weekday, a date's kind before its hours.
     var order: Int {
         switch edit {
-        case .name, .readApp, .affirmations, .visualization, .visualizationNote, .windDown: 0
+        case .readApp, .affirmations, .visualization, .visualizationNote, .windDown: 0
         case .weekType: 1
         case .stepTime(_, _, let w, _): w == nil ? 2 : 3
         case .minutes(_, _, let w, _): w == nil ? 4 : 5
@@ -59,7 +58,6 @@ extension AIChange.Edit {
     /// only changes what it names.
     func apply(to s: inout AppSettings, days: inout [String: Day], today: String) {
         switch self {
-        case .name(let n): s.name = n
         case .readApp(let a): s.readApp = a
         case .affirmations(let items): s.affirmations = items
         case .visualization(let items): s.visualization.items = items

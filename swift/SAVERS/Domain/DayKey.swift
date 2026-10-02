@@ -63,6 +63,11 @@ enum DayKey {
         formatter("EEE d MMM").string(from: date(key)).replacingOccurrences(of: ".", with: "").capitalizedFirst
     }
 
+    /// "Septiembre"
+    static func monthOnly(_ month: MonthIndex) -> String {
+        formatter("LLLL").string(from: date(month.first)).capitalizedFirst
+    }
+
     /// "Septiembre de 2026"
     static func monthName(_ month: MonthIndex) -> String {
         formatter("LLLL 'de' y").string(from: date(month.first)).capitalizedFirst

@@ -11,6 +11,8 @@ enum CardLayout {
     /// How far a 44-pt target reaches past the 36-pt circle drawn in it, so the circle, not its target,
     /// sits on the card's line.
     static let circleSlack: CGFloat = 4
+    /// The least a row in a card is tall: a 44-pt target and a little air.
+    static let rowHeight: CGFloat = 50
     /// Where a letter card's title starts, past its circle.
     static let titleIndent: CGFloat = 44 - circleSlack + 10
 }

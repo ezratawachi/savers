@@ -139,7 +139,6 @@ final class AppStore {
         scheduleSave(after: delay)
     }
 
-    func setName(_ name: String) { changeSettings { $0.name = name } }
 
     func setReadApp(_ app: String) { changeSettings(delay: .zero) { $0.readApp = app } }
 

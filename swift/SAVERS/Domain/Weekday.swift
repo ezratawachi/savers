@@ -4,6 +4,8 @@ import Foundation
 enum Weekday {
     static let keys = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"]
     static let names = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
+    /// The calendar's column heads.
+    static let letters = ["D", "L", "M", "M", "J", "V", "S"]
 
     /// "Mié", "miercoles", "MIE." → "mie": how two day keys are compared.
     static func plain(_ s: String) -> String {

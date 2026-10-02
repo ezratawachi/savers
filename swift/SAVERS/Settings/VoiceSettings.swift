@@ -9,7 +9,7 @@ struct VoiceSettings: View {
     @FocusState private var keyFocused: Bool
 
     var body: some View {
-        AppList {
+        CardList {
             Section {
                 ForEach(GeminiVoice.voices) { v in
                     row(v)

@@ -22,51 +22,46 @@ struct DayRecordView: View {
         let showRoutine = type.hasSavers || (type == .off && (d.extra || d.hasContent))
 
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(DayKey.long(ds))
-                        .font(.display(30, relativeTo: .largeTitle))
-                        .foregroundStyle(.ink)
-                        .accessibilityAddTraits(.isHeader)
-                        .onScrollVisibilityChange(threshold: 0.2) { visible in headerGone = !visible }
-                    if !(future && type != .shabbat) {
-                        HStack(spacing: 8) {
-                            DayChip(type: type) { sheetDay = ds }
-                            if showRoutine {
-                                Text("· \(d.doneCount) de 6")
-                                    .font(.reading(15, relativeTo: .subheadline))
-                                    .foregroundStyle(.muted)
-                            }
-                        }
+            VStack(alignment: .leading, spacing: 0) {
+                NightBand {
+                    header(r, type: type, d: d, future: future, showRoutine: showRoutine)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                }
+                VStack(alignment: .leading, spacing: 18) {
+                    if future && type != .shabbat {
+                        DayEditor(ds: ds)
+                    } else if type == .shabbat {
+                        RestCard(title: "Shabbat Shalom", text: "Shabbat no tiene registro.")
+                    } else if !showRoutine {
+                        RestCard(
+                            title: "Sin SAVERS",
+                            text: "Ese día no tocaba SAVERS. Si igual los hiciste, puedes registrarlos.",
+                            button: ("Registrar mis SAVERS", { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
+                        )
+                    } else {
+                        letters(r, d)
                     }
                 }
-                if future && type != .shabbat {
-                    DayEditor(ds: ds)
-                } else if type == .shabbat {
-                    RestCard(title: "Shabbat Shalom", text: "Shabbat no tiene registro.")
-                } else if !showRoutine {
-                    RestCard(
-                        title: "Sin SAVERS",
-                        text: "Ese día no tocaba SAVERS. Si igual los hiciste, puedes registrarlos.",
-                        button: ("Registrar mis SAVERS", { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
-                    )
-                } else {
-                    letters(r, d)
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+                .padding(.bottom, 32)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 32)
         }
         .background(.bg)
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle(DayKey.short(ds))
         .navigationBarTitleDisplayMode(.inline)
+        // The bar is the night too, so it runs on into the band and stays when the day scrolls under it.
+        .toolbarBackground(Color.night, for: .navigationBar)
+        .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(DayKey.short(ds))
                     .font(.display(18, relativeTo: .headline, weight: .bold))
                     .foregroundStyle(.ink)
+                    .environment(\.colorScheme, .dark)
                     .opacity(headerGone ? 1 : 0)
                     .animation(motion(.easeOut(duration: 0.2)), value: headerGone)
                     .accessibilityHidden(!headerGone)
@@ -74,6 +69,45 @@ struct DayRecordView: View {
         }
         .sensoryFeedback(.impact(weight: .light), trigger: checkTick)
         .daySheet($sheetDay)
+    }
+
+    /// The date, what the day was and how far it went, and Sunling as that morning left him: up and
+    /// awake if it was complete, heavy-eyed if not, asleep on a day to come or without SAVERS.
+    private func header(_ r: Routine, type: DayType, d: Day, future: Bool, showRoutine: Bool) -> some View {
+        let asleep = future || type == .shabbat || !showRoutine
+        let pose = asleep ? SunlingPose.asleep : .morning(d.doneCount)
+        return VStack(alignment: .leading, spacing: 10) {
+            Text(DayKey.long(ds))
+                .font(.display(32, relativeTo: .largeTitle))
+                .tracking(-0.5)
+                .foregroundStyle(.ink)
+                .accessibilityAddTraits(.isHeader)
+                .onScrollVisibilityChange(threshold: 0.2) { visible in headerGone = !visible }
+            ZStack(alignment: .topLeading) {
+                Color.clear.frame(height: 64)
+                if !(future && type != .shabbat) {
+                    HStack(spacing: 8) {
+                        DayChip(type: type) { sheetDay = ds }
+                        if showRoutine {
+                            Text("· \(d.doneCount) de 6")
+                                .font(.reading(15, relativeTo: .subheadline))
+                                .foregroundStyle(.muted)
+                        }
+                    }
+                } else {
+                    Text("Todavía no amanece")
+                        .font(.reading(16, relativeTo: .subheadline))
+                        .foregroundStyle(.muted)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .overlay(alignment: .bottomTrailing) {
+                Sunling(pose: pose, lit: !asleep && d.doneCount == 6)
+                    .frame(width: 104)
+                    .padding(.trailing, -10)
+                    .animation(motion(Motion.sun), value: pose)
+            }
+        }
     }
 
     private func letters(_ r: Routine, _ d: Day) -> some View {

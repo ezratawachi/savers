@@ -86,7 +86,7 @@ struct TodayView: View {
             .background(.bg)
             .safeAreaInset(edge: .top, spacing: 0) {
                 // The night stays under the clock, so the cards never scroll under it.
-                Color.clear.frame(height: 0).background { Color.night.ignoresSafeArea() }
+                NightStrip()
             }
             .scrollDismissesKeyboard(.interactively)
             .onScrollPhaseChange { _, phase in isScrolling = phase != .idle }

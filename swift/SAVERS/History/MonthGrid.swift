@@ -1,44 +1,82 @@
 import SwiftUI
 
-/// One month: its name and how many mornings were complete, then the days as rings that fill with each letter.
+/// One month on the night: its name as the title, how many mornings were complete, then each day as a
+/// little sun on its own horizon. The first time a month is shown in a session its suns rise in a wave.
 struct MonthGrid: View {
     @Environment(AppStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let month: MonthIndex
+    /// The month in view: the one whose suns rise.
+    let isShown: Bool
     let onOpen: (String) -> Void
 
-    private static let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 7)
-    private static let weekdays = ["D", "L", "M", "M", "J", "V", "S"]
+    @State private var risen: Bool
+
+    init(month: MonthIndex, isShown: Bool, onOpen: @escaping (String) -> Void) {
+        self.month = month
+        self.isShown = isShown
+        self.onOpen = onOpen
+        _risen = State(initialValue: Self.seen.contains(month))
+    }
+
+    /// The months whose suns already rose since the app opened.
+    @MainActor private static var seen: Set<MonthIndex> = []
+
+    private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
     var body: some View {
         let r = store.routine
         let today = store.today
         let dates = month.dates
-        VStack(alignment: .leading, spacing: 14) {
+        let lead = DayKey.weekday(month.first)
+        VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(DayKey.monthName(month))
-                    .font(.display(24, relativeTo: .title2))
+                if month.year != MonthIndex(of: today).year {
+                    Text(String(month.year))
+                        .font(.reading(13, relativeTo: .footnote))
+                        .tracking(1)
+                        .foregroundStyle(.muted)
+                }
+                Text(DayKey.monthOnly(month))
+                    .font(.display(44, relativeTo: .largeTitle, weight: .heavy))
+                    .tracking(-1)
                     .foregroundStyle(.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                     .accessibilityAddTraits(.isHeader)
+                    .accessibilityLabel(DayKey.monthName(month))
                 Text(countLine(r, dates, today: today))
-                    .font(.reading(15, relativeTo: .subheadline))
+                    .font(.reading(16, relativeTo: .subheadline))
                     .foregroundStyle(.muted)
             }
             .padding(.trailing, 100)
-            LazyVGrid(columns: Self.columns, spacing: 6) {
-                ForEach(Self.weekdays.indices, id: \.self) { i in
-                    Text(Self.weekdays[i])
+            LazyVGrid(columns: Self.columns, spacing: 10) {
+                // Ids of their own: in one grid, the heads, the blanks and the days must never share one.
+                ForEach(Weekday.letters.indices.map { "head-\($0)" }, id: \.self) { key in
+                    Text(Weekday.letters[Int(key.dropFirst(5)) ?? 0])
                         .font(.reading(13, relativeTo: .caption).bold())
                         .foregroundStyle(.muted)
                         .accessibilityHidden(true)
                 }
-                ForEach(0..<DayKey.weekday(month.first), id: \.self) { _ in
+                ForEach((0..<lead).map { "blank-\($0)" }, id: \.self) { _ in
                     Color.clear.frame(height: 1)
                 }
-                ForEach(dates, id: \.self) { ds in
-                    DayCell(ds: ds, routine: r, today: today) { onOpen(ds) }
+                ForEach(Array(dates.enumerated()), id: \.element) { i, ds in
+                    DayCell(ds: ds, routine: r, today: today, risen: risen) { onOpen(ds) }
+                        .animation(rise(delay: Double(lead + i) * 0.012), value: risen)
                 }
             }
         }
+        .onChange(of: isShown, initial: true) { _, shown in
+            guard shown, !risen else { return }
+            Self.seen.insert(month)
+            risen = true
+        }
+    }
+
+    /// The wave: each day a beat after the one before; nothing moves with "Reducir movimiento".
+    private func rise(delay: Double) -> Animation? {
+        reduceMotion ? nil : Motion.sun.delay(delay)
     }
 
     private func countLine(_ r: Routine, _ dates: [String], today: String) -> String {
@@ -51,12 +89,14 @@ struct MonthGrid: View {
     }
 }
 
-/// A day: a ring filled n/6 in amber (whole when complete), today with a blue edge, days to come
-/// faded, and a blue dot on a day to come that was changed for itself.
+/// A day: its number, and its sun risen by its letters (a whole sun on a golden line when complete).
+/// Only days lived have a horizon; days to come are just their number, faded, with a sky dot if they
+/// were changed for themselves. Today's number in sky. Shabbat and a day off with nothing: the line.
 private struct DayCell: View {
     let ds: String
     let routine: Routine
     let today: String
+    let risen: Bool
     let action: () -> Void
 
     var body: some View {
@@ -66,38 +106,25 @@ private struct DayCell: View {
         let future = ds > today
         let off = type == .shabbat || (type == .off && !d.hasContent)
         let planned = future && type != .shabbat && (d.type != nil || d.times != nil || d.mins != nil)
-        let full = n == 6
+        let isToday = ds == today
 
         Button(action: action) {
-            ZStack {
-                if !off {
-                    Circle().stroke(Color.line, lineWidth: 3)
-                    Circle()
-                        .trim(from: 0, to: CGFloat(n) / 6)
-                        .stroke(Color.done, style: StrokeStyle(lineWidth: 3, lineCap: .butt))
-                        .rotationEffect(.degrees(-90))
-                }
-                if full { Circle().fill(Color.done) }
-                if ds == today {
-                    Circle().strokeBorder(Color.sky, lineWidth: 2).padding(3)
-                }
+            VStack(spacing: 4) {
                 Text("\(DayKey.calendar.component(.day, from: DayKey.date(ds)))")
-                    .font(.reading(14, relativeTo: .footnote).weight(off ? .regular : .bold))
+                    .font(.reading(14, relativeTo: .footnote).weight(isToday || n == 6 ? .bold : .regular))
                     .monospacedDigit()
-                    .foregroundStyle(full ? Color.onDone : off ? Color.muted : Color.ink)
-                if planned {
-                    Circle().fill(Color.sky)
-                        .frame(width: 4, height: 4)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                        .padding(.bottom, 6)
-                }
+                    .foregroundStyle(isToday ? Color.sky : off || future ? Color.muted : Color.ink)
+                DaySun(rise: risen && !off ? DaySun.rise(n) : 0, lit: !off && n == 6, line: !future, diameter: 26)
+                    .padding(.horizontal, 2)
+                Circle()
+                    .fill(Color.sky)
+                    .frame(width: 4, height: 4)
+                    .opacity(planned ? 1 : 0)
             }
-            .padding(1.5)
-            .aspectRatio(1, contentMode: .fit)
-            .opacity(future && !off ? 0.4 : 1)
-            .contentShape(.circle)
+            .opacity(future && !off ? 0.55 : 1)
+            .contentShape(.rect)
         }
-        .buttonStyle(PressScale(scale: 0.94))
+        .buttonStyle(PressScale(scale: 0.92))
         .disabled(type == .shabbat)
         .accessibilityLabel(label(future: future, off: off, planned: planned, n: n))
     }

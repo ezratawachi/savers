@@ -11,7 +11,7 @@ struct NoticesSettings: View {
 
     var body: some View {
         let blocked = notices.permission == .blocked
-        AppList {
+        CardList {
             Section {
                 ForEach(NoteKind.allCases) { kind in
                     Toggle(isOn: Binding {
@@ -28,17 +28,19 @@ struct NoticesSettings: View {
                         }
                     }
                     .tint(.sky)
+                    .disabled(blocked || notices.busy != nil)
                 }
             } footer: {
                 Text("Nada desde el viernes en la tarde hasta que termina Shabbat.")
             }
-            .disabled(blocked || notices.busy != nil)
 
             if blocked {
                 Section {
                     Button("Abrir Configuración") {
                         if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
                     }
+                    .foregroundStyle(.sky)
+                    .cardRow()
                 } header: {
                     Text("Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS.")
                         .textCase(nil)
@@ -53,6 +55,8 @@ struct NoticesSettings: View {
                             toast.show("Aviso de prueba enviado")
                         }
                     }
+                    .foregroundStyle(.sky)
+                    .cardRow()
                 } footer: {
                     Text("Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › SAVERS. Con el modo Dormir u otra concentración llegan sin sonido y sin mostrarse, salvo que SAVERS esté entre sus apps permitidas.")
                 }

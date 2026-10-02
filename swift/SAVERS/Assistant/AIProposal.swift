@@ -31,7 +31,7 @@ struct AIProposal: Identifiable {
 
     // MARK: Finding the block
 
-    private static let topKeys: Set<String> = ["nombre", "leeren", "afirmaciones", "visualizacion", "semana", "prepararte", "normal", "gym", "fechas"]
+    private static let topKeys: Set<String> = ["leeren", "afirmaciones", "visualizacion", "semana", "prepararte", "normal", "gym", "fechas"]
 
     /// The ```savers block, or else the last JSON object in the text that looks like one.
     static func block(in text: String) -> [String: JSONValue]? {
@@ -93,7 +93,6 @@ struct AIProposal: Identifiable {
         let week = block.filter { AIText.key($0.key) == "semana" }
         for (k, v) in week.sorted(by: { $0.key < $1.key }) + block.filter({ week[$0.key] == nil }).sorted(by: { $0.key < $1.key }) {
             switch AIText.key(k) {
-            case "nombre": readName(v)
             case "leeren": readReadApp(v)
             case "afirmaciones": readItems(v, current: r.settings.affirmations.filled, what: "Afirmaciones", noun: ("frase", "frases")) { .affirmations($0) }
             case "visualizacion": readVisualization(v)
@@ -105,13 +104,6 @@ struct AIProposal: Identifiable {
             default: problem("\(AIText.quoted(k)) no se puede cambiar desde la app.")
             }
         }
-    }
-
-    private mutating func readName(_ v: JSONValue) {
-        guard let n = v.text?.trimmingCharacters(in: .whitespacesAndNewlines) else { return problem("El nombre tiene que ser un texto.") }
-        let old = r.settings.name
-        guard n != old else { return }
-        add(.name(n), "Tu nombre", "", "\(old.isEmpty ? "(vacío)" : old) → \(n.isEmpty ? "(vacío)" : n)")
     }
 
     private static let readApps = [("libros", "Libros"), ("kindle", "Kindle"), ("papel", "Libro físico")]

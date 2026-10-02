@@ -1,98 +1,101 @@
 import SwiftUI
 
-/// Ajustes: the name, the routine's content, sound, and the copy. Each screen pushes in from the right.
+/// Ajustes: how you want your mornings. On the night, your week (it opens Horario); under it, what you
+/// say and see, help, sound and notices, and your data. Each page pushes in from the right.
 struct SettingsView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
     @Environment(Notices.self) private var notices
-    @State private var name = ""
     @State private var keepMusic = ToneEngine.keepMusic
-    @FocusState private var nameFocused: Bool
+    /// The week scrolled away: the strip under the clock says where you are.
+    @State private var weekGone = false
     private var gemini: GeminiVoice { .shared }
 
     var body: some View {
         let s = store.settings
-        let r = store.routine
         NavigationStack {
-            AppList {
-                Section {
-                    LabeledContent("Tu nombre") {
-                        TextField("Para el saludo", text: $name)
-                            .multilineTextAlignment(.trailing)
-                            .textContentType(.givenName)
-                            .submitLabel(.done)
-                            .focused($nameFocused)
-                    }
-                }
-                Section {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
                     NavigationLink {
                         ScheduleSettings()
                     } label: {
-                        LabeledContent("Horario", value: count(r.days(of: .normal).count + r.days(of: .gym).count, "día", "días"))
+                        NightBand { WeekBand() }
                     }
-                    NavigationLink {
-                        ItemsPage(kind: .affirmations)
-                    } label: {
-                        let n = s.affirmations.filled.count
-                        LabeledContent("Afirmaciones", value: n > 0 ? count(n, "frase", "frases") : "Vacío")
-                    }
-                    NavigationLink {
-                        ItemsPage(kind: .visualization)
-                    } label: {
-                        let n = s.visualization.items.filled.count
-                        LabeledContent("Visualización", value: n > 0 ? count(n, "pregunta", "preguntas") : "Vacío")
-                    }
-                    ReadAppPicker()
-                }
-                Section {
-                    NavigationLink("Hablar con una IA") {
-                        AssistantPage()
-                    }
-                }
-                Section {
-                    NavigationLink {
-                        NoticesSettings()
-                    } label: {
-                        LabeledContent("Notificaciones", value: notices.anyOn ? "Activadas" : "Apagadas")
-                    }
-                    NavigationLink {
-                        VoiceSettings()
-                    } label: {
-                        LabeledContent("Voz", value: gemini.hasKey ? gemini.voice : "Del iPhone")
-                    }
-                    Toggle("Mantener mi música", isOn: $keepMusic)
-                        .tint(.sky)
-                        .onChange(of: keepMusic) { _, on in ToneEngine.keepMusic = on }
-                } footer: {
-                    Text("En los temporizadores tu música sigue sonando, pero la voz solo se oye si el iPhone no está en silencio. Apagado, la voz pausa tu música y suena siempre.")
-                }
-                Section {
-                    NavigationLink {
-                        BackupPage()
-                    } label: {
-                        LabeledContent("Copia de seguridad") {
-                            Text(cloud.linked ? "En la nube" : "Apagada")
-                                .foregroundStyle(.muted)
+                    .buttonStyle(CardRowButtonStyle())
+                    .onScrollVisibilityChange(threshold: 0.3) { visible in weekGone = !visible }
+
+                    CardSections {
+                        Section("Lo que dices y ves") {
+                            NavigationLink {
+                                ItemsPage(kind: .affirmations)
+                            } label: {
+                                let n = s.affirmations.filled.count
+                                RowLabel(title: "Afirmaciones", value: n > 0 ? count(n, "frase", "frases") : "Vacío")
+                            }
+                            .cardRow()
+                            NavigationLink {
+                                ItemsPage(kind: .visualization)
+                            } label: {
+                                let n = s.visualization.items.filled.count
+                                RowLabel(title: "Visualización", value: n > 0 ? count(n, "pregunta", "preguntas") : "Vacío")
+                            }
+                            .cardRow()
+                            ReadAppPicker()
+                        }
+                        Section("Ayuda") {
+                            NavigationLink {
+                                AssistantPage()
+                            } label: {
+                                RowLabel(title: "Hablar con una IA")
+                            }
+                            .cardRow()
+                        }
+                        Section {
+                            NavigationLink {
+                                NoticesSettings()
+                            } label: {
+                                RowLabel(title: "Notificaciones", value: notices.anyOn ? "Activadas" : "Apagadas")
+                            }
+                            .cardRow()
+                            NavigationLink {
+                                VoiceSettings()
+                            } label: {
+                                RowLabel(title: "Voz", value: gemini.hasKey ? gemini.voice : "Del iPhone")
+                            }
+                            .cardRow()
+                            Toggle("Mantener mi música", isOn: $keepMusic)
+                                .tint(.sky)
+                                .onChange(of: keepMusic) { _, on in ToneEngine.keepMusic = on }
+                        } header: {
+                            Text("Sonido y avisos")
+                        } footer: {
+                            Text(keepMusic
+                                 ? "Tu música sigue en los temporizadores; la voz se oye si el iPhone no está en silencio."
+                                 : "La voz pausa tu música y suena siempre.")
+                        }
+                        Section {
+                            NavigationLink {
+                                BackupPage()
+                            } label: {
+                                RowLabel(title: "Copia de seguridad", value: cloud.linked ? "En la nube" : "Apagada")
+                            }
+                            .cardRow()
+                        } header: {
+                            Text("Tus datos")
+                        } footer: {
+                            Text(cloud.linked ? "Tus registros se guardan en este aparato y en la nube." : "Tus registros viven solo en este aparato.")
                         }
                     }
-                } footer: {
-                    Text(cloud.linked ? "Tus registros se guardan en este aparato y en la nube." : "Tus registros viven solo en este aparato.")
+                    .padding(.horizontal, 16)
+                    .padding(.top, 24)
+                    .padding(.bottom, 32)
                 }
             }
-            .navigationTitle("Ajustes")
-        }
-        .onAppear { name = store.settings.name }
-        .onChange(of: name) { _, new in
-            if new != store.settings.name { store.setName(new) }
-        }
-        .onChange(of: nameFocused) { _, focused in
-            guard !focused else { return }
-            name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            store.flush()
-        }
-        .onChange(of: store.settings.name) { _, new in
-            // A name that arrives from the cloud, unless it's being written here.
-            if !nameFocused && new != name { name = new }
+            .background(.bg)
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                NightStrip(title: weekGone ? "Ajustes" : nil)
+            }
         }
     }
 

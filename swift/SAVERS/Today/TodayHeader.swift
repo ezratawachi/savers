@@ -30,48 +30,40 @@ struct TodayHeader: View {
     @Environment(Opening.self) private var opening
 
     var body: some View {
-        Group {
-            if title.isLetters {
-                VStack(alignment: .leading, spacing: 0) {
-                    dayLine
-                    titleView
-                    // The line under the title; Sunling below it, on the horizon at the right.
-                    ZStack(alignment: .topLeading) {
-                        Color.clear.frame(height: 72)
+        NightBand {
+            Group {
+                if title.isLetters {
+                    VStack(alignment: .leading, spacing: 0) {
+                        dayLine
+                        titleView
+                        // The line under the title; Sunling below it, on the horizon at the right.
+                        ZStack(alignment: .topLeading) {
+                            Color.clear.frame(height: 72)
+                            line
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .bottomTrailing) {
+                            landing(Sunling(pose: pose, lit: lit).frame(width: 104), pose: pose, lit: lit)
+                                // His body, not his halo, lines up with the margin.
+                                .padding(.trailing, -10)
+                                .animation(Motion.pick(Motion.sun, reduce: reduceMotion), value: pose)
+                                .animation(Motion.pick(Motion.sun, reduce: reduceMotion), value: lit)
+                        }
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: 0) {
+                        dayLine
+                        titleView
                         line
+                        Spacer(minLength: 32)
+                        landing(Sunling(pose: .asleep).frame(maxWidth: 290), pose: .asleep, lit: false)
+                            .frame(maxWidth: .infinity)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .overlay(alignment: .bottomTrailing) {
-                        landing(Sunling(pose: pose, lit: lit).frame(width: 104), pose: pose, lit: lit)
-                            // His body, not his halo, lines up with the margin.
-                            .padding(.trailing, -10)
-                            .animation(Motion.pick(Motion.sun, reduce: reduceMotion), value: pose)
-                            .animation(Motion.pick(Motion.sun, reduce: reduceMotion), value: lit)
-                    }
+                    .containerRelativeFrame(.vertical, alignment: .top) { height, _ in height * 0.7 }
                 }
-            } else {
-                VStack(alignment: .leading, spacing: 0) {
-                    dayLine
-                    titleView
-                    line
-                    Spacer(minLength: 32)
-                    landing(Sunling(pose: .asleep).frame(maxWidth: 290), pose: .asleep, lit: false)
-                        .frame(maxWidth: .infinity)
-                }
-                .containerRelativeFrame(.vertical, alignment: .top) { height, _ in height * 0.7 }
             }
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        // The night, with its own colors whatever the iPhone's mode, from under the clock (and past it,
-        // when pulled down) to the icon's line.
-        .environment(\.colorScheme, .dark)
-        .background {
-            Color.night.padding(.top, -1000)
-        }
-        .overlay(alignment: .bottom) {
-            Color.horizon.frame(height: 1.5)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
         }
         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { y in
             if !opening.done { opening.horizon = y }

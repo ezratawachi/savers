@@ -13,7 +13,7 @@ struct AssistantPage: View {
     @FocusState private var notesFocused: Bool
 
     var body: some View {
-        AppList {
+        CardList {
             Section {
                 TextField("Mi trabajo, lo que no se mueve, lo que quiero lograr", text: $notes, axis: .vertical)
                     .lineLimit(3...)
@@ -34,6 +34,7 @@ struct AssistantPage: View {
                         .fontWeight(.bold)
                 }
                 .foregroundStyle(.sky)
+                .cardRow()
             } header: {
                 Text("¿De qué quieres hablar?")
             } footer: {
@@ -57,6 +58,8 @@ struct AssistantPage: View {
             if store.aiUndo != nil {
                 Section {
                     Button("Deshacer los últimos cambios de la IA", role: .destructive) { askingUndo = true }
+                        .foregroundStyle(.warn)
+                        .cardRow()
                 }
             }
         }

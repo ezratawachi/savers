@@ -14,7 +14,7 @@ struct ChangesSheet: View {
 
     var body: some View {
         NavigationStack {
-            AppList {
+            CardList {
                 if !proposal.changes.isEmpty {
                     Section {
                         ForEach(proposal.changes) { c in
@@ -41,6 +41,7 @@ struct ChangesSheet: View {
                             copied = true
                         }
                         .foregroundStyle(.sky)
+                        .cardRow()
                     } header: {
                         Text(proposal.problems.count == 1 ? "No se puede aplicar" : "No se pueden aplicar")
                     } footer: {

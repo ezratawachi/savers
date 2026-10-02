@@ -203,9 +203,9 @@ private struct GroupTitle: View {
     let text: String
 
     var body: some View {
+        // Like every section head in the app: Hoy's blocks, Ajustes' groups.
         Text(text)
-            .font(.reading(13, relativeTo: .caption).bold())
-            .textCase(.uppercase)
+            .font(.reading(15, relativeTo: .subheadline).bold())
             .foregroundStyle(.muted)
             .padding(.top, 14)
             .padding(.bottom, 4)
