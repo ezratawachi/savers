@@ -22,6 +22,9 @@ struct Sunling: View {
             .clipShape(.rect)
         }
         .aspectRatio(SunlingLayer.aspect, contentMode: .fit)
+        // One picture, so a fade shows him whole: faded layer by layer, his lids would turn see-through
+        // and his eyes would show under them.
+        .compositingGroup()
         .accessibilityHidden(true)
     }
 

@@ -47,14 +47,16 @@ struct TodayView: View {
 
         let free = type == .off && !(day.extra || store.showOff || day.hasContent)
         let title: TodayHeader.Title = type == .shabbat ? .shabbat : free ? .free : .letters(day)
-        // Sunling wakes with each letter, and is all up once the morning is done.
-        let pose = SunlingPose.morning(shownFinish == .none ? day.doneCount : 6)
+        // Sunling wakes with each letter, and is all up once the morning is done. Before the first
+        // settle he takes the day as it is, so he doesn't rise on his own when the app opens.
+        let shown = settled ? shownFinish : finish
+        let pose = SunlingPose.morning(shown == .none ? day.doneCount : 6)
 
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     TodayHeader(ds: ds, type: type, title: title, note: note(title, routine), status: store.saveError,
-                                pose: pose, lit: shownFinish != .none) {
+                                pose: pose, lit: shown != .none) {
                         sheetDay = ds
                     }
                     VStack(alignment: .leading, spacing: 20) {

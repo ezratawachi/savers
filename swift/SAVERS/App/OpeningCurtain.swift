@@ -33,6 +33,7 @@ struct OpeningCurtain: View {
             }
         }
         .ignoresSafeArea()
+        .compositingGroup()
         .opacity(gone ? 0 : 1)
         .allowsHitTesting(!gone)
         .accessibilityHidden(true)
@@ -51,10 +52,11 @@ struct OpeningCurtain: View {
         try? await Task.sleep(for: .milliseconds(120))
         if !reduceMotion && opening.bird != nil {
             withAnimation(.spring(duration: 0.8, bounce: 0)) { landed = true }
-            try? await Task.sleep(for: .milliseconds(650))
+            // Fade only once he has landed on Hoy's Sunling, so nothing moves under the fade.
+            try? await Task.sleep(for: .milliseconds(850))
         }
-        withAnimation(.easeOut(duration: 0.3)) { gone = true }
-        try? await Task.sleep(for: .milliseconds(300))
+        withAnimation(.easeOut(duration: 0.25)) { gone = true }
+        try? await Task.sleep(for: .milliseconds(250))
         opening.done = true
     }
 }
