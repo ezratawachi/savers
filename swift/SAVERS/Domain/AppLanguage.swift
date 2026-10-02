@@ -10,6 +10,9 @@ enum AppLanguage {
     /// plain language, so an English app on a French iPhone doesn't name its days in French.
     static let locale: Locale = Locale.current.language.languageCode?.identifier == code ? .current : Locale(identifier: code)
 
+    /// "Español", "English": the language's own name.
+    static var name: String { (locale.localizedString(forLanguageCode: code) ?? code).capitalizedFirst }
+
     /// "a, b y c", "a, b and c"
     static func list(_ items: [String]) -> String {
         let f = ListFormatter()

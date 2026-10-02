@@ -2431,6 +2431,16 @@
         }
       }
     },
+    "Language" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
+          }
+        }
+      }
+    },
     "Last one: legs on the chair, breathe slowly." : {
       "localizations" : {
         "es" : {
@@ -2987,6 +2997,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abrir Configuración"
+          }
+        }
+      }
+    },
+    "Opens Sunling in the iPhone's Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Sunling en la Configuración del iPhone"
           }
         }
       }
@@ -3627,6 +3647,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sunling descansa hoy"
+          }
+        }
+      }
+    },
+    "Sunling speaks the iPhone's language. To choose another one just for Sunling, tap Language in its Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunling habla el idioma del iPhone. Para elegir otro solo para Sunling, toca Idioma en su Configuración."
           }
         }
       }

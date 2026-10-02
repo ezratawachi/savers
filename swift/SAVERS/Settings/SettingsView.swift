@@ -1,11 +1,12 @@
 import SwiftUI
 
 /// Settings: how you want your mornings. On the night, your week (it opens Horario); under it, what you
-/// say and see, help, sound and notices, and your data. Each page pushes in from the right.
+/// say and see, help, sound and notices, your data and the language. Each page pushes in from the right.
 struct SettingsView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
     @Environment(Notices.self) private var notices
+    @Environment(\.openURL) private var openURL
     @State private var keepMusic = ToneEngine.keepMusic
     /// The week scrolled away: the strip under the clock says where you are.
     @State private var weekGone = false
@@ -90,6 +91,18 @@ struct SettingsView: View {
                             Text("Your data")
                         } footer: {
                             Text(cloud.linked ? "Your records are saved on this device and in the cloud." : "Your records live only on this device.")
+                        }
+                        Section {
+                            // Apple's way: the iPhone's language, or one just for Sunling in its page of iOS Settings.
+                            Button {
+                                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                            } label: {
+                                RowLabel(title: String(localized: "Language"), value: AppLanguage.name)
+                            }
+                            .cardRow()
+                            .accessibilityHint("Opens Sunling in the iPhone's Settings")
+                        } footer: {
+                            Text("Sunling speaks the iPhone's language. To choose another one just for Sunling, tap Language in its Settings.")
                         }
                     }
                     .padding(.horizontal, 16)
