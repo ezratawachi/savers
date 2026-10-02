@@ -42,7 +42,7 @@ struct NoticesSettings: View {
                     .foregroundStyle(.sky)
                     .cardRow()
                 } header: {
-                    Text("Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › SAVERS.")
+                    Text("Los avisos están bloqueados. Actívalos en Configuración › Notificaciones › Sunling.")
                         .textCase(nil)
                         .font(.footnote)
                         .foregroundStyle(.warn)
@@ -58,7 +58,7 @@ struct NoticesSettings: View {
                     .foregroundStyle(.sky)
                     .cardRow()
                 } footer: {
-                    Text("Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › SAVERS. Con el modo Dormir u otra concentración llegan sin sonido y sin mostrarse, salvo que SAVERS esté entre sus apps permitidas.")
+                    Text("Cómo se ven y si suenan lo eliges en Configuración › Notificaciones › Sunling. Con el modo Dormir u otra concentración llegan sin sonido y sin mostrarse, salvo que Sunling esté entre sus apps permitidas.")
                 }
             }
         }

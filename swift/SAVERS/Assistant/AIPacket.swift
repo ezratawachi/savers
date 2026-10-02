@@ -10,7 +10,7 @@ enum AIPacket {
         let notes = r.settings.aiNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
         parts.append("# Mi rutina SAVERS\n\n" +
-            "Hoy es \(DayKey.long(r.today).lowercased()) (\(r.today)). Te paso todo lo de mi app de SAVERS para que me ayudes.")
+            "Hoy es \(DayKey.long(r.today).lowercased()) (\(r.today)). Te paso todo lo de Sunling, mi app de SAVERS, para que me ayudes.")
         parts.append("## Lo que quiero\n\n" + (q.isEmpty ? "Todavía no lo sé. Pregúntame de qué quiero hablar." : q))
         parts.append("## Mis notas (lo que la app no sabe)\n\n" + (notes.isEmpty ? "Sin notas." : notes))
         parts.append(howToWork)

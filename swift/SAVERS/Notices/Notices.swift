@@ -20,7 +20,7 @@ enum NoteKind: String, CaseIterable, Identifiable {
 
     func about(_ r: Routine) -> String {
         switch self {
-        case .lectura: "Cuando terminan tus minutos, aunque SAVERS esté cerrada."
+        case .lectura: "Cuando terminan tus minutos, aunque Sunling esté cerrada."
         case .leer: "Los días de gym, si todavía no leíste."
         case .dormir: "\(r.windDown) minutos antes de Dormido, de domingo a jueves. Lo cambias en Horario."
         case .revision: "Afirmaciones y visualización, el primer domingo a las 11:00 am."
@@ -98,7 +98,7 @@ final class Notices {
     }
 
     func test() async {
-        await LocalNote.schedule(id: "prueba", at: .now, title: "Los avisos funcionan", body: "Así te llegan los avisos de SAVERS.")
+        await LocalNote.schedule(id: "prueba", at: .now, title: "Los avisos funcionan", body: "Así te llegan los avisos de Sunling.")
     }
 
     // MARK: Planning

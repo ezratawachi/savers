@@ -319,7 +319,7 @@ final class Runs {
             id: "lectura",
             at: Date(timeIntervalSince1970: run.start / 1000 + Double(min) * 60),
             title: "Lectura terminada",
-            body: "Leíste \(min) \(min == 1 ? "minuto" : "minutos"). Se marca sola al volver a SAVERS."
+            body: "Leíste \(min) \(min == 1 ? "minuto" : "minutos"). Se marca sola al volver a Sunling."
         )
         if reading?.start == run.start { reading?.sent = true; save() }
     }
