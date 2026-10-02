@@ -14,7 +14,7 @@ struct OpeningCurtain: View {
         GeometryReader { g in
             let w = g.size.width
             let h = g.size.height
-            let start = startFrame(in: g.size)
+            let start = Self.launchFrame(in: g.size)
             let horizon = landed ? (opening.horizon ?? h / 2) : h / 2
             let bird = landed ? (opening.bird ?? start) : start
             ZStack(alignment: .topLeading) {
@@ -45,7 +45,7 @@ struct OpeningCurtain: View {
     }
 
     /// Sunling as the launch image draws him: a 250-pt half disc, centered, on the screen's middle line.
-    private func startFrame(in size: CGSize) -> CGRect {
+    static func launchFrame(in size: CGSize) -> CGRect {
         let width = 250 * 1024 / 820.0
         let height = width / SunlingLayer.aspect
         return CGRect(x: (size.width - width) / 2, y: size.height / 2 - height, width: width, height: height)

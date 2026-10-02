@@ -5,6 +5,9 @@ import SwiftUI
 /// long, and the notifications. Sunling sleeps on the horizon in the middle and wakes a little with each
 /// screen; the opening curtain under this draws him, so when the welcome ends he lands on Today as on any open.
 struct WelcomeView: View {
+    /// Settings › The method › "See the welcome": the same screens, on their own night, changing nothing.
+    var preview = false
+
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
     @Environment(Notices.self) private var notices
@@ -16,6 +19,8 @@ struct WelcomeView: View {
     @State private var wake = "6:30"
     @State private var length = SunriseLength.ten
     @State private var asking = false
+    @State private var pose = SunlingPose.asleep
+    @Environment(\.dismiss) private var dismiss
 
     /// He opens his eyes a little with each screen; on the last he's the icon, as the opening starts.
     private static let poses: [SunlingPose] = [.asleep, SunlingPose(rise: 0.87, leftLid: 594, rightLid: 584, lidLine: 1), .icon]
@@ -44,7 +49,13 @@ struct WelcomeView: View {
                                     removal: .opacity.animation(.easeIn(duration: 0.18))))
         }
         .environment(\.colorScheme, .dark)
-        .onChange(of: page, initial: true) { _, p in opening.startPose = Self.poses[min(p, 2)] }
+        .background {
+            // Without the opening under it, the welcome draws the launch's night itself.
+            if preview { WelcomeNight(pose: pose).animation(Motion.pick(Motion.sun, reduce: reduceMotion), value: pose) }
+        }
+        .onChange(of: page, initial: true) { _, p in
+            if preview { pose = Self.poses[min(p, 2)] } else { opening.startPose = Self.poses[min(p, 2)] }
+        }
         .onChange(of: cloud.linked) { _, linked in
             // "I already use Sunling": the cloud brings the rest.
             if linked { finish() }
@@ -92,7 +103,7 @@ struct WelcomeView: View {
                 Spacer(minLength: 16)
                 next(String(localized: "Continue")) { go(1) }
                 quiet(String(localized: "I already use Sunling")) {
-                    Task { await cloud.signIn(using: webAuth) }
+                    if preview { finish() } else { Task { await cloud.signIn(using: webAuth) } }
                 }
                 .disabled(cloud.busy)
                 if !cloud.error.isEmpty {
@@ -121,7 +132,7 @@ struct WelcomeView: View {
                     .padding(.top, 8)
                 Spacer(minLength: 16)
                 next(String(localized: "Continue")) {
-                    store.startFresh(wake: wake, length: length)
+                    if !preview { store.startFresh(wake: wake, length: length) }
                     go(2)
                 }
             }
@@ -138,7 +149,7 @@ struct WelcomeView: View {
                 next(String(localized: "Allow notifications")) {
                     asking = true
                     Task {
-                        await notices.askPermission()
+                        if !preview { await notices.askPermission() }
                         finish()
                     }
                 }
@@ -215,6 +226,30 @@ struct WelcomeView: View {
 
     /// The night stays; the words go, and the curtain under them lands on Today.
     private func finish() {
+        if preview { dismiss(); return }
         withAnimation(.easeOut(duration: 0.25)) { opening.welcoming = false }
+    }
+}
+
+/// The launch's night for the welcome's preview: a horizon across the middle and Sunling on it, where the
+/// opening curtain draws him.
+private struct WelcomeNight: View {
+    let pose: SunlingPose
+
+    var body: some View {
+        GeometryReader { g in
+            let bird = OpeningCurtain.launchFrame(in: g.size)
+            ZStack(alignment: .topLeading) {
+                Color.night
+                Color.horizon
+                    .frame(width: g.size.width, height: 1.5)
+                    .offset(y: g.size.height / 2 - 1.5)
+                Sunling(pose: pose)
+                    .frame(width: bird.width, height: bird.height)
+                    .offset(x: bird.minX, y: bird.minY)
+            }
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
     }
 }

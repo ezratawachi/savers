@@ -3731,6 +3731,16 @@
         }
       }
     },
+    "See the welcome" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver la bienvenida"
+          }
+        }
+      }
+    },
     "See you on Sunday" : {
       "localizations" : {
         "es" : {
@@ -4327,6 +4337,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todavía no amanece"
+          }
+        }
+      }
+    },
+    "The three screens someone new sees the first time. Nothing you choose there changes your app." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las tres pantallas que ve alguien nuevo la primera vez. Nada de lo que elijas ahí cambia tu app."
           }
         }
       }
