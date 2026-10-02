@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// SAVERS from margin to margin: done in terracotta, the rest quiet. Not buttons.
+/// SAVERS from margin to margin: done in amber on the night, the rest quiet. Not buttons.
 struct HeroLetters: View {
     let day: Day
 
@@ -21,7 +21,7 @@ struct HeroLetters: View {
 
     private var word: Text {
         Letter.allCases.reduce(Text(verbatim: "")) { word, letter in
-            Text("\(word)\(Text(letter.initial).foregroundStyle(day.isDone(letter) ? Color.dawn : Color.line))")
+            Text("\(word)\(Text(letter.initial).foregroundStyle(day.isDone(letter) ? Color.done : Color.nightLetter))")
         }
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// "Mañana lista" with what's left for later, or "Día completo" with the streak.
+/// "Mañana lista" with what's left for later, or "Día completo" with the streak. No check of its own:
+/// Sunling, up and awake on the horizon just above, is the finish.
 struct FinishCard: View {
     let finish: Finish
     /// "Lectura a las 8:50 pm"
@@ -8,13 +9,7 @@ struct FinishCard: View {
     let streak: Int
 
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "checkmark")
-                .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 64, height: 64)
-                .background(.dawn, in: .circle)
-                .accessibilityHidden(true)
+        VStack(spacing: 4) {
             Text(finish == .morning ? "Mañana lista" : "Día completo")
                 .font(.display(26, relativeTo: .title))
                 .foregroundStyle(.ink)
@@ -32,7 +27,7 @@ struct FinishCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(CardLayout.inset)
-        .background(.dawnSoft, in: .rect(cornerRadius: CardLayout.radius))
+        .background(.doneSoft, in: .rect(cornerRadius: CardLayout.radius))
         .accessibilityElement(children: .contain)
     }
 }

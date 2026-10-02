@@ -17,9 +17,9 @@ struct FoldCard<Content: View>: View {
                 HStack(spacing: 10) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.onDone)
                         .frame(width: 36, height: 36)
-                        .background(.dawn, in: .circle)
+                        .background(.done, in: .circle)
                         .frame(width: 44, height: 44)
                     Text("\(Text(label).bold()) \(Text("· \(count) hechas").foregroundStyle(.muted))")
                         .font(.reading(18, relativeTo: .headline))

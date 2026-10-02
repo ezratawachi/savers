@@ -51,7 +51,7 @@ struct MonthGrid: View {
     }
 }
 
-/// A day: a ring filled n/6 in terracotta (whole when complete), today with a blue edge, days to come
+/// A day: a ring filled n/6 in amber (whole when complete), today with a blue edge, days to come
 /// faded, and a blue dot on a day to come that was changed for itself.
 private struct DayCell: View {
     let ds: String
@@ -74,17 +74,17 @@ private struct DayCell: View {
                     Circle().stroke(Color.line, lineWidth: 3)
                     Circle()
                         .trim(from: 0, to: CGFloat(n) / 6)
-                        .stroke(Color.dawn, style: StrokeStyle(lineWidth: 3, lineCap: .butt))
+                        .stroke(Color.done, style: StrokeStyle(lineWidth: 3, lineCap: .butt))
                         .rotationEffect(.degrees(-90))
                 }
-                if full { Circle().fill(Color.dawn) }
+                if full { Circle().fill(Color.done) }
                 if ds == today {
                     Circle().strokeBorder(Color.sky, lineWidth: 2).padding(3)
                 }
                 Text("\(DayKey.calendar.component(.day, from: DayKey.date(ds)))")
                     .font(.reading(14, relativeTo: .footnote).weight(off ? .regular : .bold))
                     .monospacedDigit()
-                    .foregroundStyle(full ? Color.white : off ? Color.muted : Color.ink)
+                    .foregroundStyle(full ? Color.onDone : off ? Color.muted : Color.ink)
                 if planned {
                     Circle().fill(Color.sky)
                         .frame(width: 4, height: 4)

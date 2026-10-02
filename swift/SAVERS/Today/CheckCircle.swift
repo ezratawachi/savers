@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The circle that marks a letter: its initial while pending, a check on terracotta when done.
+/// The circle that marks a letter: its initial while pending, a check on amber when done.
 struct CheckCircle: View {
     let letter: Letter
     let done: Bool
@@ -11,12 +11,12 @@ struct CheckCircle: View {
         Button(action: action) {
             ZStack {
                 Circle()
-                    .fill(done ? Color.dawn : Color.clear)
-                    .stroke(done ? Color.dawn : isNow ? Color.sky : Color.line, lineWidth: 1.5)
+                    .fill(done ? Color.done : Color.clear)
+                    .stroke(done ? Color.done : isNow ? Color.sky : Color.line, lineWidth: 1.5)
                 if done {
                     Image(systemName: "checkmark")
                         .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.onDone)
                         .transition(.scale(scale: 0.5).combined(with: .opacity))
                 } else {
                     Text(letter.initial)

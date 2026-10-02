@@ -76,7 +76,7 @@ struct ExerciseTimer: View {
     }
 }
 
-/// The six parts in a row, each a short bar that fills: done is terracotta, now has a sky ring.
+/// The six parts in a row, each a short bar that fills: done is amber, now has a sky ring.
 /// The circuit runs twice, so in round 2 its four parts fill again (the step's name says which round).
 private struct ExerciseMap: View {
     /// The part it's in; -1 before starting.
@@ -95,7 +95,7 @@ private struct ExerciseMap: View {
                         .overlay(alignment: .leading) {
                             GeometryReader { g in
                                 Capsule()
-                                    .fill(Color.dawn)
+                                    .fill(Color.done)
                                     .frame(width: g.size.width * (current < 0 ? 0 : k < current ? 1 : now ? fill : 0))
                                     .animation(.linear(duration: 0.25), value: fill)
                             }

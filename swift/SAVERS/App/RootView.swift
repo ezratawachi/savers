@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The three tabs, the toast, and keeping "today" right across midnight and app switches.
+/// The three tabs, the toast, the opening, and keeping "today" right across midnight and app switches.
 struct RootView: View {
     @Environment(AppStore.self) private var store
     @Environment(CloudSync.self) private var cloud
@@ -13,6 +13,7 @@ struct RootView: View {
     @State private var tab = AppTab.today
     #endif
     @State private var historyOpened = 0
+    @State private var opening = Opening()
 
     var body: some View {
         TabView(selection: $tab) {
@@ -31,6 +32,10 @@ struct RootView: View {
         }
         .tint(.sky)
         .overlay { ToastOverlay() }
+        .overlay {
+            if !opening.done { OpeningCurtain() }
+        }
+        .environment(opening)
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 store.refreshToday()

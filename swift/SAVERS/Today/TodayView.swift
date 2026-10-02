@@ -8,7 +8,6 @@ struct TodayView: View {
     @Environment(Notices.self) private var notices
     @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.colorScheme) private var colorScheme
 
     /// Every card starts closed; this remembers the ones opened while the app stays open.
     #if DEBUG
@@ -48,42 +47,44 @@ struct TodayView: View {
 
         let free = type == .off && !(day.extra || store.showOff || day.hasContent)
         let title: TodayHeader.Title = type == .shabbat ? .shabbat : free ? .free : .letters(day)
-        // The dawn stays while the morning is still to do.
-        let glow = title.isLetters && shownFinish == .none && colorScheme == .light ? DawnGlow.on : 0
+        // Sunling wakes with each letter, and is all up once the morning is done.
+        let pose = SunlingPose.morning(shownFinish == .none ? day.doneCount : 6)
 
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    TodayHeader(ds: ds, type: type, title: title, note: note(title, routine), status: store.saveError) {
+                VStack(alignment: .leading, spacing: 0) {
+                    TodayHeader(ds: ds, type: type, title: title, note: note(title, routine), status: store.saveError,
+                                pose: pose, lit: shownFinish != .none) {
                         sheetDay = ds
                     }
-                    if !store.settings.hasPersonalData && !cloud.linked {
-                        SignInBanner(busy: cloud.busy, error: cloud.error) {
-                            Task { await cloud.signIn(using: webAuth) }
+                    VStack(alignment: .leading, spacing: 20) {
+                        if !store.settings.hasPersonalData && !cloud.linked {
+                            SignInBanner(busy: cloud.busy, error: cloud.error) {
+                                Task { await cloud.signIn(using: webAuth) }
+                            }
+                        }
+                        switch title {
+                        case .shabbat:
+                            EmptyView()
+                        case .free:
+                            Button("Hacer mis SAVERS hoy") {
+                                withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) }
+                            }
+                            .buttonStyle(PrimaryButton())
+                        case .letters:
+                            guide(routine, ds: ds, day: day, blocks: blocks)
                         }
                     }
-                    switch title {
-                    case .shabbat:
-                        EmptyView()
-                    case .free:
-                        Button("Hacer mis SAVERS hoy") {
-                            withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) }
-                        }
-                        .buttonStyle(PrimaryButton())
-                    case .letters:
-                        guide(routine, ds: ds, day: day, blocks: blocks)
-                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 20)
+                    .padding(.bottom, 32)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 32)
             }
-            .background(alignment: .top) { DawnGlow(strength: glow) }
             .background(.bg)
             .safeAreaInset(edge: .top, spacing: 0) {
-                // Content scrolls under the clock without showing through it.
-                Color.clear.frame(height: 0).background { DawnGlow.band(glow) }
+                // The night stays under the clock, so the cards never scroll under it.
+                Color.clear.frame(height: 0).background { Color.night.ignoresSafeArea() }
             }
             .scrollDismissesKeyboard(.interactively)
             .onScrollPhaseChange { _, phase in isScrolling = phase != .idle }

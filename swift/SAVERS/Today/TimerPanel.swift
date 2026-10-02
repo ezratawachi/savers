@@ -51,7 +51,7 @@ private struct ProgressBar: View {
             .overlay(alignment: .leading) {
                 GeometryReader { g in
                     Capsule()
-                        .fill(Color.dawn)
+                        .fill(Color.done)
                         .frame(width: g.size.width * min(1, max(0, value)))
                         .animation(.linear(duration: 0.25), value: value)
                 }
