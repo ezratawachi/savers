@@ -26,17 +26,21 @@ build() {
   xcrun simctl install "$UDID" "$APP"
 }
 
-# Waits until the app is drawn and still, however long the simulator takes: the launch screen is a plain
-# background (a small capture), and once the app settles two captures in a row are the same. The last
-# capture stays in $SHOT.
+# Waits until the app is drawn and still, however long the simulator takes: first its accessibility tree
+# has to show SAVERS with something in it (the home screen and the launch screen don't), then two captures
+# in a row have to match, once the fade-in is over. The last capture stays in $SHOT.
 SHOT="$OUT/.ultima.png"
 settle() {
-  local prev="" sum
+  local prev="" sum tree up=0
   mkdir -p "$OUT"
-  for _ in $(seq 1 30); do
+  for _ in $(seq 1 40); do
     sleep 0.3
+    if [ $up = 0 ]; then
+      tree=$(axe describe-ui --udid "$UDID" 2>/dev/null | python3 "$HERE/tools/ui.py" 2>/dev/null) || tree=""
+      [[ "$(head -1 <<<"$tree")" == *"'SAVERS'"* ]] && [ "$(grep -c . <<<"$tree")" -gt 3 ] || continue
+      up=1
+    fi
     xcrun simctl io "$UDID" screenshot "$SHOT" >/dev/null 2>&1 || continue
-    [ "$(stat -f %z "$SHOT")" -gt 300000 ] || continue
     sum=$(md5 -q "$SHOT")
     [ "$sum" = "$prev" ] && return
     prev=$sum

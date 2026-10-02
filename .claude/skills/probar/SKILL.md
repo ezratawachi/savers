@@ -12,7 +12,7 @@ Nunca hace falta marcar, escribir ni desmarcar en los datos reales del usuario.
 ## Ver cómo se ve: una sola imagen
 
 ```bash
-swift/tools/probar.sh hoja                      # compila y captura los 7 escenarios (~50 s)
+swift/tools/probar.sh hoja                      # compila y captura los 8 escenarios (~80 s)
 swift/tools/probar.sh hoja hechas abiertas:2    # solo esos; ":2" baja y captura una segunda pantalla
 swift/tools/probar.sh hoja manana --sin-build   # sin compilar (si no cambió el código)
 ```
