@@ -1,5 +1,6 @@
 .claude/*
 !.claude/skills/
+!.claude/rules/
 privado/
 .DS_Store
 avisos/node_modules/

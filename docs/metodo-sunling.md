@@ -1,6 +1,7 @@
 # Sunling: de SAVERS a un método propio
 
-Investigación y decisiones del grill del 2026-10-02. Cómo se construye: [guia-amanecer.md](guia-amanecer.md).
+Investigación y decisiones del grill del 2026-10-02. Se construyó en tres sesiones, terminadas el mismo día; la guía
+quedó en el historial de git.
 
 ## 1. Lo que encontré
 
@@ -146,7 +147,7 @@ Nunca se menciona en el nombre, el subtítulo, las palabras clave ni las captura
 
 ## 5. Cómo se construye
 
-Son tres sesiones, en [guia-amanecer.md](guia-amanecer.md), y cada una arranca con **"Seguimos con Amanecer"**:
+Se hizo en tres sesiones (todas hechas el 2026-10-02):
 
 1. El método dentro de la app.
 2. Inglés como idioma base.
