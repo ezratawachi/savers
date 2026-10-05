@@ -161,6 +161,16 @@
         }
       }
     },
+    "%@ are %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ son %2$@."
+          }
+        }
+      }
+    },
     "%@ at %@" : {
       "localizations" : {
         "es" : {
@@ -187,6 +197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ termina %2$@, pasa las %4$@ de %3$@"
+          }
+        }
+      }
+    },
+    "%@ goes first: it's the one a day uses when it needs a sunrise and has none, like a day of rest you do anyway." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ va primero: es el que usa un día cuando necesita un amanecer y no tiene, como un descanso que haces igual."
           }
         }
       }
@@ -397,6 +417,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se abre %@ y te aviso al terminar."
+          }
+        }
+      }
+    },
+    "%@ use %@. From today they're %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ usan %2$@. Desde hoy pasan a %3$@."
           }
         }
       }
@@ -1111,6 +1141,26 @@
         }
       }
     },
+    "A day of rest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un descanso"
+          }
+        }
+      }
+    },
+    "A day of rest has no hours. Sunling rests, and it doesn't break your sunrises in a row." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un descanso no tiene horas. Sunling descansa y no corta tus amaneceres seguidos."
+          }
+        }
+      }
+    },
     "A few minutes of movement at home, or your gym." : {
       "localizations" : {
         "es" : {
@@ -1157,6 +1207,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cuenta"
+          }
+        }
+      }
+    },
+    "Add" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar"
           }
         }
       }
@@ -1571,6 +1631,16 @@
         }
       }
     },
+    "Brings it to this block" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo trae a este bloque"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "es" : {
@@ -1771,6 +1841,16 @@
         }
       }
     },
+    "Create" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear"
+          }
+        }
+      }
+    },
     "Creating…" : {
       "localizations" : {
         "es" : {
@@ -1817,6 +1897,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dead bug"
+          }
+        }
+      }
+    },
+    "Delete %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar %@"
+          }
+        }
+      }
+    },
+    "Delete %@?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Borrar %@?"
+          }
+        }
+      }
+    },
+    "Delete block" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar bloque"
           }
         }
       }
@@ -1897,6 +2007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Baja"
+          }
+        }
+      }
+    },
+    "Duplicate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicar"
           }
         }
       }
@@ -2031,12 +2151,12 @@
         }
       }
     },
-    "For a single day, like a holiday or a cancelled gym, tap it in Today or in History." : {
+    "For a single day, like a holiday, tap it in Today or in History." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para un solo día, como un feriado o un gym cancelado, tócalo en Hoy o en Historial."
+            "value" : "Para un solo día, como un feriado, tócalo en Hoy o en Historial."
           }
         }
       }
@@ -2187,6 +2307,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crecer"
+          }
+        }
+      }
+    },
+    "Gym, Read at night, On the bus" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gym, Leer en la noche, En el bus"
           }
         }
       }
@@ -2591,6 +2721,16 @@
         }
       }
     },
+    "In the morning" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En la mañana"
+          }
+        }
+      }
+    },
     "It goes with instructions, your schedule, your affirmations, your Imagine questions, your notes and what you checked off in the last %lld weeks. Not what you write in %@." : {
       "localizations" : {
         "es" : {
@@ -2621,6 +2761,36 @@
         }
       }
     },
+    "Its blocks and hours" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sus bloques y horas"
+          }
+        }
+      }
+    },
+    "Just the sunrise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo el Amanecer"
+          }
+        }
+      }
+    },
+    "Keep at least one kind with the sunrise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiene que quedar por lo menos un tipo con Amanecer."
+          }
+        }
+      }
+    },
     "Keep editing" : {
       "localizations" : {
         "es" : {
@@ -2647,6 +2817,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clave"
+          }
+        }
+      }
+    },
+    "Kinds of day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipos de día"
           }
         }
       }
@@ -2991,6 +3171,36 @@
         }
       }
     },
+    "Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        }
+      }
+    },
+    "New block" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo bloque"
+          }
+        }
+      }
+    },
+    "New kind" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo tipo"
+          }
+        }
+      }
+    },
     "New month: do they still feel like yours?" : {
       "localizations" : {
         "es" : {
@@ -3061,6 +3271,16 @@
         }
       }
     },
+    "No day of your week is %@ now." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún día de tu semana es %@ ahora."
+          }
+        }
+      }
+    },
     "No day uses this schedule now." : {
       "localizations" : {
         "es" : {
@@ -3077,6 +3297,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todavía no hay días registrados."
+          }
+        }
+      }
+    },
+    "No hours" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin horas"
           }
         }
       }
@@ -3247,6 +3477,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activadas"
+          }
+        }
+      }
+    },
+    "On every %@ day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En todos los días %@."
+          }
+        }
+      }
+    },
+    "On every %@ day. Its steps go back to %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En todos los días %1$@. Sus pasos vuelven a %2$@."
+          }
+        }
+      }
+    },
+    "On every %@ day. Then you choose the steps it holds." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En todos los días %@. Después eliges qué pasos lleva."
+          }
+        }
+      }
+    },
+    "One block with the six steps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un bloque con los seis pasos"
           }
         }
       }
@@ -3641,6 +3911,16 @@
         }
       }
     },
+    "Same as %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Igual que %@"
+          }
+        }
+      }
+    },
     "Saturday is Shabbat and doesn't change." : {
       "localizations" : {
         "es" : {
@@ -3707,6 +3987,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mandar a la IA"
+          }
+        }
+      }
+    },
+    "Sends it back to the sunrise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo devuelve al Amanecer"
           }
         }
       }
@@ -3881,6 +4171,16 @@
         }
       }
     },
+    "Start from" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar desde"
+          }
+        }
+      }
+    },
     "Start from zero" : {
       "localizations" : {
         "es" : {
@@ -3957,6 +4257,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estado"
+          }
+        }
+      }
+    },
+    "Steps in this block" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasos de este bloque"
           }
         }
       }
@@ -4121,12 +4431,22 @@
         }
       }
     },
-    "Tap an hour to change it on every %@ day or on just one. The same goes for the minutes of %@ and %@." : {
+    "Tap a block to change its hour on every %@ day or on just one, its name, or the steps it holds. The same goes for the minutes of %@ and %@." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toca una hora para cambiarla en todos los días de %1$@ o solo en uno. Los minutos de %2$@ y %3$@, igual."
+            "value" : "Toca un bloque para cambiar su hora en todos los días %1$@ o en uno solo, su nombre o qué pasos lleva. Lo mismo con los minutos de %2$@ y %3$@."
+          }
+        }
+      }
+    },
+    "Tap a step to bring it here. Tap it again and it goes back to %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca un paso para traerlo aquí. Si lo vuelves a tocar, vuelve a %@."
           }
         }
       }
@@ -4217,6 +4537,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La app todavía no guardaba a qué hora marco cada paso."
+          }
+        }
+      }
+    },
+    "The days that passed stay as they were." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los días que ya pasaron quedan como fueron."
+          }
+        }
+      }
+    },
+    "The days you changed to %@ become %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los días que cambiaste a %1$@ pasan a %2$@."
           }
         }
       }
@@ -4431,6 +4771,16 @@
         }
       }
     },
+    "Time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora"
+          }
+        }
+      }
+    },
     "Time for a step" : {
       "localizations" : {
         "es" : {
@@ -4537,6 +4887,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Título de pregunta %lld"
+          }
+        }
+      }
+    },
+    "To take a step out of %@, open the block where you want it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para sacar un paso de %@, abre el bloque donde lo quieres."
           }
         }
       }
@@ -4871,6 +5231,16 @@
         }
       }
     },
+    "When" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuándo"
+          }
+        }
+      }
+    },
     "When a step goes later than your sunrise, if you haven't done it yet." : {
       "localizations" : {
         "es" : {
@@ -5057,6 +5427,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sí, %@"
+          }
+        }
+      }
+    },
+    "You already have a kind called %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya tienes un tipo que se llama %@."
           }
         }
       }

@@ -11,6 +11,8 @@ enum Scenario: String, CaseIterable {
     case siete
     /// Monday changed to Rest today: the Mondays before stay sunrises, in Historial and in the streak.
     case semana
+    /// Gym deleted today: Wednesdays and Fridays are Normal from now on, and the ones before stay Gym in Historial.
+    case borrado
 
     static let current: Scenario? = {
         let args = ProcessInfo.processInfo.arguments
@@ -41,7 +43,7 @@ enum Scenario: String, CaseIterable {
 
     var tab: AppTab {
         switch self {
-        case .historial, .semana: .history
+        case .historial, .semana, .borrado: .history
         case .ajustes: .settings
         default: .today
         }
@@ -80,7 +82,10 @@ enum Scenario: String, CaseIterable {
             try? persistence.save(settings: settings, days: days())
         default:
             var settings = try! JSONDecoder().decode(AppSettings.self, from: Data(Self.settingsJSON.utf8))
+            // As the app has it after loading, so the week kept for the past has Saturday too.
+            settings.schedule?.migrate()
             if self == .semana { settings.schedule?.setWeek(1, to: DayType.rest, today: DayKey.today) }
+            if self == .borrado { settings.schedule?.deleteKind(DayType.gym, fallback: DayType.normal, today: DayKey.today) }
             try? persistence.save(settings: settings, days: days())
         }
         return AppStore(persistence: persistence, prefs: Self.prefs)
@@ -118,7 +123,7 @@ enum Scenario: String, CaseIterable {
             for l in Letter.allCases { d.checks[l.rawValue] = true }
         case .sinSavers:
             d.type = "off"
-        case .shabbat, .historial, .ajustes, .nuevo, .semana:
+        case .shabbat, .historial, .ajustes, .nuevo, .semana, .borrado:
             break
         }
         out[today] = d

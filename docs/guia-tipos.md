@@ -155,15 +155,27 @@ alguien de España empezarían en lunes. Es otro tema.
   *Tú pruebas:* tu miércoles (Gym con su bloque y su hora), tu sábado ("Shabbat", con "Hacerlo igual") y que tu
   racha y tu Historial sigan igual.
 
-- [ ] **2. Horario.**
-  - [ ] `Settings/ScheduleSettings.swift`: secciones Tu semana (menú por día, los 7) y Tipos de día (lista +
+- [x] **2. Horario.** *(Hecha el 2026-10-05.)*
+  - [x] `Settings/ScheduleSettings.swift`: secciones Tu semana (menú por día, los 7) y Tipos de día (lista +
     "Nuevo tipo").
-  - [ ] La página de un tipo: nombre (único), y si tiene Amanecer, bloques con horas, crear bloques y mover pasos
+  - [x] La página de un tipo: nombre (único), y si tiene Amanecer, bloques con horas, crear bloques y mover pasos
     entre ellos. Duplicar y borrar, con el aviso de qué días cambian y la regla de que quede uno con Amanecer.
-  - [ ] Las hojas de horas (`Schedule/UsualSheets.swift`) y la hoja del día (`Schedule/DaySheet.swift`,
+  - [x] Las hojas de horas (`Schedule/UsualSheets.swift`) y la hoja del día (`Schedule/DaySheet.swift`,
     `DayEditor.swift`) con todos los tipos.
-  - [ ] Probar: crear, renombrar, duplicar Normal como "Gym 2", mover Escribe a un bloque de la noche, borrar un tipo
+  - [x] Probar: crear, renombrar, duplicar Normal como "Gym 2", mover Escribe a un bloque de la noche, borrar un tipo
     en uso (y ver que el pasado no cambia).
+
+  **Qué quedó**
+  - Cada tipo tiene su página (`Schedule/KindPage.swift`): nombre (único sin importar mayúsculas; vacío o repetido
+    vuelve al que tenía), sus bloques por grupo (La noche anterior, En la mañana, Más tarde), "Nuevo bloque",
+    Duplicar ("Gym 2") y Borrar. Un tipo nuevo (`NewKindSheet`) empieza con solo el Amanecer, como descanso o igual
+    que uno con Amanecer.
+  - Tocar un bloque abre la hoja de siempre (la hora arriba) y debajo `BlockDetails`: su nombre, qué pasos lleva
+    y Borrar bloque. Un paso vive en un solo bloque: tocarlo lo trae; tocarlo de nuevo lo devuelve al Amanecer. El
+    bloque Amanecer no se borra. Las mañanas y "Más tarde" llevan pasos; la noche no.
+  - Un bloque se ordena por su hora al crearlo y al cambiar la hora de todos los días (`TypeSchedule.place`).
+  - La hoja del día usa el segmentado hasta 4 tipos y un menú con más.
+  - Escenario nuevo `borrado` (Gym borrado hoy): los miércoles y viernes pasados siguen siendo Gym.
 
   *Tú pruebas:* duplicar un tipo, cambiarle una hora y asignarlo a un día.
 

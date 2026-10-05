@@ -1,18 +1,17 @@
 import SwiftUI
 
-/// Settings › Schedule: what each weekday is, and the usual hours of each kind with the sunrise. Changes as you tap,
-/// like iOS Settings.
+/// Settings › Schedule: what each weekday is, and your kinds of day, each with a page of its own. Changes as you
+/// tap, like iOS Settings.
 struct ScheduleSettings: View {
     @Environment(AppStore.self) private var store
-    /// The kind whose hours show, by id.
-    @State private var tab: String?
-    @State private var chosenTab = false
-    @State private var editing: ScheduleEdit?
+    @State private var adding = false
+    /// A kind just made, until its sheet closes.
+    @State private var made: String?
+    /// Its page, open.
+    @State private var opened: String?
 
     var body: some View {
         let r = store.routine
-        let kinds = r.types.filter { $0.hasSunrise && r.settings.schedule?.type($0) != nil }
-        let shown = kinds.first { $0.id == tab } ?? kinds.first ?? r.firstSunrise
 
         CardList {
             Section {
@@ -23,146 +22,48 @@ struct ScheduleSettings: View {
                         }
                         .labelsHidden()
                         .tint(.muted)
+                        // Kinds are equal by id, so a renamed one wouldn't redraw the menu by itself.
+                        .id(r.types.map(\.name))
                     }
                 }
             } header: {
-                Text("Days")
+                Text("Your week")
             } footer: {
-                Text("For a single day, like a holiday or a cancelled gym, tap it in Today or in History.")
+                Text("For a single day, like a holiday, tap it in Today or in History.")
             }
 
-            if kinds.isEmpty {
-                Section("Hours") {
-                    Text("Your hours load when you sign in with Google.")
-                        .foregroundStyle(.muted)
-                }
-            } else {
-                Section {
-                    if kinds.count > 1 {
-                        SegmentedChoice(
-                            label: String(localized: "Schedule"),
-                            options: kinds.map { k in
-                                let ws = r.days(of: k)
-                                return .init(id: k, title: k.name, note: ws.isEmpty ? String(localized: "no days") : Weekday.list(ws))
-                            },
-                            selection: Binding { shown } set: { tab = $0.id }
-                        )
+            Section {
+                ForEach(r.types) { k in
+                    NavigationLink {
+                        KindPage(id: k.id)
+                    } label: {
+                        let ws = r.days(of: k)
+                        RowLabel(title: k.name, value: ws.isEmpty ? String(localized: "no days") : Weekday.list(ws))
                     }
-                } header: {
-                    Text("Hours")
+                    .cardRow()
                 }
-                .cardPlain()
-                ForEach(r.stepLines(shown), id: \.group) { g in
-                    Section {
-                        ForEach(g.lines) { line in
-                            stepRows(line, shown)
-                        }
-                    } header: {
-                        if let title = g.group.title { Text(title) }
-                    } footer: {
-                        if g.group == TypeSchedule.Group.allCases.last(where: { r.settings.schedule?.type(shown)?[$0].isEmpty == false }) {
-                            Text("Tap an hour to change it on every \(shown.name) day or on just one. The same goes for the minutes of \(Letter.silencio.name) and \(Letter.lectura.name).")
-                        }
-                    }
+                Button {
+                    adding = true
+                } label: {
+                    Label("New kind", systemImage: "plus")
+                        .font(.reading().bold())
+                        .foregroundStyle(.sky)
                 }
+                .cardRow()
+            } header: {
+                Text("Kinds of day")
+            } footer: {
+                Text("\(r.firstSunrise.name) goes first: it's the one a day uses when it needs a sunrise and has none, like a day of rest you do anyway.")
             }
         }
         .navigationTitle("Schedule")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            // Opens on the kind today is, the first time.
-            guard !chosenTab else { return }
-            tab = r.scheduleKind(store.today).id
-            chosenTab = true
+        .sheet(isPresented: $adding, onDismiss: {
+            opened = made
+            made = nil
+        }) {
+            NewKindSheet { made = $0 }
         }
-        .sheet(item: $editing) { edit in
-            Group {
-                switch edit {
-                case .step(let kind, let id): StepTimeSheet(kind: kind, id: id)
-                case .minutes(let kind, let letter): MinutesSheet(kind: kind, letter: letter)
-                case .windDown: WindDownSheet()
-                }
-            }
-            .presentationDetents([.medium])
-        }
-    }
-
-    @ViewBuilder
-    private func stepRows(_ line: Routine.StepLine, _ kind: DayType) -> some View {
-        Button {
-            if let id = line.step.id { editing = .step(kind, id) }
-        } label: {
-            SettingsRow(title: line.step.title ?? "", detail: line.summary, chevron: true)
-        }
-        .cardRow()
-        ForEach(line.letters) { l in
-            if l.letter.usualMinutes != nil {
-                Button {
-                    editing = .minutes(kind, l.letter)
-                } label: {
-                    SettingsRow(title: l.letter.name, detail: l.info, chevron: true, sub: true)
-                }
-                .cardRow()
-            } else {
-                SettingsRow(title: l.letter.name, detail: l.info, chevron: false, sub: true)
-            }
-        }
-        if let info = line.windDown {
-            Button {
-                editing = .windDown
-            } label: {
-                SettingsRow(title: String(localized: "Wind down"), detail: info, chevron: true, sub: true)
-            }
-            .cardRow()
-        }
-        ForEach(line.warnings, id: \.self) { w in
-            Label(w, systemImage: "exclamationmark.triangle.fill")
-                .font(.reading(15, relativeTo: .subheadline))
-                .foregroundStyle(.warn)
-        }
-    }
-}
-
-enum ScheduleEdit: Identifiable {
-    case step(DayType, String)
-    case minutes(DayType, Letter)
-    case windDown
-
-    var id: String {
-        switch self {
-        case .step(let k, let id): "\(k.id)-\(id)"
-        case .minutes(let k, let l): "\(k.id)-\(l.rawValue)"
-        case .windDown: "windDown"
-        }
-    }
-}
-
-/// "Get up · 5:20 · Thu 5:10 ›"; a step under its block is indented.
-struct SettingsRow: View {
-    let title: String
-    let detail: String
-    var chevron = false
-    var sub = false
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Text(title)
-                .font(sub ? .reading(16) : .reading().bold())
-                .foregroundStyle(.ink)
-                .padding(.leading, sub ? 16 : 0)
-            Spacer(minLength: 8)
-            Text(detail)
-                .font(.reading(15, relativeTo: .subheadline))
-                .monospacedDigit()
-                .foregroundStyle(.muted)
-                .multilineTextAlignment(.trailing)
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.muted)
-                .opacity(chevron ? 0.6 : 0)
-                .accessibilityHidden(true)
-        }
-        .contentShape(.rect)
-        .accessibilityElement(children: .combine)
+        .navigationDestination(item: $opened) { KindPage(id: $0) }
     }
 }

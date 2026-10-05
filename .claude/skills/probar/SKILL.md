@@ -29,7 +29,8 @@ abiertas con texto), `hechas` (mañana completa, bloque "hechas" abierto con una
 `shabbat`, `sin-savers`, `historial`, `ajustes` (la pestaña Ajustes, para entrar a Horario o Notificaciones con `tocar`).
 Fuera de la hoja de siempre: `nuevo` (instalación nueva: las 3 pantallas de inicio), `siete` (alguien nuevo en su
 séptimo amanecer completo: "¿Quieres más tiempo?") y `semana` (el lunes pasó a Descanso hoy, abre en Historial:
-los lunes pasados siguen contando).
+los lunes pasados siguen contando) y `borrado` (Gym se borró hoy, abre en Historial: los miércoles y
+viernes pasados siguen siendo Gym).
 
 ## Probar una interacción: texto, no imágenes
 

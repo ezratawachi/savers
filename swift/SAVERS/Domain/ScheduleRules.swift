@@ -125,6 +125,37 @@ extension Routine {
         }
     }
 
+    // MARK: Kinds of day
+
+    /// The kind in your list with this name, whatever its capitals.
+    func kind(named name: String, except id: String? = nil) -> DayType? {
+        let n = name.trimmingCharacters(in: .whitespaces)
+        return types.first { $0.id != id && $0.name.caseInsensitiveCompare(n) == .orderedSame }
+    }
+
+    /// "Gym 2", "Gym 3": a name for a copy that no kind has.
+    func copyName(_ name: String) -> String {
+        var n = 2
+        while kind(named: "\(name) \(n)") != nil { n += 1 }
+        return "\(name) \(n)"
+    }
+
+    /// What a kind's days become when it's deleted: the first other one with the sunrise.
+    func fallback(for kind: DayType) -> DayType? {
+        types.first { $0.hasSunrise && $0.id != kind.id }
+    }
+
+    /// The dates from today on changed to this kind by hand.
+    func datesChanged(to kind: DayType) -> [String] {
+        days.compactMap { ds, d in ds >= today && d.type == kind.id ? ds : nil }.sorted()
+    }
+
+    /// The block of a kind that holds a step, in the morning or later.
+    func block(holding letter: Letter, in kind: DayType) -> Step? {
+        guard let t = settings.schedule?.type(kind) else { return nil }
+        return (t[.steps] + t[.later]).first { $0.letterKeys.contains(letter) }
+    }
+
     // MARK: One date
 
     /// This date has an hour or minutes of its own.

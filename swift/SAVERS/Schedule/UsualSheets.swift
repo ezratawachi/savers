@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One hour of the schedule: for all the days of its kind, or for one weekday only.
+/// A block: its hour for all the days of its kind or for one weekday only, then its name and its steps.
 struct StepTimeSheet: View {
     @Environment(AppStore.self) private var store
     let kind: DayType
@@ -30,6 +30,8 @@ struct StepTimeSheet: View {
                          ? days.isEmpty ? String(localized: "No day uses this schedule now.") : String(localized: "For \(Weekday.list(days)).")
                          : String(localized: "\(Weekday.plurals(own).capitalizedFirst) have another time. If you change it here, they all end up the same."))
                 }
+            } more: {
+                BlockDetails(kind: kind, id: id)
             }
         }
     }
@@ -82,14 +84,15 @@ struct WindDownSheet: View {
     }
 }
 
-/// Title and Done, "All | Mon | Tue…", the wheel, and what the choice means.
-private struct UsualSheet<Wheel: View, Foot: View>: View {
+/// Title and Done, "All | Mon | Tue…", the wheel, what the choice means, and anything more under it.
+private struct UsualSheet<Wheel: View, Foot: View, More: View>: View {
     @Environment(\.dismiss) private var dismiss
     let title: String
     let days: [Int]
     @Binding var weekday: Int?
     @ViewBuilder let wheel: Wheel
     @ViewBuilder let foot: Foot
+    @ViewBuilder let more: More
 
     var body: some View {
         NavigationStack {
@@ -105,6 +108,7 @@ private struct UsualSheet<Wheel: View, Foot: View>: View {
                     wheel
                         .frame(maxWidth: .infinity)
                     VStack(alignment: .leading, spacing: 4) { foot }
+                    more
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
@@ -119,6 +123,12 @@ private struct UsualSheet<Wheel: View, Foot: View>: View {
             }
         }
         .tint(.sky)
+    }
+}
+
+extension UsualSheet where More == EmptyView {
+    init(title: String, days: [Int], weekday: Binding<Int?>, @ViewBuilder wheel: () -> Wheel, @ViewBuilder foot: () -> Foot) {
+        self.init(title: title, days: days, weekday: weekday, wheel: wheel, foot: foot) { EmptyView() }
     }
 }
 

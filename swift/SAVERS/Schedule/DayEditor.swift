@@ -17,14 +17,38 @@ struct DayEditor: View {
         let editable = ds >= store.today
 
         VStack(alignment: .leading, spacing: 18) {
-            SegmentedChoice(
-                label: String(localized: "This day is"),
-                options: r.types.map { .init(id: $0, title: $0.name, note: $0 == r.weekType(w) ? Weekday.plural(w) : nil) },
-                selection: Binding { type } set: { new in
-                    picking = nil
-                    store.setDateType(ds, new)
+            let choice = Binding { type } set: { new in
+                picking = nil
+                store.setDateType(ds, new)
+            }
+            if r.types.count <= 4 {
+                SegmentedChoice(
+                    label: String(localized: "This day is"),
+                    options: r.types.map { .init(id: $0, title: $0.name, note: $0 == r.weekType(w) ? Weekday.plural(w) : nil) },
+                    selection: choice
+                )
+            } else {
+                // More kinds than fit side by side: a menu, with the weekday's own kind marked.
+                HStack(spacing: 8) {
+                    Text("This day is")
+                        .font(.reading().bold())
+                        .foregroundStyle(.ink)
+                    Spacer(minLength: 8)
+                    Picker("This day is", selection: choice) {
+                        ForEach(r.types) { k in
+                            Text(k == r.weekType(w) ? "\(k.name) (\(Weekday.plural(w)))" : k.name).tag(k)
+                        }
+                    }
+                    .labelsHidden()
+                    .tint(.sky)
+                    // Kinds are equal by id, so a renamed one wouldn't redraw the menu by itself.
+                    .id(r.types.map(\.name))
                 }
-            )
+                .padding(.leading, CardLayout.inset)
+                .padding(.trailing, 4)
+                .frame(minHeight: CardLayout.rowHeight)
+                .background(Color.surface2, in: .rect(cornerRadius: CardLayout.innerRadius))
+            }
             if !type.hasSunrise {
                 Note(String(localized: "Sunling rests this day: it doesn't break your sunrises in a row."))
             } else if let t = r.settings.schedule?.type(type) {

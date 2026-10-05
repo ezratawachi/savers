@@ -213,6 +213,52 @@ final class AppStore {
         changeSchedule { $0.setWeek(w, to: type.id, today: today) }
     }
 
+    // MARK: Kinds of day
+
+    /// A new kind at the end of the list; returns its id. One that starts with the sunrise gets it at the
+    /// hour of the first kind's.
+    @discardableResult
+    func addKind(named name: String, from start: Schedule.Start) -> String {
+        let r = routine
+        let first = r.firstSunrise
+        let wake = r.settings.schedule?.type(first)?.sunriseBlockID.flatMap { r.step(first, id: $0)?.time } ?? "6:00"
+        var id = ""
+        changeSchedule { id = $0.addKind(named: name, from: start, wake: wake) }
+        return id
+    }
+
+    func renameKind(_ kind: DayType, _ name: String) {
+        changeSchedule { $0.renameKind(kind.id, to: name) }
+    }
+
+    /// Its weekdays and the dates to come changed to it become the first other kind with the sunrise. The days
+    /// that passed stay as they were.
+    func deleteKind(_ kind: DayType) {
+        guard let fallback = routine.fallback(for: kind) else { return }
+        let dates = routine.datesChanged(to: kind)
+        changeSchedule { $0.deleteKind(kind.id, fallback: fallback.id, today: today) }
+        for ds in dates { setDateType(ds, fallback) }
+    }
+
+    @discardableResult
+    func addBlock(_ kind: DayType, group: TypeSchedule.Group, title: String, time: String) -> String? {
+        var id: String?
+        changeSchedule { id = $0.addBlock(kind.id, group: group, title: title, time: time) }
+        return id
+    }
+
+    func renameBlock(_ kind: DayType, id: String, _ title: String) {
+        changeSchedule { $0.renameBlock(kind.id, id: id, to: title) }
+    }
+
+    func removeBlock(_ kind: DayType, id: String) {
+        changeSchedule { $0.removeBlock(kind.id, id: id) }
+    }
+
+    func moveStep(_ letter: Letter, in kind: DayType, to blockID: String) {
+        changeSchedule { $0.moveStep(letter, in: kind.id, to: blockID) }
+    }
+
     private func changeStep(_ kind: DayType, id: String, _ body: (inout Step) -> Void) {
         changeSchedule { sc in
             guard var t = sc.types?[kind.id] else { return }
@@ -240,6 +286,7 @@ final class AppStore {
             if !TimeText.same(time, st.time) { times[Weekday.keys[w]] = time }
             st.times = times.isEmpty ? nil : times
         }
+        if w == nil { changeSchedule { $0.types?[kind.id]?.place(id) } }
     }
 
     /// Silencio's or Lectura's minutes, like an hour: for all days, or one weekday (nil minutes: follow the rest).
