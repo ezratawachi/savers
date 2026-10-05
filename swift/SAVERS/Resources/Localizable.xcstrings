@@ -421,16 +421,6 @@
         }
       }
     },
-    "%@ · %lld at the gym" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ · %2$lld de gym"
-          }
-        }
-      }
-    },
     "%@ → as usual (%@)" : {
       "localizations" : {
         "es" : {
@@ -731,7 +721,7 @@
         }
       }
     },
-    "%lld minutes before bedtime, Sunday to Thursday. You change it in Schedule." : {
+    "%lld minutes before bedtime, the night before each sunrise. You change it in Schedule." : {
       "localizations" : {
         "en" : {
           "variations" : {
@@ -739,13 +729,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld minute before bedtime, Sunday to Thursday. You change it in Schedule."
+                  "value" : "%lld minute before bedtime, the night before each sunrise. You change it in Schedule."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld minutes before bedtime, Sunday to Thursday. You change it in Schedule."
+                  "value" : "%lld minutes before bedtime, the night before each sunrise. You change it in Schedule."
                 }
               }
             }
@@ -757,13 +747,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld minuto antes de Dormido, de domingo a jueves. Lo cambias en Horario."
+                  "value" : "%lld minuto antes de Dormido, la noche antes de cada amanecer. Lo cambias en Horario."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld minutos antes de Dormido, de domingo a jueves. Lo cambias en Horario."
+                  "value" : "%lld minutos antes de Dormido, la noche antes de cada amanecer. Lo cambias en Horario."
                 }
               }
             }
@@ -1801,16 +1791,6 @@
         }
       }
     },
-    "Day off" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Día libre"
-          }
-        }
-      }
-    },
     "Days" : {
       "localizations" : {
         "es" : {
@@ -2207,36 +2187,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crecer"
-          }
-        }
-      }
-    },
-    "Gym" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gym"
-          }
-        }
-      }
-    },
-    "Gym day" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Día de gym"
-          }
-        }
-      }
-    },
-    "Gym with your trainer" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gym con tu entrenador"
           }
         }
       }
@@ -2657,6 +2607,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se guarda solo. Si cambias lo mismo en el iPhone y en la Mac, se queda el último cambio."
+          }
+        }
+      }
+    },
+    "It's on your schedule at %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo tienes en tu horario a las %@."
           }
         }
       }
@@ -3151,16 +3111,6 @@
         }
       }
     },
-    "Normal day" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Día normal"
-          }
-        }
-      }
-    },
     "Not available in developer mode" : {
       "localizations" : {
         "es" : {
@@ -3207,16 +3157,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notas para la IA"
-          }
-        }
-      }
-    },
-    "Nothing from Friday afternoon until Shabbat ends." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nada desde el viernes en la tarde hasta que termina Shabbat."
           }
         }
       }
@@ -3307,16 +3247,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activadas"
-          }
-        }
-      }
-    },
-    "On gym days, if you haven't read yet." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los días de gym, si todavía no leíste."
           }
         }
       }
@@ -3661,16 +3591,6 @@
         }
       }
     },
-    "Rest day" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Día de descanso"
-          }
-        }
-      }
-    },
     "Restart" : {
       "localizations" : {
         "es" : {
@@ -3771,16 +3691,6 @@
         }
       }
     },
-    "See you on Sunday" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nos vemos el domingo"
-          }
-        }
-      }
-    },
     "Send a test notification" : {
       "localizations" : {
         "es" : {
@@ -3807,26 +3717,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajustes"
-          }
-        }
-      }
-    },
-    "Shabbat" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shabbat"
-          }
-        }
-      }
-    },
-    "Shabbat has no record." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shabbat no tiene registro."
           }
         }
       }
@@ -4541,6 +4431,26 @@
         }
       }
     },
+    "Time for a step" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de un paso"
+          }
+        }
+      }
+    },
+    "Time for: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es hora: %@"
+          }
+        }
+      }
+    },
     "Time of %@" : {
       "localizations" : {
         "es" : {
@@ -4651,6 +4561,16 @@
         }
       }
     },
+    "Today you read at %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy lees a las %@."
+          }
+        }
+      }
+    },
     "Today you read later, at %@." : {
       "localizations" : {
         "es" : {
@@ -4667,16 +4587,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hoy lees más tarde."
-          }
-        }
-      }
-    },
-    "Today you read later: %@." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hoy lees más tarde: %@."
           }
         }
       }
@@ -4711,12 +4621,12 @@
         }
       }
     },
-    "Tomorrow is gym: you get up at %@." : {
+    "Tomorrow is %@: you get up at %@." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mañana es gym: te paras a las %@."
+            "value" : "Mañana es %1$@: te paras a las %2$@."
           }
         }
       }
@@ -4957,6 +4867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lo que escribiste el %@"
+          }
+        }
+      }
+    },
+    "When a step goes later than your sunrise, if you haven't done it yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando un paso va después de tu amanecer, si todavía no lo hiciste."
           }
         }
       }

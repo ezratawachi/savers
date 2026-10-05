@@ -30,8 +30,6 @@ struct NoticesSettings: View {
                     .tint(.sky)
                     .disabled(blocked || notices.busy != nil)
                 }
-            } footer: {
-                Text("Nothing from Friday afternoon until Shabbat ends.")
             }
 
             if blocked {

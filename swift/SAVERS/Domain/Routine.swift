@@ -11,25 +11,52 @@ struct Routine {
 
     // MARK: Kind of day
 
+    /// A kind by its id, a deleted one too: the past still says it.
+    func kind(_ id: String?) -> DayType? {
+        guard let id, let t = settings.schedule?.types?[id] else { return nil }
+        return DayType(id: id, t)
+    }
+
+    /// The kinds you have, oldest first; always one with the sunrise.
+    var types: [DayType] {
+        let all = (settings.schedule?.types ?? [:]).map { DayType(id: $0.key, $0.value) }
+            .filter { !$0.deleted }
+            .sorted { ($0.order, $0.id) < ($1.order, $1.id) }
+        return all.contains(where: \.hasSunrise) ? all : [Self.plainNormal] + all
+    }
+
+    /// Before there's a schedule: a Normal with no hours.
+    private static let plainNormal = DayType(id: DayType.normal, TypeSchedule())
+
+    /// What a day uses when it needs some kind (one it doesn't know, a day of rest done anyway): the oldest
+    /// with the sunrise.
+    var firstSunrise: DayType { types.first(where: \.hasSunrise) ?? Self.plainNormal }
+
+    /// What a weekday is now.
     func weekType(_ w: Int) -> DayType {
-        if w == 6 { return .shabbat }
-        if let t = settings.schedule?.week[String(w)].flatMap(DayType.init(rawValue:)), DayType.choosable.contains(t) { return t }
-        return DayType.defaultWeek[w] ?? .off
+        kind(settings.schedule?.week[String(w)]).flatMap { $0.deleted ? nil : $0 } ?? firstSunrise
     }
 
-    func weekDayType(_ ds: String) -> DayType { weekType(DayKey.weekday(ds)) }
+    /// What a date's weekday was: before today, the week it had then, so the past never changes.
+    func weekDayType(_ ds: String) -> DayType {
+        let week = settings.schedule?.week(on: ds, today: today) ?? [:]
+        if let k = kind(week[String(DayKey.weekday(ds))]), !k.deleted || ds < today { return k }
+        return firstSunrise
+    }
 
-    /// A date can be something else for that day only (the gym got cancelled, a holiday).
+    /// A date can be another kind for that day only (the gym got cancelled, a holiday).
     func dayType(_ ds: String) -> DayType {
-        let t = weekDayType(ds)
-        if t != .shabbat, let own = days[ds]?.type.flatMap(DayType.init(rawValue:)), DayType.choosable.contains(own) { return own }
-        return t
+        if let own = kind(days[ds]?.type), !own.deleted || ds < today { return own }
+        return weekDayType(ds)
     }
 
-    func isScheduled(_ ds: String) -> Bool { dayType(ds).hasSavers }
+    func isScheduled(_ ds: String) -> Bool { dayType(ds).hasSunrise }
 
-    /// Whose hours a date uses: gym on a gym day, normal otherwise (a day of rest done anyway uses normal).
-    func scheduleKind(_ ds: String) -> DayType { dayType(ds) == .gym ? .gym : .normal }
+    /// Whose hours a date uses: its own kind's, or on a day of rest done anyway the first with the sunrise.
+    func scheduleKind(_ ds: String) -> DayType {
+        let t = dayType(ds)
+        return t.hasSunrise ? t : firstSunrise
+    }
 
     // MARK: Hours and minutes
 
@@ -42,10 +69,23 @@ struct Routine {
         return step.time ?? ""
     }
 
-    /// When a letter that's "Más tarde" happens on this day.
-    func laterTime(_ kind: DayType, _ letter: Letter, on ds: String) -> String {
-        guard let step = settings.schedule?.type(kind)?[.later].first(where: { $0.letterKeys.contains(letter) }) else { return "" }
-        return time(of: step, on: ds)
+    /// The block that holds a letter on a date when it isn't the sunrise ("5:15 · Gym", "Más tarde · 8:50 pm").
+    /// nil when it's in the sunrise, or nothing places it.
+    func placement(_ letter: Letter, on ds: String) -> Placement? {
+        guard let t = settings.schedule?.type(scheduleKind(ds)), let sunrise = t.sunriseBlockID else { return nil }
+        let steps = t[.steps]
+        let sunriseAt = steps.firstIndex { $0.id == sunrise } ?? 0
+        for (i, st) in steps.enumerated() where st.letterKeys.contains(letter) {
+            return st.id == sunrise ? nil : Placement(step: st, time: time(of: st, on: ds), isLater: false, afterSunrise: i > sunriseAt)
+        }
+        guard let st = t[.later].first(where: { $0.letterKeys.contains(letter) }) else { return nil }
+        return Placement(step: st, time: time(of: st, on: ds), isLater: true, afterSunrise: true)
+    }
+
+    /// Read comes before Write that day, so Write asks about today's reading, not yesterday's.
+    func readsBeforeWriting(_ ds: String) -> Bool {
+        let order = blocks(ds).flatMap(\.letters)
+        return (order.firstIndex(of: .lectura) ?? .max) < (order.firstIndex(of: .escritura) ?? .max)
     }
 
     /// "Dormido" (asleep): the night's step that says so, in either language, or its last one.
@@ -88,22 +128,22 @@ struct Routine {
 
     /// How long a letter takes on a date; 0 when it isn't known.
     func letterMinutes(_ letter: Letter, _ kind: DayType, on ds: String) -> Int {
-        letter.usualMinutes != nil ? minutesOn(kind, letter, on: ds) : fixedMinutes(letter, kind)
+        letter.usualMinutes != nil ? minutesOn(kind, letter, on: ds) : fixedMinutes(letter)
     }
 
     /// How long a letter usually takes on a weekday (nil: on all the days of its kind).
     func letterMinutes(_ letter: Letter, _ kind: DayType, weekday w: Int?) -> Int {
-        letter.usualMinutes != nil ? usualMinutes(kind, letter, weekday: w) : fixedMinutes(letter, kind)
+        letter.usualMinutes != nil ? usualMinutes(kind, letter, weekday: w) : fixedMinutes(letter)
     }
 
     /// The letters whose minutes come from what's in them, not from a setting.
-    private func fixedMinutes(_ letter: Letter, _ kind: DayType) -> Int {
+    private func fixedMinutes(_ letter: Letter) -> Int {
         switch letter {
         case .silencio, .lectura: defaultMinutes(letter)
         case .afirmaciones: max(1, Int((Double(settings.affirmations.filled.count * 25) / 60).rounded(.up)))
         case .visualizacion:
             max(1, Int((Double(settings.visualization.items.filled.count) * (settings.length?.imagineSeconds ?? 60) / 60).rounded(.up)))
-        case .ejercicio: kind == .gym ? TimeText.span(settings.schedule?.gymTime) ?? 0 : Workout.of(settings).minutes
+        case .ejercicio: Workout.of(settings).minutes
         case .escritura: settings.length?.writeMinutes ?? 2
         }
     }

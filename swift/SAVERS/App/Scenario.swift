@@ -9,6 +9,8 @@ enum Scenario: String, CaseIterable {
     case nuevo
     /// Someone new on their seventh sunrise, done: "Want more time?".
     case siete
+    /// Monday changed to Rest today: the Mondays before stay sunrises, in Historial and in the streak.
+    case semana
 
     static let current: Scenario? = {
         let args = ProcessInfo.processInfo.arguments
@@ -39,7 +41,7 @@ enum Scenario: String, CaseIterable {
 
     var tab: AppTab {
         switch self {
-        case .historial: .history
+        case .historial, .semana: .history
         case .ajustes: .settings
         default: .today
         }
@@ -77,7 +79,8 @@ enum Scenario: String, CaseIterable {
             settings.affirmations = AppSettings.exampleAffirmations
             try? persistence.save(settings: settings, days: days())
         default:
-            let settings = try! JSONDecoder().decode(AppSettings.self, from: Data(Self.settingsJSON.utf8))
+            var settings = try! JSONDecoder().decode(AppSettings.self, from: Data(Self.settingsJSON.utf8))
+            if self == .semana { settings.schedule?.setWeek(1, to: DayType.rest, today: DayKey.today) }
             try? persistence.save(settings: settings, days: days())
         }
         return AppStore(persistence: persistence, prefs: Self.prefs)
@@ -115,7 +118,7 @@ enum Scenario: String, CaseIterable {
             for l in Letter.allCases { d.checks[l.rawValue] = true }
         case .sinSavers:
             d.type = "off"
-        case .shabbat, .historial, .ajustes, .nuevo:
+        case .shabbat, .historial, .ajustes, .nuevo, .semana:
             break
         }
         out[today] = d

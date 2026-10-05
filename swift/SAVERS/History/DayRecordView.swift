@@ -19,7 +19,7 @@ struct DayRecordView: View {
         let type = r.dayType(ds)
         let d = r.day(ds)
         let future = ds > store.today
-        let showRoutine = type.hasSavers || (type == .off && (d.extra || d.hasContent))
+        let showRoutine = type.hasSunrise || d.extra || d.hasContent
 
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -29,13 +29,11 @@ struct DayRecordView: View {
                         .padding(.top, 8)
                 }
                 VStack(alignment: .leading, spacing: 18) {
-                    if future && type != .shabbat {
+                    if future {
                         DayEditor(ds: ds)
-                    } else if type == .shabbat {
-                        RestCard(title: "Shabbat Shalom", text: String(localized: "Shabbat has no record."))
                     } else if !showRoutine {
                         RestCard(
-                            title: DayType.off.name,
+                            title: type.name,
                             text: String(localized: "Sunling was resting that day. If you did your sunrise anyway, you can log it."),
                             button: (String(localized: "Log my sunrise"), { withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) } })
                         )
@@ -74,7 +72,7 @@ struct DayRecordView: View {
     /// The date, what the day was and how far it went, and Sunling as that morning left him: up and
     /// awake if it was complete, heavy-eyed if not, asleep on a day to come or of rest.
     private func header(_ r: Routine, type: DayType, d: Day, future: Bool, showRoutine: Bool) -> some View {
-        let asleep = future || type == .shabbat || !showRoutine
+        let asleep = future || !showRoutine
         let pose = asleep ? SunlingPose.asleep : .morning(d.doneCount)
         return VStack(alignment: .leading, spacing: 10) {
             Text(DayKey.long(ds))
@@ -85,7 +83,7 @@ struct DayRecordView: View {
                 .onScrollVisibilityChange(threshold: 0.2) { visible in headerGone = !visible }
             ZStack(alignment: .topLeading) {
                 Color.clear.frame(height: 64)
-                if !(future && type != .shabbat) {
+                if !future {
                     HStack(spacing: 8) {
                         DayChip(type: type) { sheetDay = ds }
                         if showRoutine {
@@ -137,7 +135,7 @@ struct DayRecordView: View {
             onOpen: { withAnimation(motion(Motion.height)) { writingOpen.toggle() } }
         ) {
             if letter == .escritura {
-                WritingBody(ds: ds, gym: r.dayType(ds) == .gym, done: d.isDone(.escritura), focus: $focus) {
+                WritingBody(ds: ds, readFirst: r.readsBeforeWriting(ds), done: d.isDone(.escritura), focus: $focus) {
                     focus = nil
                     if !store.routine.day(ds).isDone(.escritura) { toggle(.escritura) }
                     withAnimation(motion(Motion.height)) { writingOpen = false }
@@ -156,29 +154,23 @@ struct DayRecordView: View {
     private func motion(_ a: Animation) -> Animation? { Motion.pick(a, reduce: reduceMotion) }
 }
 
-/// "Normal day ›": what the day is; a button that opens its sheet, except on Shabbat.
+/// "Normal ›": what the day is; a button that opens its sheet.
 struct DayChip: View {
     let type: DayType
     let action: () -> Void
 
     var body: some View {
-        if type == .shabbat {
-            label(chevron: false)
-        } else {
-            Button(action: action) { label(chevron: true) }
-                .buttonStyle(PressScale())
-                .accessibilityLabel("\(type.chipName). Change this day")
-        }
+        Button(action: action) { label }
+            .buttonStyle(PressScale())
+            .accessibilityLabel("\(type.name). Change this day")
     }
 
-    private func label(chevron: Bool) -> some View {
+    private var label: some View {
         HStack(spacing: 4) {
-            Text(type.chipName)
-            if chevron {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.muted)
-            }
+            Text(type.name)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(.muted)
         }
         .font(.reading(15, relativeTo: .subheadline).bold())
         .foregroundStyle(.ink)

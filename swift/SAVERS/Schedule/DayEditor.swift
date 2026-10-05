@@ -19,13 +19,13 @@ struct DayEditor: View {
         VStack(alignment: .leading, spacing: 18) {
             SegmentedChoice(
                 label: String(localized: "This day is"),
-                options: DayType.choosable.map { .init(id: $0, title: $0.name, note: $0 == r.weekType(w) ? Weekday.plural(w) : nil) },
+                options: r.types.map { .init(id: $0, title: $0.name, note: $0 == r.weekType(w) ? Weekday.plural(w) : nil) },
                 selection: Binding { type } set: { new in
                     picking = nil
                     store.setDateType(ds, new)
                 }
             )
-            if type == .off {
+            if !type.hasSunrise {
                 Note(String(localized: "Sunling rests this day: it doesn't break your sunrises in a row."))
             } else if let t = r.settings.schedule?.type(type) {
                 timeline(r, t, editable: editable)

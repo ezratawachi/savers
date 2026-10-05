@@ -100,10 +100,13 @@ struct AIProposal: Identifiable {
             case "visualizacion", "visualization": readVisualization(v)
             case "semana", "week": readWeek(v)
             case "prepararte", "winddown": readWindDown(v)
-            case "normal": readKind(.normal, v)
-            case "gym": readKind(.gym, v)
             case "fechas", "dates": readDates(v)
-            default: problem(String(localized: "\(AIText.quoted(k)) can't be changed from the app."))
+            default:
+                if let kind = r.types.first(where: { $0.hasSunrise && AIText.key($0.name) == AIText.key(k) }) {
+                    readKind(kind, v)
+                } else {
+                    problem(String(localized: "\(AIText.quoted(k)) can't be changed from the app."))
+                }
             }
         }
     }
@@ -213,7 +216,7 @@ struct AIProposal: Identifiable {
         for (k, x) in o.sorted(by: { (AIText.weekday($0.key) ?? 9) < (AIText.weekday($1.key) ?? 9) }) {
             guard let w = AIText.weekday(k) else { problem(String(localized: "\(AIText.quoted(k)) isn't a weekday.")); continue }
             guard w != 6 else { problem(String(localized: "Saturday is Shabbat and doesn't change.")); continue }
-            guard let t = AIText.dayType(x) else { problem(String(localized: "\(AIText.quoted(x.text ?? "")) isn't a kind of day (\(Weekday.names[w])): use normal, gym or rest.")); continue }
+            guard let t = AIText.dayType(x, in: r) else { problem(String(localized: "\(AIText.quoted(x.text ?? "")) isn't a kind of day (\(Weekday.names[w])): use normal, gym or rest.")); continue }
             let old = r.weekType(w)
             if t != old {
                 add(.weekType(w, t), Weekday.names[w].capitalizedFirst, String(localized: "Every week"), "\(old.name) → \(t.name)")
@@ -236,7 +239,7 @@ struct AIProposal: Identifiable {
     private mutating func readKind(_ kind: DayType, _ v: JSONValue) {
         guard r.settings.schedule?.type(kind) != nil else { return problem(String(localized: "There's no \(kind.name) schedule in the app.")) }
         guard case .object(let o) = v else {
-            return problem(String(localized: "\"\(kind.rawValue)\" has to have \"\(AIWord.hours)\" or \"\(AIWord.minutes)\"."))
+            return problem(String(localized: "\"\(kind.name)\" has to have \"\(AIWord.hours)\" or \"\(AIWord.minutes)\"."))
         }
         for (k, x) in o.sorted(by: { $0.key < $1.key }) {
             switch AIText.key(k) {
@@ -372,7 +375,7 @@ struct AIProposal: Identifiable {
             let was = r.dayType(ds)
             var type = r.days[ds]?.type == nil ? newWeek[DayKey.weekday(ds)] ?? was : was
             if let raw = d.first(where: { ["tipo", "type"].contains(AIText.key($0.key)) })?.value {
-                if let t = AIText.dayType(raw) {
+                if let t = AIText.dayType(raw, in: r) {
                     if t != was { add(.dateType(ds, t), title, String(localized: "That date"), "\(was.name) → \(t.name)") }
                     type = t
                 } else {
@@ -382,7 +385,7 @@ struct AIProposal: Identifiable {
             let sameType = type == was
             for (k, y) in d.sorted(by: { $0.key < $1.key }) {
                 let key = AIText.key(k)
-                if ["horas", "hours", "minutos", "minutes"].contains(key) && !type.hasSavers {
+                if ["horas", "hours", "minutos", "minutes"].contains(key) && !type.hasSunrise {
                     problem(String(localized: "\(title) is \(type.name): it has no sunrise hours or minutes."))
                     continue
                 }
@@ -400,7 +403,7 @@ struct AIProposal: Identifiable {
         guard case .object(let o) = v else {
             return problem(String(localized: "\(title): \"\(AIWord.hours)\" goes like {\"\(String(localized: "Sunrise"))\": \"7:00\"}."))
         }
-        let kind: DayType = type == .gym ? .gym : .normal
+        let kind = type.hasSunrise ? type : r.firstSunrise
         for (name, y) in o.sorted(by: { $0.key < $1.key }) {
             guard let b = block(kind, name), let id = b.step.id else { continue }
             let usual = r.usualTime(b.step, weekday: DayKey.weekday(ds))
@@ -419,7 +422,7 @@ struct AIProposal: Identifiable {
         guard case .object(let o) = v else {
             return problem(String(localized: "\(title): \"\(AIWord.minutes)\" goes like {\"\(Letter.lectura.aiKey)\": 20}."))
         }
-        let kind: DayType = type == .gym ? .gym : .normal
+        let kind = type.hasSunrise ? type : r.firstSunrise
         for (name, y) in o.sorted(by: { $0.key < $1.key }) {
             guard let l = editableLetter(name, title) else { continue }
             let usual = r.usualMinutes(kind, l, weekday: DayKey.weekday(ds))

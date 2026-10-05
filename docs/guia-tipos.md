@@ -105,37 +105,52 @@ alguien de España empezarían en lunes. Es otro tema.
 - [ ] **1. El modelo.** Por fuera, tu app se ve igual salvo los cambios ya decididos.
 
   **Antes de tocar nada**
-  - [ ] Pedirte un respaldo desde Ajustes.
-  - [ ] Con `/probar`, guardar cómo se ven hoy un lunes, un miércoles (Gym), un sábado y un domingo, para comparar
+  - [ ] Pedirte un respaldo desde Ajustes. (Pedido; falta que confirmes antes de instalar.)
+  - [x] Con `/probar`, guardar cómo se ven hoy un lunes, un miércoles (Gym), un sábado y un domingo, para comparar
     al final.
 
   **Los tipos**
-  - [ ] `Model/DayType.swift` deja de ser un enum fijo: un tipo tiene id, nombre opcional, si tiene Amanecer y su
+  - [x] `Model/DayType.swift` deja de ser un enum fijo: un tipo tiene id, nombre opcional, si tiene Amanecer y su
     orden de creación. Tus `normal`, `gym`, `off` y `shabbat` se convierten con esos mismos ids, en ese orden.
-  - [ ] `Schedule.week` gana la clave `"6"` (el sábado deja de ser fijo). `DayType.defaultWeek` y el `w == 6` de
+  - [x] `Schedule.week` gana la clave `"6"` (el sábado deja de ser fijo). `DayType.defaultWeek` y el `w == 6` de
     `Domain/Routine.swift` se van.
-  - [ ] `Schedule.types` acepta cualquier id; `starter(wake:)` crea Normal y Descanso.
+  - [x] `Schedule.types` acepta cualquier id; `starter(wake:)` crea Normal y Descanso.
 
   **El pasado nunca cambia**
-  - [ ] Elegir y anotar aquí cómo: guardar el tipo en los días pasados afectados al cambiar la semana o al borrar,
+  - [x] Elegir y anotar aquí cómo: guardar el tipo en los días pasados afectados al cambiar la semana o al borrar,
     o guardar la semana con fecha de inicio. Un tipo borrado se sigue recordando para la historia.
-  - [ ] La racha (`Routine.streak`) y Historial (`MonthGrid`, `DayRecordView`) usan eso.
+    **Elegido: la semana con fecha.** `Schedule.pastWeeks` guarda cada semana anterior con `until` (el último día
+    que valió); `Schedule.setWeek` la agrega al cambiar un día, y `Schedule.week(on:today:)` da la semana que valía
+    en una fecha. Así no hay que escribir en cada día pasado (ni subir cientos de días a la nube). Un tipo borrado
+    queda en `types` con `deleted: true`: no sale en las listas pero los días pasados lo siguen nombrando. Las
+    fechas futuras cambiadas a un tipo borrado vuelven a su semana. El escenario `semana` (lunes pasado a Descanso
+    hoy) lo prueba: los lunes de septiembre siguen contando.
+  - [x] La racha (`Routine.streak`) y Historial (`MonthGrid`, `DayRecordView`) usan eso.
 
   **Lo que hoy pregunta "¿es Gym?" o "¿es Shabbat?"**
-  - [ ] Las cartas leen el bloque: `Today/LetterInfo.swift`, `Today/ReadingBody.swift`, el `ExerciseTimer` de
+  - [x] Las cartas leen el bloque: `Today/LetterInfo.swift`, `Today/ReadingBody.swift`, el `ExerciseTimer` de
     `Today/TodayView.swift`, y `WritingField.hint` / `WritingBody` (orden de Lee y Escribe).
-  - [ ] `TypeSchedule.sunriseBlockID` pasa a ser explícito (también en `Schedule/DayEditor.swift`).
-  - [ ] Descanso: `TodayHeader` y `TodayView` (título = nombre del tipo, sin `.shabbat`), `RestCard`,
+  - [x] `TypeSchedule.sunriseBlockID` pasa a ser explícito (también en `Schedule/DayEditor.swift`).
+  - [x] Descanso: `TodayHeader` y `TodayView` (título = nombre del tipo, sin `.shabbat`), `RestCard`,
     `SunlingPose`, `DayRecordView`, `MonthGrid` (el sábado deja de estar desactivado).
-  - [ ] Avisos (`Notices/Notices.swift`): se va `shabbatQuiet`; el aviso de leer pasa a "Hora de un paso" para
+  - [x] Avisos (`Notices/Notices.swift`): se va `shabbatQuiet`; el aviso de leer pasa a "Hora de un paso" para
     cualquier paso en un bloque más tarde; "Mañana es {nombre}". Textos de `NoticesSettings`.
-  - [ ] `Settings/WeekBand.swift`: cuenta por tipo.
+  - [x] `Settings/WeekBand.swift`: cuenta por tipo.
 
   **Cierre**
-  - [ ] Actualizar los escenarios de `App/Scenario.swift` (`shabbat` sigue existiendo como escenario de tu sábado).
-  - [ ] Comparar con lo guardado al principio y repasar `/probar` mañana, hechas, sin-savers, shabbat e historial,
+  - [x] Actualizar los escenarios de `App/Scenario.swift` (`shabbat` sigue existiendo como escenario de tu sábado).
+  - [x] Comparar con lo guardado al principio y repasar `/probar` mañana, hechas, sin-savers, shabbat e historial,
     en español e inglés.
   - [ ] Instalar en el iPhone.
+
+  **Notas para la sesión 2**
+  - La hoja del día usa `SegmentedChoice`: con 4 tipos (Normal, Gym, Descanso, Shabbat) cabe justo; con más hay
+    que cambiarla por una lista o un menú.
+  - Horario hoy solo tiene lo mínimo: un menú por cada uno de los 7 días con todos los tipos, y las horas de los
+    tipos con Amanecer. Borrar un tipo: marcar `deleted`, pasar sus días con `setWeek` (guarda el pasado) y sus
+    fechas futuras al primer tipo.
+  - Cada tipo con Amanecer guarda su bloque Amanecer en `sunrise` (lo puso la migración). Al mover pasos, Lee o
+    Muévete fuera de ese bloque se muestran con el nombre y la hora de su bloque (`Routine.placement`).
 
   *Tú pruebas:* tu miércoles (Gym con su bloque y su hora), tu sábado ("Shabbat", con "Hacerlo igual") y que tu
   racha y tu Historial sigan igual.

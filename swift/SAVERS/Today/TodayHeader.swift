@@ -1,13 +1,13 @@
 import SwiftUI
 
 /// The top of Today is the icon's night: "THURSDAY, OCT 1 · GYM", the day's one big title, a quiet line, and
-/// Sunling on the horizon that closes it. On a day without the routine the night takes most of the screen
-/// and he sleeps in the middle of it.
+/// Sunling on the horizon that closes it. On a day of rest the title is its kind ("Rest", "Shabbat"), the night
+/// takes most of the screen and he sleeps in the middle of it.
 struct TodayHeader: View {
     enum Title {
         case letters(Day)
-        case shabbat
-        case free
+        /// A day of rest, by its kind's name.
+        case rest(String)
 
         var isLetters: Bool {
             if case .letters = self { true } else { false }
@@ -16,6 +16,8 @@ struct TodayHeader: View {
 
     let ds: String
     let type: DayType
+    /// The day is another kind than the usual one, so the date line names it.
+    let named: Bool
     let title: Title
     /// "6 sunrises in a row", "Sunling rests today"; nil hides the line.
     let note: String?
@@ -95,33 +97,29 @@ struct TodayHeader: View {
 
     // MARK: The day
 
-    /// The whole line opens the day's sheet, except on Shabbat.
-    @ViewBuilder
+    /// The whole line opens the day's sheet.
     private var dayLine: some View {
-        if type == .shabbat {
-            dayText
-        } else {
-            Button(action: onDay) {
-                HStack(spacing: 5) {
-                    dayText
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(.muted)
-                }
-                // A 44-pt target without making the line look bigger.
-                .padding(.vertical, 13)
-                .contentShape(.rect)
-                .padding(.vertical, -13)
+        Button(action: onDay) {
+            HStack(spacing: 5) {
+                dayText
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.muted)
             }
-            .buttonStyle(PressScale())
-            .accessibilityLabel("\(DayKey.head(ds)), \(type.chipName). Change this day")
+            // A 44-pt target without making the line look bigger.
+            .padding(.vertical, 13)
+            .contentShape(.rect)
+            .padding(.vertical, -13)
         }
+        .buttonStyle(PressScale())
+        .accessibilityLabel("\(DayKey.head(ds)), \(type.name). Change this day")
     }
 
-    /// Only what's out of the ordinary is named: a normal day is just its date.
+    /// Only what's out of the ordinary is named: a usual day is just its date, and a day of rest says it in
+    /// the title.
     private var dayText: some View {
         let date = Text(DayKey.head(ds))
-        let line = type == .gym ? Text("\(date) · \(Text("Gym").bold().foregroundStyle(.ink))") : date
+        let line = named && title.isLetters ? Text("\(date) · \(Text(type.name).bold().foregroundStyle(.ink))") : date
         return line
             .font(.reading(13, relativeTo: .footnote))
             .tracking(1)
@@ -136,10 +134,8 @@ struct TodayHeader: View {
         switch title {
         case .letters(let day):
             HeroWord(day: day)
-        case .shabbat:
-            restTitle("Shabbat Shalom")
-        case .free:
-            restTitle(String(localized: "Day off"))
+        case .rest(let name):
+            restTitle(name)
         }
     }
 

@@ -49,8 +49,8 @@ struct TodayView: View {
         let now = routine.nextLetter(blocks, day)
         let finish = routine.finish(ds)
 
-        let free = type == .off && !(day.extra || store.showOff || day.hasContent)
-        let title: TodayHeader.Title = type == .shabbat ? .shabbat : free ? .free : .letters(day)
+        let resting = !type.hasSunrise && !(day.extra || store.showOff || day.hasContent)
+        let title: TodayHeader.Title = resting ? .rest(type.name) : .letters(day)
         // Sunling wakes with each letter, and is all up once the morning is done. Before the first
         // settle he takes the day as it is, so he doesn't rise on his own when the app opens.
         let shown = settled ? shownFinish : finish
@@ -59,7 +59,7 @@ struct TodayView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    TodayHeader(ds: ds, type: type, title: title, note: note(title, routine), status: store.saveError,
+                    TodayHeader(ds: ds, type: type, named: type != routine.firstSunrise, title: title, note: note(title, routine), status: store.saveError,
                                 pose: pose, lit: shown != .none) {
                         sheetDay = ds
                     }
@@ -70,9 +70,7 @@ struct TodayView: View {
                             }
                         }
                         switch title {
-                        case .shabbat:
-                            EmptyView()
-                        case .free:
+                        case .rest:
                             Button("Start my sunrise") {
                                 withAnimation(motion(Motion.spring)) { store.doSaversAnyway(on: ds) }
                             }
@@ -210,7 +208,6 @@ struct TodayView: View {
 
     @ViewBuilder
     private func cardBody(_ letter: Letter, _ routine: Routine, ds: String, day: Day, reviewDue: Bool) -> some View {
-        let kind = routine.scheduleKind(ds)
         switch letter {
         case .afirmaciones:
             let items = routine.settings.affirmations.filled
@@ -223,19 +220,17 @@ struct TodayView: View {
             }
         case .lectura:
             ReadingBody(
-                minutes: routine.letterMinutes(.lectura, kind, on: ds),
-                gym: kind == .gym,
-                laterAt: kind == .gym ? routine.laterTime(.gym, .lectura, on: ds) : "",
-                gymReading: routine.settings.schedule?.gymReading,
+                minutes: routine.letterMinutes(.lectura, routine.scheduleKind(ds), on: ds),
+                placement: routine.placement(.lectura, on: ds),
                 done: day.isDone(.lectura)
             )
         case .escritura:
-            WritingBody(ds: ds, gym: routine.dayType(ds) == .gym, done: day.isDone(.escritura), focus: $focus) {
+            WritingBody(ds: ds, readFirst: routine.readsBeforeWriting(ds), done: day.isDone(.escritura), focus: $focus) {
                 focus = nil
                 if !store.routine.day(ds).isDone(.escritura) { toggle(.escritura, ds: ds) }
             }
         case .ejercicio:
-            if kind != .gym { ExerciseTimer(done: day.isDone(.ejercicio)) }
+            ExerciseTimer(done: day.isDone(.ejercicio))
         case .silencio:
             EmptyView()
         }
@@ -244,8 +239,7 @@ struct TodayView: View {
     /// The quiet line under the title. The streak shows from two days, and not while "Day complete" says it.
     private func note(_ title: TodayHeader.Title, _ routine: Routine) -> String? {
         switch title {
-        case .shabbat: return String(localized: "See you on Sunday")
-        case .free: return String(localized: "Sunling rests today")
+        case .rest: return String(localized: "Sunling rests today")
         case .letters:
             let streak = routine.streak()
             return streak >= 2 && shownFinish != .day ? String(localized: "\(streak) sunrises in a row") : nil
@@ -313,19 +307,28 @@ struct TodayView: View {
         withAnimation(motion(Motion.spring)) { proxy.scrollTo(now, anchor: UnitPoint(x: 0.5, y: 0.04)) }
     }
 
-    /// "Time to read" opens Read ready to start; the monthly review opens Affirm to edit.
+    /// A step's "it's time" opens that step ready to start; the monthly review opens Affirm to edit.
     private func openTapped(proxy: ScrollViewProxy) async {
         guard let id = notices.tapped else { return }
         notices.tapped = nil
         guard editingItems == nil, sheetDay == nil else { return }
         if id == "revision" {
             editingItems = .review
-        } else if id.hasPrefix("leer-"), !store.routine.day(store.today).isDone(.lectura) {
+        } else if let letter = Self.tappedStep(id), !store.routine.day(store.today).isDone(letter) {
             try? await Task.sleep(for: .milliseconds(300))
-            withAnimation(motion(Motion.height)) { _ = openCards.insert(.lectura) }
-            try? await Task.sleep(for: .milliseconds(350))
-            withAnimation(motion(Motion.spring)) { proxy.scrollTo(Letter.lectura, anchor: UnitPoint(x: 0.5, y: 0.04)) }
+            if store.routine.info(letter, on: store.today, reviewDue: false).opens {
+                withAnimation(motion(Motion.height)) { _ = openCards.insert(letter) }
+                try? await Task.sleep(for: .milliseconds(350))
+            }
+            withAnimation(motion(Motion.spring)) { proxy.scrollTo(letter, anchor: UnitPoint(x: 0.5, y: 0.04)) }
         }
+    }
+
+    /// "paso-lectura-2026-10-05" → Read; "leer-…" from before is Read too.
+    private static func tappedStep(_ id: String) -> Letter? {
+        if id.hasPrefix("leer-") { return .lectura }
+        guard id.hasPrefix("paso-") else { return nil }
+        return Letter(rawValue: String(id.dropFirst(5).prefix { $0 != "-" }))
     }
 
     /// Reaching a finish: 400 ms later, what's done folds into one row and the finish card grows.

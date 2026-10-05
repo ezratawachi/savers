@@ -3,7 +3,8 @@ import SwiftUI
 /// Write: three fields that save while you write, and Done to check it off.
 struct WritingBody: View {
     let ds: String
-    let gym: Bool
+    /// Read comes before Write that day.
+    let readFirst: Bool
     let done: Bool
     var focus: FocusState<WritingField?>.Binding
     let onDone: () -> Void
@@ -11,7 +12,7 @@ struct WritingBody: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             ForEach(WritingField.allCases) { field in
-                WritingFieldView(ds: ds, field: field, hint: field.hint(gym: gym), focus: focus)
+                WritingFieldView(ds: ds, field: field, hint: field.hint(readFirst: readFirst), focus: focus)
                     .id(field)
             }
             if !done {

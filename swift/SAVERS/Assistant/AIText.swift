@@ -24,13 +24,16 @@ enum AIText {
         return Letter.allCases.first { l in l.knownNames.contains { k.hasPrefix(key($0)) } }
     }
 
-    /// "normal", "Gym", "rest", "descanso", "sin savers", "off" → the kind a weekday or a date can be.
-    static func dayType(_ v: JSONValue?) -> DayType? {
+    /// A kind by its name ("Normal", "gym", "Shabbat"), or the words for one from before ("descanso",
+    /// "sin savers", "day off") → the kind a weekday or a date can be.
+    static func dayType(_ v: JSONValue?, in r: Routine) -> DayType? {
         guard let s = v?.text else { return nil }
-        switch key(s) {
-        case "normal": return .normal
-        case "gym", "gimnasio", "diadegym", "gymday": return .gym
-        case "sinsavers", "off", "libre", "descanso", "ninguno", "rest", "restday", "dayoff", "none": return .off
+        let k = key(s)
+        if let t = r.types.first(where: { key($0.name) == k || $0.id == k }) { return t }
+        switch k {
+        case "gimnasio", "diadegym", "gymday": return r.types.first { $0.id == DayType.gym }
+        case "sinsavers", "off", "libre", "descanso", "ninguno", "rest", "restday", "dayoff", "none":
+            return r.types.first { $0.id == DayType.rest } ?? r.types.first { !$0.hasSunrise }
         default: return nil
         }
     }

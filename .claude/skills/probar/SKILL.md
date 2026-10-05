@@ -27,8 +27,9 @@ Imprime la ruta de `hoja.png`; léela con Read. Es una imagen para todo, en vez 
 Escenarios: `manana` (nada marcado, Silencio en Ahora), `abiertas` (Afirmaciones, Visualización y Escritura
 abiertas con texto), `hechas` (mañana completa, bloque "hechas" abierto con una letra abierta), `dia-completo`,
 `shabbat`, `sin-savers`, `historial`, `ajustes` (la pestaña Ajustes, para entrar a Horario o Notificaciones con `tocar`).
-Fuera de la hoja de siempre: `nuevo` (instalación nueva: las 3 pantallas de inicio) y `siete` (alguien nuevo en su
-séptimo amanecer completo: "¿Quieres más tiempo?").
+Fuera de la hoja de siempre: `nuevo` (instalación nueva: las 3 pantallas de inicio), `siete` (alguien nuevo en su
+séptimo amanecer completo: "¿Quieres más tiempo?") y `semana` (el lunes pasó a Descanso hoy, abre en Historial:
+los lunes pasados siguen contando).
 
 ## Probar una interacción: texto, no imágenes
 

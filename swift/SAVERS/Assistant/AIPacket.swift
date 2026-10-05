@@ -59,7 +59,7 @@ enum AIPacket {
     }
 
     private static func changeBlock(_ r: Routine) -> String {
-        let block = r.aiBlocks(.normal).first { !$0.step.letterKeys.isEmpty }?.name ?? String(localized: "Sunrise")
+        let block = r.aiBlocks(r.firstSunrise).first { !$0.step.letterKeys.isEmpty }?.name ?? String(localized: "Sunrise")
         return String(localized: """
         ## The change block
 
@@ -85,18 +85,6 @@ enum AIPacket {
     }
 }
 
-extension DayType {
-    /// How the configuration writes it: "normal", "gym", "rest" ("descanso").
-    var aiName: String {
-        switch self {
-        case .normal: "normal"
-        case .gym: "gym"
-        case .off: AppLanguage.isSpanish ? "descanso" : "rest"
-        case .shabbat: "shabbat"
-        }
-    }
-}
-
 extension Routine {
     // MARK: The configuration
 
@@ -108,11 +96,11 @@ extension Routine {
                 (AIWord.questions, .array(settings.visualization.items.filled.map(Self.aiItem))),
                 (AIWord.note, .string(settings.visualization.note)),
             ])),
-            (AIWord.week, .object((0...5).map { (AIWord.weekday($0), .string(weekType($0).aiName)) })),
+            (AIWord.week, .object((0...5).map { (AIWord.weekday($0), .string(weekType($0).name)) })),
             (AIWord.windDown, .number(windDown)),
         ]
-        for kind in [DayType.normal, .gym] where settings.schedule?.type(kind) != nil {
-            top.append((kind.rawValue, aiKind(kind)))
+        for kind in types where kind.hasSunrise && settings.schedule?.type(kind) != nil {
+            top.append((AIText.key(kind.name), aiKind(kind)))
         }
         top.append((AIWord.dates, .object(aiDateKeys().map { ($0, aiDate($0)) })))
         return .object(top)
@@ -151,7 +139,7 @@ extension Routine {
     private func aiDate(_ ds: String) -> OrderedJSON {
         let d = day(ds)
         var out: [(String, OrderedJSON)] = []
-        if d.type != nil { out.append((AIWord.type, .string(dayType(ds).aiName))) }
+        if d.type != nil { out.append((AIWord.type, .string(dayType(ds).name))) }
         if isScheduled(ds) {
             let kind = scheduleKind(ds)
             let hours: [(String, OrderedJSON)] = aiBlocks(kind).compactMap { b in
@@ -175,7 +163,7 @@ extension Routine {
         var who: [String: [Int]] = [:]
         for w in 0...6 {
             let type = weekType(w)
-            let body = type.hasSavers
+            let body = type.hasSunrise
                 ? aiTimeline(type, time: { usualTime($0, weekday: w) }, minutes: { letterMinutes($0, type, weekday: w) })
                 : ""
             let key = type.name + "\n" + body
@@ -251,11 +239,11 @@ extension Routine {
         for ds in dates {
             let type = dayType(ds)
             let d = day(ds)
-            guard type.hasSavers || d.extra || d.doneCount > 0 else { continue }
+            guard type.hasSunrise || d.extra || d.doneCount > 0 else { continue }
             count += 1
             if d.doneCount == 6 { complete += 1 }
             for l in Letter.allCases where d.isDone(l) { perLetter[l, default: 0] += 1 }
-            var line = "- \(DayKey.short(ds)) · \(type.name)" + (type.hasSavers ? "" : " (" + String(localized: "did it anyway") + ")")
+            var line = "- \(DayKey.short(ds)) · \(type.name)" + (type.hasSunrise ? "" : " (" + String(localized: "did it anyway") + ")")
             let done = Letter.allCases.filter(d.isDone)
             let hours = done.map { l in (l, aiHour(d.checkedAt?[l.rawValue], ds: ds)) }
             if hours.contains(where: { $0.1 != nil }) {

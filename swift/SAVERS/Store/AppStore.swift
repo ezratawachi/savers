@@ -72,7 +72,7 @@ final class AppStore {
     /// Marks or unmarks a letter; returns whether it's marked now.
     @discardableResult
     func toggle(_ letter: Letter, on ds: String) -> Bool {
-        let off = routine.dayType(ds) == .off
+        let off = !routine.dayType(ds).hasSunrise
         var on = false
         change(ds, delay: .milliseconds(150)) { d in
             if off { d.extra = true }
@@ -109,7 +109,7 @@ final class AppStore {
     /// Back to what its weekday is: nothing to remember.
     func setDateType(_ ds: String, _ type: DayType) {
         let usual = routine.weekDayType(ds)
-        change(ds, delay: .zero) { $0.type = type == usual ? nil : type.rawValue }
+        change(ds, delay: .zero) { $0.type = type == usual ? nil : type.id }
     }
 
     /// Only what differs from the usual is kept, so later changes to the usual hours still reach this date.
@@ -166,8 +166,8 @@ final class AppStore {
         moreTimeAsked = true
     }
 
-    /// The welcome's answers on a new install: one sunrise block at the hour you wake up, every day but
-    /// Shabbat, its length, and three example phrases to make your own.
+    /// The welcome's answers on a new install: one sunrise block at the hour you wake up, every day, its length,
+    /// and three example phrases to make your own.
     func startFresh(wake: String, length: SunriseLength) {
         changeSettings(delay: .zero) { s in
             s.length = length
@@ -208,20 +208,21 @@ final class AppStore {
         }
     }
 
+    /// From today on: the days that passed keep what they were.
     func setWeekType(_ w: Int, _ type: DayType) {
-        changeSchedule { $0.week[String(w)] = type.rawValue }
+        changeSchedule { $0.setWeek(w, to: type.id, today: today) }
     }
 
     private func changeStep(_ kind: DayType, id: String, _ body: (inout Step) -> Void) {
         changeSchedule { sc in
-            guard var t = sc.types?[kind.rawValue] else { return }
+            guard var t = sc.types?[kind.id] else { return }
             for g in TypeSchedule.Group.allCases {
                 var list = t[g]
                 guard let i = list.firstIndex(where: { $0.id == id }) else { continue }
                 body(&list[i])
                 t[g] = list
             }
-            sc.types?[kind.rawValue] = t
+            sc.types?[kind.id] = t
         }
     }
 
@@ -245,7 +246,7 @@ final class AppStore {
     func setUsualMinutes(_ kind: DayType, _ letter: Letter, weekday w: Int?, _ minutes: Int?) {
         let key = letter.rawValue
         changeSchedule { sc in
-            guard var t = sc.types?[kind.rawValue] else { return }
+            guard var t = sc.types?[kind.id] else { return }
             var days = t.minutesDays ?? [:]
             if let w {
                 var own = days[key] ?? [:]
@@ -260,7 +261,7 @@ final class AppStore {
                 days[key] = nil
             }
             t.minutesDays = days.isEmpty ? nil : days
-            sc.types?[kind.rawValue] = t
+            sc.types?[kind.id] = t
         }
     }
 

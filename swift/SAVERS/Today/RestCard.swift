@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A day without the routine: Shabbat, or a day of rest (with a way to do it anyway).
+/// A day of rest, with a way to log the sunrise if you did it anyway.
 struct RestCard: View {
     let title: String
     let text: String

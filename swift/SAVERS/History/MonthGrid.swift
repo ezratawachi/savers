@@ -91,7 +91,7 @@ struct MonthGrid: View {
 
 /// A day: its number, and its sun risen by its letters (a whole sun on a golden line when complete).
 /// Only days lived have a horizon; days to come are just their number, faded, with a sky dot if they
-/// were changed for themselves. Today's number in sky. Shabbat and a day off with nothing: the line.
+/// were changed for themselves. Today's number in sky. A day of rest with nothing: the line.
 private struct DayCell: View {
     let ds: String
     let routine: Routine
@@ -104,8 +104,8 @@ private struct DayCell: View {
         let d = routine.day(ds)
         let n = d.doneCount
         let future = ds > today
-        let off = type == .shabbat || (type == .off && !d.hasContent)
-        let planned = future && type != .shabbat && (d.type != nil || d.times != nil || d.mins != nil)
+        let off = !type.hasSunrise && !d.hasContent
+        let planned = future && (d.type != nil || d.times != nil || d.mins != nil)
         let isToday = ds == today
 
         Button(action: action) {
@@ -125,7 +125,6 @@ private struct DayCell: View {
             .contentShape(.rect)
         }
         .buttonStyle(PressScale(scale: 0.92))
-        .disabled(type == .shabbat)
         .accessibilityLabel(label(future: future, off: off, planned: planned, n: n))
     }
 

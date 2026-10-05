@@ -1,32 +1,30 @@
 import Foundation
 
-/// What a date is. Normal and gym have the sunrise with their own hours; off (Rest) has none; Saturday is Shabbat.
-enum DayType: String, Sendable {
-    case normal, gym, off, shabbat
+/// A kind of day, as the schedule keeps it (`schedule.types[id]`): one with the sunrise and its hours, or one of
+/// rest that only has a name. Two are the same kind when their ids are.
+struct DayType: Hashable, Identifiable, Sendable {
+    let id: String
+    /// The name you gave it; nil keeps the app's own ("Normal", "Rest"), in the app's language.
+    let ownName: String?
+    let hasSunrise: Bool
+    /// When it was made: the oldest comes first.
+    let order: Int
+    /// Removed from the list; still remembered for the days that were this kind.
+    let deleted: Bool
 
-    /// The three a weekday or a date can be set to.
-    static let choosable: [DayType] = [.normal, .gym, .off]
-
-    /// Weekday (0 = Sunday … 5 = Friday) when the schedule doesn't say.
-    static let defaultWeek: [Int: DayType] = [0: .off, 1: .normal, 2: .normal, 3: .gym, 4: .normal, 5: .gym]
-
-    var hasSavers: Bool { self == .normal || self == .gym }
-
-    var name: String {
-        switch self {
-        case .normal: String(localized: "Normal")
-        case .gym: String(localized: "Gym")
-        case .off: String(localized: "Rest")
-        case .shabbat: "Shabbat"
-        }
+    init(id: String, _ t: TypeSchedule) {
+        self.id = id
+        ownName = t.name.flatMap { $0.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0 }
+        hasSunrise = t.rest != true
+        order = t.order ?? Int.max
+        deleted = t.deleted == true
     }
 
-    var chipName: String {
-        switch self {
-        case .normal: String(localized: "Normal day")
-        case .gym: String(localized: "Gym day")
-        case .off: String(localized: "Rest day")
-        case .shabbat: "Shabbat"
-        }
-    }
+    var name: String { ownName ?? (hasSunrise ? String(localized: "Normal") : String(localized: "Rest")) }
+
+    static func == (a: DayType, b: DayType) -> Bool { a.id == b.id }
+    func hash(into h: inout Hasher) { h.combine(id) }
+
+    /// The ids your days had before kinds were your own; the past still says them.
+    static let normal = "normal", gym = "gym", rest = "off", shabbat = "shabbat"
 }

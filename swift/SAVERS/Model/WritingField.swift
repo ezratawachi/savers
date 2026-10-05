@@ -14,10 +14,11 @@ enum WritingField: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    func hint(gym: Bool) -> String {
+    /// `readFirst`: Read comes before Write that day, so the idea is from today's reading.
+    func hint(readFirst: Bool) -> String {
         switch self {
         case .gratitude: String(localized: "something specific from yesterday, and why")
-        case .bookIdea: gym ? String(localized: "an idea from what you read yesterday") : String(localized: "an idea from what you read today")
+        case .bookIdea: readFirst ? String(localized: "an idea from what you read today") : String(localized: "an idea from what you read yesterday")
         case .notes: String(localized: "optional")
         }
     }

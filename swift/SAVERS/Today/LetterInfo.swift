@@ -9,8 +9,17 @@ struct LetterInfo {
 
 extension Routine {
     func info(_ letter: Letter, on ds: String, reviewDue: Bool) -> LetterInfo {
-        let kind = scheduleKind(ds)
-        let mins = String(localized: "\(letterMinutes(letter, kind, on: ds)) min")
+        var info = usualInfo(letter, on: ds, reviewDue: reviewDue)
+        // In a block of its own ("5:15 · Gym", "Más tarde · 8:50 pm"): that block's name and hour.
+        if let p = placement(letter, on: ds) {
+            if p.step.onlyStep != letter { info.subtitle = p.step.title ?? p.step.label }
+            if !p.time.isEmpty { info.time = p.time }
+        }
+        return info
+    }
+
+    private func usualInfo(_ letter: Letter, on ds: String, reviewDue: Bool) -> LetterInfo {
+        let mins = String(localized: "\(letterMinutes(letter, scheduleKind(ds), on: ds)) min")
         switch letter {
         case .silencio:
             return LetterInfo(subtitle: settings.breatheLine, time: mins, opens: false)
@@ -20,13 +29,10 @@ extension Routine {
         case .visualizacion:
             return LetterInfo(subtitle: String(localized: "Eyes closed, guided"), time: mins, opens: true)
         case .ejercicio:
-            if kind == .gym {
-                let span = TimeText.span(settings.schedule?.gymTime).map { String(localized: "\($0) min") } ?? String(localized: "Gym")
-                return LetterInfo(subtitle: String(localized: "Gym with your trainer"), time: span, opens: false)
-            }
             return LetterInfo(subtitle: String(localized: "Home routine"), time: mins, opens: true)
         case .lectura:
-            return LetterInfo(subtitle: kind == .gym ? String(localized: "Your book") : String(localized: "With your coffee"), time: mins, opens: true)
+            let own = placement(.lectura, on: ds) != nil
+            return LetterInfo(subtitle: own ? String(localized: "Your book") : String(localized: "With your coffee"), time: mins, opens: true)
         case .escritura:
             return LetterInfo(subtitle: String(localized: "Give thanks and jot down"), time: mins, opens: true)
         }

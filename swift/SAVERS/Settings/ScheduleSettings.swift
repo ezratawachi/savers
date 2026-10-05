@@ -1,30 +1,30 @@
 import SwiftUI
 
-/// Settings › Schedule: what each weekday is, and the usual hours of Normal and Gym. Changes as you tap,
+/// Settings › Schedule: what each weekday is, and the usual hours of each kind with the sunrise. Changes as you tap,
 /// like iOS Settings.
 struct ScheduleSettings: View {
     @Environment(AppStore.self) private var store
-    @State private var tab: DayType = .normal
+    /// The kind whose hours show, by id.
+    @State private var tab: String?
     @State private var chosenTab = false
     @State private var editing: ScheduleEdit?
 
     var body: some View {
         let r = store.routine
-        let kinds = [DayType.normal, .gym].filter { r.settings.schedule?.type($0) != nil }
-        let shown = kinds.contains(tab) ? tab : kinds.first ?? .normal
+        let kinds = r.types.filter { $0.hasSunrise && r.settings.schedule?.type($0) != nil }
+        let shown = kinds.first { $0.id == tab } ?? kinds.first ?? r.firstSunrise
 
         CardList {
             Section {
-                ForEach(0..<6, id: \.self) { w in
+                ForEach(0..<7, id: \.self) { w in
                     LabeledContent(Weekday.names[w].capitalizedFirst) {
                         Picker(Weekday.names[w].capitalizedFirst, selection: Binding { r.weekType(w) } set: { store.setWeekType(w, $0) }) {
-                            ForEach(DayType.choosable, id: \.self) { Text($0.name).tag($0) }
+                            ForEach(r.types) { Text($0.name).tag($0) }
                         }
                         .labelsHidden()
                         .tint(.muted)
                     }
                 }
-                LabeledContent(Weekday.names[6].capitalizedFirst, value: "Shabbat")
             } header: {
                 Text("Days")
             } footer: {
@@ -45,7 +45,7 @@ struct ScheduleSettings: View {
                                 let ws = r.days(of: k)
                                 return .init(id: k, title: k.name, note: ws.isEmpty ? String(localized: "no days") : Weekday.list(ws))
                             },
-                            selection: Binding { shown } set: { tab = $0 }
+                            selection: Binding { shown } set: { tab = $0.id }
                         )
                     }
                 } header: {
@@ -72,7 +72,7 @@ struct ScheduleSettings: View {
         .onAppear {
             // Opens on the kind today is, the first time.
             guard !chosenTab else { return }
-            tab = r.dayType(store.today) == .gym ? .gym : .normal
+            tab = r.scheduleKind(store.today).id
             chosenTab = true
         }
         .sheet(item: $editing) { edit in
@@ -130,8 +130,8 @@ enum ScheduleEdit: Identifiable {
 
     var id: String {
         switch self {
-        case .step(let k, let id): "\(k.rawValue)-\(id)"
-        case .minutes(let k, let l): "\(k.rawValue)-\(l.rawValue)"
+        case .step(let k, let id): "\(k.id)-\(id)"
+        case .minutes(let k, let l): "\(k.id)-\(l.rawValue)"
         case .windDown: "windDown"
         }
     }

@@ -13,7 +13,7 @@ nonisolated struct SunlingPose: Equatable, Sendable {
     /// The icon itself: up, half asleep, the right eye a little more open.
     static let icon = SunlingPose(rise: 1, leftLid: 580, rightLid: 564, lidLine: 1)
 
-    /// Shabbat and a day off: eyes shut, lower behind the horizon.
+    /// A day of rest: eyes shut, lower behind the horizon.
     static let asleep = SunlingPose(rise: 0.74, leftLid: 610, rightLid: 608, lidLine: 1)
 
     /// The morning, letter by letter: asleep and almost hidden at 0, up and awake (but calm, the lids

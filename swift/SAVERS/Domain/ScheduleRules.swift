@@ -2,8 +2,8 @@ import Foundation
 
 /// What Ajustes › Horario and the day sheet show: the usual hours, their summaries, and what runs late.
 extension Routine {
-    /// The weekdays (0…5) that are this kind.
-    func days(of kind: DayType) -> [Int] { (0...5).filter { weekType($0) == kind } }
+    /// The weekdays (0 = Sunday … 6) that are this kind.
+    func days(of kind: DayType) -> [Int] { (0...6).filter { weekType($0) == kind } }
 
     /// A step's own hour on one weekday, if it has one.
     func ownTime(_ step: Step, weekday w: Int) -> String? {

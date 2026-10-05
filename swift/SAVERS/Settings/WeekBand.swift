@@ -1,15 +1,15 @@
 import SwiftUI
 
 /// The top of Settings: your week on the night. Each day with its sun if it has a sunrise, the hour you get up,
-/// and gym marked; a day off and Shabbat are just the horizon. The whole band opens Schedule.
+/// and its kind when it isn't the usual one; a day of rest is just the horizon and its name. The whole band
+/// opens Schedule.
 struct WeekBand: View {
     @Environment(AppStore.self) private var store
 
     var body: some View {
         let r = store.routine
         let todayW = DayKey.weekday(store.today)
-        let savers = (0...6).filter { r.weekType($0).hasSavers }
-        let gym = r.days(of: .gym).count
+        let line = summary(r)
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -23,7 +23,7 @@ struct WeekBand: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.muted)
                 }
-                Text(summary(savers.count, gym: gym))
+                Text(line)
                     .font(.reading(16, relativeTo: .subheadline))
                     .foregroundStyle(.muted)
             }
@@ -39,7 +39,7 @@ struct WeekBand: View {
         .padding(.bottom, 18)
         .contentShape(.rect)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Your week: \(summary(savers.count, gym: gym))")
+        .accessibilityLabel("Your week: \(line)")
         .accessibilityHint("Opens your schedule")
         .accessibilityAddTraits(.isButton)
     }
@@ -50,25 +50,20 @@ struct WeekBand: View {
             Text(Weekday.letters[w])
                 .font(.reading(13, relativeTo: .caption).bold())
                 .foregroundStyle(isToday ? Color.sky : Color.muted)
-            DaySun(rise: type.hasSavers ? 1 : 0, diameter: 26)
+            DaySun(rise: type.hasSunrise ? 1 : 0, diameter: 26)
                 .padding(.horizontal, 2)
             VStack(spacing: 1) {
-                switch type {
-                case .normal, .gym:
+                if type.hasSunrise {
                     Text(wakeTime(w, type, r))
                         .font(.reading(14, relativeTo: .footnote).bold())
                         .monospacedDigit()
                         .foregroundStyle(.ink)
-                    Text("Gym")
+                    Text(type.name)
                         .font(.reading(11, relativeTo: .caption2))
                         .foregroundStyle(.muted)
-                        .opacity(type == .gym ? 1 : 0)
-                case .shabbat:
-                    Text("Shabbat")
-                        .font(.reading(11, relativeTo: .caption2))
-                        .foregroundStyle(.muted)
-                default:
-                    Text("Rest")
+                        .opacity(type == r.firstSunrise ? 0 : 1)
+                } else {
+                    Text(type.name)
                         .font(.reading(11, relativeTo: .caption2))
                         .foregroundStyle(.muted)
                 }
@@ -85,8 +80,13 @@ struct WeekBand: View {
         return t.isEmpty ? "—" : t
     }
 
-    private func summary(_ savers: Int, gym: Int) -> String {
-        let days = String(localized: "\(savers) sunrises")
-        return gym > 0 ? String(localized: "\(days) · \(gym) at the gym") : days
+    /// "6 sunrises · 2 Gym": the sunrises, and how many are each kind other than the usual one.
+    private func summary(_ r: Routine) -> String {
+        let sunrises = (0...6).filter { r.weekType($0).hasSunrise }.count
+        let others = r.types.filter { $0.hasSunrise && $0 != r.firstSunrise }.compactMap { t -> String? in
+            let n = r.days(of: t).count
+            return n > 0 ? "\(n) \(t.name)" : nil
+        }
+        return ([String(localized: "\(sunrises) sunrises")] + others).joined(separator: " · ")
     }
 }

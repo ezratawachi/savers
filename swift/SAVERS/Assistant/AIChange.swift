@@ -68,7 +68,7 @@ extension AIChange.Edit {
             s.schedule = sc
         case .weekType(let w, let t):
             var sc = s.schedule ?? .blank
-            sc.week[String(w)] = t.rawValue
+            sc.setWeek(w, to: t.id, today: today)
             s.schedule = sc
         case .stepTime(let kind, let id, let w, let time):
             Self.changeStep(&s, kind, id) { st in
@@ -83,7 +83,7 @@ extension AIChange.Edit {
                 st.times = times.isEmpty ? nil : times
             }
         case .minutes(let kind, let letter, let w, let n):
-            guard var t = s.schedule?.types?[kind.rawValue] else { return }
+            guard var t = s.schedule?.types?[kind.id] else { return }
             let key = letter.rawValue
             var perDay = t.minutesDays ?? [:]
             var own = perDay[key] ?? [:]
@@ -99,7 +99,7 @@ extension AIChange.Edit {
             }
             perDay[key] = own.isEmpty ? nil : own
             t.minutesDays = perDay.isEmpty ? nil : perDay
-            s.schedule?.types?[kind.rawValue] = t
+            s.schedule?.types?[kind.id] = t
         case .dateReset(let ds):
             Self.changeDay(&days, ds) { d in
                 d.type = nil
@@ -108,7 +108,7 @@ extension AIChange.Edit {
             }
         case .dateType(let ds, let type):
             let usual = Routine(settings: s, days: days, today: today).weekDayType(ds)
-            Self.changeDay(&days, ds) { $0.type = type == usual ? nil : type.rawValue }
+            Self.changeDay(&days, ds) { $0.type = type == usual ? nil : type.id }
         case .dateTime(let ds, let id, let time):
             let r = Routine(settings: s, days: days, today: today)
             guard let st = r.step(r.dayType(ds), id: id) else { return }
@@ -130,14 +130,14 @@ extension AIChange.Edit {
     }
 
     private static func changeStep(_ s: inout AppSettings, _ kind: DayType, _ id: String, _ body: (inout Step) -> Void) {
-        guard var t = s.schedule?.types?[kind.rawValue] else { return }
+        guard var t = s.schedule?.types?[kind.id] else { return }
         for g in TypeSchedule.Group.allCases {
             var list = t[g]
             guard let i = list.firstIndex(where: { $0.id == id }) else { continue }
             body(&list[i])
             t[g] = list
         }
-        s.schedule?.types?[kind.rawValue] = t
+        s.schedule?.types?[kind.id] = t
     }
 
     private static func changeDay(_ days: inout [String: Day], _ ds: String, _ body: (inout Day) -> Void) {

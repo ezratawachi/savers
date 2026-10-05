@@ -12,7 +12,7 @@ enum NoteKind: String, CaseIterable, Identifiable {
     var name: String {
         switch self {
         case .lectura: String(localized: "End of reading")
-        case .leer: String(localized: "Time to read")
+        case .leer: String(localized: "Time for a step")
         case .dormir: String(localized: "Wind down for bed")
         case .revision: String(localized: "Monthly review")
         }
@@ -21,8 +21,8 @@ enum NoteKind: String, CaseIterable, Identifiable {
     func about(_ r: Routine) -> String {
         switch self {
         case .lectura: String(localized: "When your minutes are up, even if Sunling is closed.")
-        case .leer: String(localized: "On gym days, if you haven't read yet.")
-        case .dormir: String(localized: "\(r.windDown) minutes before bedtime, Sunday to Thursday. You change it in Schedule.")
+        case .leer: String(localized: "When a step goes later than your sunrise, if you haven't done it yet.")
+        case .dormir: String(localized: "\(r.windDown) minutes before bedtime, the night before each sunrise. You change it in Schedule.")
         case .revision: String(localized: "Affirm and Imagine, the first Sunday at 11:00 am.")
         }
     }
@@ -38,7 +38,7 @@ struct PlannedNote: Equatable {
 
 /// What the iPhone lets SAVERS do, the switches (`savers:avisos`, only on this iPhone), and the notices
 /// planned two weeks ahead. Each open and each change plans them again from the schedule, so a changed hour
-/// moves its notice. Nothing in the morning, and nothing from Friday afternoon until Shabbat ends.
+/// moves its notice. Nothing in the morning.
 @Observable
 final class Notices {
     enum Permission { case notAsked, allowed, blocked }
@@ -140,8 +140,11 @@ final class Notices {
         }
     }
 
-    /// The ones this planner owns; "lectura" and "prueba" come and go on their own.
-    private static func isPlanned(_ id: String) -> Bool { id == "revision" || id.hasPrefix("dormir-") || id.hasPrefix("leer-") }
+    /// The ones this planner owns; "lectura" and "prueba" come and go on their own. ("leer-" is from before
+    /// "paso-", so old ones go.)
+    private static func isPlanned(_ id: String) -> Bool {
+        id == "revision" || id.hasPrefix("dormir-") || id.hasPrefix("paso-") || id.hasPrefix("leer-")
+    }
 
     private static func same(_ n: PlannedNote, _ r: UNNotificationRequest?) -> Bool {
         guard let r, let t = r.trigger as? UNCalendarNotificationTrigger, let at = DayKey.calendar.date(from: t.dateComponents) else { return false }
@@ -152,22 +155,16 @@ final class Notices {
     func notes(_ r: Routine, reviewed: String, now: Date) -> [PlannedNote] {
         var out: [PlannedNote] = []
         func add(_ n: PlannedNote?) {
-            if let n, n.at > now, !Self.shabbatQuiet(n.at) { out.append(n) }
+            if let n, n.at > now { out.append(n) }
         }
         let today = DayKey.of(now)
         for i in 0...Self.planDays {
             let ds = DayKey.adding(i, to: today)
             if wants(.dormir) { add(Self.bedNote(r, ds)) }
-            if wants(.leer) { add(Self.readNote(r, ds)) }
+            if wants(.leer) { Self.stepNotes(r, ds).forEach(add) }
         }
         if wants(.revision) { add(Self.reviewNote(r, reviewed: reviewed, now: now)) }
         return out
-    }
-
-    /// Friday from 3:00 pm and all of Saturday.
-    static func shabbatQuiet(_ at: Date) -> Bool {
-        let c = DayKey.calendar.dateComponents([.weekday, .hour], from: at)
-        return c.weekday == 7 || (c.weekday == 6 && (c.hour ?? 0) >= 15)
     }
 
     private static func at(_ ds: String, minute: Int) -> Date {
@@ -177,7 +174,7 @@ final class Notices {
     /// The night before a sunrise day, `windDown` minutes before its "Dormido".
     static func bedNote(_ r: Routine, _ ds: String) -> PlannedNote? {
         guard r.isScheduled(ds) else { return nil }
-        let kind = r.scheduleKind(ds)
+        let kind = r.dayType(ds)
         guard let steps = r.settings.schedule?.type(kind)?[.steps], let bedStep = r.bedStep(kind),
               let bed = TimeText.minutes(r.time(of: bedStep, on: ds)) else { return nil }
         let wakeStep = steps.first { s in ["te paras", "despiert", "get up", "wake"].contains { s.title?.localizedCaseInsensitiveContains($0) == true } } ?? steps.first
@@ -187,18 +184,31 @@ final class Notices {
         var body = String(localized: "Asleep at \(TimeText.label(bed)).")
         if let wake {
             let up = TimeText.label(wake)
-            body += " " + (kind == .gym ? String(localized: "Tomorrow is gym: you get up at \(up).") : String(localized: "Tomorrow you get up at \(up)."))
+            body += " " + (kind != r.firstSunrise ? String(localized: "Tomorrow is \(kind.name): you get up at \(up).") : String(localized: "Tomorrow you get up at \(up)."))
         }
         return PlannedNote(id: "dormir-" + ds, at: at(night0, minute: bed - r.windDown), title: String(localized: "Time to wind down for bed"), body: body)
     }
 
-    /// A Read that's "Later" that day (the gym days), while it isn't marked.
-    static func readNote(_ r: Routine, _ ds: String) -> PlannedNote? {
-        guard r.isScheduled(ds), !r.day(ds).isDone(.lectura) else { return nil }
-        let kind = r.scheduleKind(ds)
-        guard let min = TimeText.minutes(r.laterTime(kind, .lectura, on: ds)) else { return nil }
-        let n = r.letterMinutes(.lectura, kind, on: ds)
-        return PlannedNote(id: "leer-" + ds, at: at(ds, minute: min), title: String(localized: "Time to read"), body: String(localized: "Your \(n) minutes of reading for today."))
+    /// Each block after the sunrise ("Más tarde · 8:50 pm") at its hour, with its steps not yet marked.
+    /// The id says the first one, so a tap opens it.
+    static func stepNotes(_ r: Routine, _ ds: String) -> [PlannedNote] {
+        guard r.isScheduled(ds) else { return [] }
+        let d = r.day(ds)
+        var blocks: [(place: Placement, letters: [Letter])] = []
+        for l in r.blocks(ds).flatMap(\.letters) where !d.isDone(l) {
+            guard let p = r.placement(l, on: ds), p.afterSunrise, TimeText.minutes(p.time) != nil else { continue }
+            if let i = blocks.firstIndex(where: { $0.place.step.id == p.step.id }) { blocks[i].letters.append(l) } else { blocks.append((p, [l])) }
+        }
+        return blocks.compactMap { b in
+            guard let first = b.letters.first, let min = TimeText.minutes(b.place.time) else { return nil }
+            let id = "paso-\(first.rawValue)-" + ds
+            if b.letters == [.lectura] {
+                let n = r.letterMinutes(.lectura, r.scheduleKind(ds), on: ds)
+                return PlannedNote(id: id, at: at(ds, minute: min), title: String(localized: "Time to read"), body: String(localized: "Your \(n) minutes of reading for today."))
+            }
+            let names = AppLanguage.list(b.letters.map(\.name))
+            return PlannedNote(id: id, at: at(ds, minute: min), title: String(localized: "Time for: \(names)"), body: String(localized: "It's on your schedule at \(b.place.time)."))
+        }
     }
 
     /// The first Sunday of the month at 11:00; this month's only while it's still ahead and not done.
