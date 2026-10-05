@@ -28,12 +28,6 @@ struct SettingsView: View {
                     CardSections {
                         Section("What you say and see") {
                             NavigationLink {
-                                BreathePage()
-                            } label: {
-                                RowLabel(title: Letter.silencio.name, value: s.breatheLine)
-                            }
-                            .cardRow()
-                            NavigationLink {
                                 ItemsPage(kind: .affirmations)
                             } label: {
                                 let n = s.affirmations.filled.count

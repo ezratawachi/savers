@@ -29,7 +29,7 @@ Las tres pestañas:
 - **Historial** = cómo me fue. El mes es el título; en la franja de noche, cada día es un solecito que asoma según
   los pasos hechos. Debajo, "Lo que escribiste". Tocar un día lo abre; también los días futuros, para prepararlos.
 - **Ajustes** = cómo quiero mi semana. Arriba la franja "Tu semana" (abre Horario). Luego grupos: lo que dices y ves
-  (Respira, Afirma, Imagina), ayuda (El método, Hablar con una IA), sonido y avisos, tus datos (respaldo en la nube)
+  (Afirma, Imagina, Leer en), ayuda (El método, Hablar con una IA), sonido y avisos, tus datos (respaldo en la nube)
   y, solo en Debug, Modo desarrollador.
 
 ## Palabras
@@ -64,6 +64,8 @@ Las tres pestañas:
 - El pasado nunca cambia.
 - Nada personal en el repo: es público. Lo personal va en `privado/` (ignorado) o en la nube.
 - Lo normal no se anuncia; solo las excepciones. Una sola cosa fuerte arriba en Hoy: sin saludo ni chips.
+- Bajo el nombre de cada paso, una línea fija igual para todos (`Today/LetterInfo.swift`): no se edita ni cambia
+  según el día o el bloque.
 - Colores: ámbar `#F2B544` = hecho (con check azul noche); azul cielo = Ahora. Azul noche `#1B2538` y suelo `#10151F`
   vienen del ícono. Sin rojo, sin parpadeos, sin culpa.
 - Diseñar y revisar primero en modo claro (el usuario lo usa); después oscuro.
@@ -100,6 +102,8 @@ Las tres pestañas:
 ## Para después
 
 - La IA no crea ni borra tipos de día.
+- Respira a tu manera: elegir con qué lo haces (por ejemplo una app para abrir, como en Lee). La línea de la carta no
+  se toca.
 - `avisos/` (Worker de Cloudflare) y `app/ios` (cascarón Capacitor) quedaron sin uso; `app/renovar.sh` sí se usa.
 - Modo desarrollador: una guía a los ajustes tras llegar a Hoy (primero vivir el recorrido).
 - Sol de Ahora: el número al tocar ("Vas 4 min tarde") y qué hacer cuando no llegas.

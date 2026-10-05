@@ -175,7 +175,7 @@ struct TodayView: View {
 
     private func card(_ letter: Letter, _ routine: Routine, ds: String, day: Day, nested: Bool = false) -> some View {
         let reviewDue = routine.affirmationReviewDue(reviewed: store.affReviewed)
-        let info = routine.info(letter, on: ds, reviewDue: reviewDue)
+        let info = routine.info(letter, on: ds)
         let isNow = letter == shownNow
         let done = day.isDone(letter)
         let isOpen = info.opens && openCards.contains(letter)
@@ -297,7 +297,7 @@ struct TodayView: View {
         guard !Task.isCancelled else { return }
         withAnimation(motion(Motion.height)) {
             shownNow = now
-            if let now, routine.info(now, on: store.today, reviewDue: false).opens, !routine.day(store.today).isDone(now) {
+            if let now, routine.info(now, on: store.today).opens, !routine.day(store.today).isDone(now) {
                 openCards.insert(now)
             }
         }
@@ -316,7 +316,7 @@ struct TodayView: View {
             editingItems = .review
         } else if let letter = Self.tappedStep(id), !store.routine.day(store.today).isDone(letter) {
             try? await Task.sleep(for: .milliseconds(300))
-            if store.routine.info(letter, on: store.today, reviewDue: false).opens {
+            if store.routine.info(letter, on: store.today).opens {
                 withAnimation(motion(Motion.height)) { _ = openCards.insert(letter) }
                 try? await Task.sleep(for: .milliseconds(350))
             }

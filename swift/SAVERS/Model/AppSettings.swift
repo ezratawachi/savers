@@ -10,13 +10,10 @@ struct AppSettings: Codable, Equatable, Sendable {
     var readApp: String = "libros"
     /// "Notas para la IA": what the app doesn't know (work, what never moves, goals). Always in the packet.
     var aiNotes: String = ""
-    /// The line under Breathe, in your words ("Daily Calm"). Empty: the app's own.
-    var breatheNote: String = ""
     /// 10, 20 or 30 minutes, chosen on the first open. None on copies from before: the usual minutes.
     var length: SunriseLength?
 
     static let readApps = ["libros", "kindle", "papel"]
-    static var breatheDefault: String { String(localized: "Meditate, pray or breathe") }
 
     /// Phrases someone can believe from the first day, to edit until they're theirs: about choosing and
     /// practicing, never "I'm amazing".
@@ -27,9 +24,6 @@ struct AppSettings: Codable, Equatable, Sendable {
             Item(text: String(localized: "I can do what matters today, even if it isn't perfect.")),
         ]
     }
-
-    /// What Breathe's card says under its name.
-    var breatheLine: String { breatheNote.isEmpty ? Self.breatheDefault : breatheNote }
 
     init() {}
 
@@ -44,7 +38,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         }
         if let r = c.lenient(String.self, "readApp"), Self.readApps.contains(r) { readApp = r }
         if let n = c.lenient(String.self, "aiNotes") { aiNotes = n }
-        if let n = c.lenient(String.self, "breatheNote") { breatheNote = n }
         length = c.lenient(SunriseLength.self, "length")
     }
 
@@ -57,7 +50,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         if let schedule { try c.encode(schedule, forKey: AnyKey("schedule")) } else { try c.encodeNil(forKey: AnyKey("schedule")) }
         try c.encode(readApp, forKey: AnyKey("readApp"))
         if !aiNotes.isEmpty { try c.encode(aiNotes, forKey: AnyKey("aiNotes")) }
-        if !breatheNote.isEmpty { try c.encode(breatheNote, forKey: AnyKey("breatheNote")) }
         try c.encodeIfPresent(length, forKey: AnyKey("length"))
     }
 

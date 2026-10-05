@@ -120,7 +120,7 @@ struct DayRecordView: View {
     }
 
     private func card(_ letter: Letter, _ r: Routine, _ d: Day) -> some View {
-        var info = r.info(letter, on: ds, reviewDue: false)
+        var info = r.info(letter, on: ds)
         // A day to look at, not a morning to run again: only Write opens.
         info.opens = letter == .escritura
         return LetterCard(

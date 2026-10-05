@@ -154,7 +154,6 @@ final class AppStore {
 
     func setAINotes(_ notes: String) { changeSettings { $0.aiNotes = notes } }
 
-    func setBreatheNote(_ note: String) { changeSettings { $0.breatheNote = note } }
 
     /// "Want more time?": the steps get longer, unless their minutes were set by hand in Schedule.
     func setLength(_ length: SunriseLength) { changeSettings(delay: .zero) { $0.length = length } }
