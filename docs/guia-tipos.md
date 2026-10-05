@@ -179,13 +179,26 @@ alguien de España empezarían en lunes. Es otro tema.
 
   *Tú pruebas:* duplicar un tipo, cambiarle una hora y asignarlo a un día.
 
-- [ ] **3. El resto.**
-  - [ ] Bienvenida (`App/WelcomeView.swift`): pantalla "¿Qué días?" entre la 2 y la 3, los 7 marcados, por lo menos
+- [x] **3. El resto.** *(Hecha el 2026-10-05.)*
+  - [x] Bienvenida (`App/WelcomeView.swift`): pantalla "¿Qué días?" entre la 2 y la 3, los 7 marcados, por lo menos
     uno; `AppStore.startFresh` recibe los días.
-  - [ ] La IA: `Assistant/AIPacket.swift` (tipos por nombre, sin Shabbat), `AIProposal.swift` y `AIText.swift`
+  - [x] La IA: `Assistant/AIPacket.swift` (tipos por nombre, sin Shabbat), `AIProposal.swift` y `AIText.swift`
     (leer nombres de tipos en vez de normal/gym/rest; sin el guard del sábado).
-  - [ ] La web: confirmar contigo antes de apagar GitHub Pages. Después sacar `index.html` y sus archivos del repo,
+  - [x] La web: confirmar contigo antes de apagar GitHub Pages. Después sacar `index.html` y sus archivos del repo,
     y actualizar CLAUDE.md y la memoria (`savers-web-app`).
-  - [ ] Probar `/probar nuevo` (bienvenida) y el paquete de la IA (`-paquete archivo`).
+  - [x] Probar `/probar nuevo` (bienvenida) y el paquete de la IA (`-paquete archivo`).
+
+  **Qué quedó**
+  - "¿Qué días?" son 7 círculos (`App/WeekdayPicker.swift`), domingo primero; debajo dice qué días descansas.
+    Sin ninguno marcado, Seguir no se puede tocar. Los desmarcados quedan como Descanso (`Schedule.starter`).
+    Sunling abre los ojos en 4 pasos en vez de 3.
+  - El paquete nombra tus tipos ("con amanecer: Normal y Gym. De descanso: Descanso y Shabbat"), manda los 7 días
+    y el ejemplo del bloque de cambios usa tus nombres. Dice que la IA no crea, renombra ni borra tipos.
+  - Al pegar: cualquier tipo por su nombre, el sábado como cualquier día, y si pide horas para un descanso dice
+    "Shabbat es un día de descanso: no tiene horas". Se arregló de paso que una fecha pedida como un tipo se
+    comparaba con la semana de antes y no con la que el mismo bloque cambia.
+  - GitHub Pages apagado; `index.html`, `sw.js`, `manifest.webmanifest`, `icons/` y `vendor/` fuera del repo.
+  - Quedan de la web, sin tocar: el Worker de avisos (`avisos/`, solo servía a la web) y el cascarón Capacitor
+    (`app/ios`, `app/www`, que apuntaba a la web). `app/renovar.sh` ya usa solo `swift/`.
 
   *Tú pruebas:* la bienvenida con el modo desarrollador, y pegar un cambio de la IA que use "Shabbat" por nombre.

@@ -1,8 +1,8 @@
 import AuthenticationServices
 import SwiftUI
 
-/// A new install's three screens, on the launch's own night: what Sunling is, when you wake up and for how
-/// long, and the notifications. Sunling sleeps on the horizon in the middle and wakes a little with each
+/// A new install's four screens, on the launch's own night: what Sunling is, when you wake up and for how
+/// long, which days, and the notifications. Sunling sleeps on the horizon in the middle and wakes a little with each
 /// screen; the opening curtain under this draws him, so when the welcome ends he lands on Today as on any open.
 struct WelcomeView: View {
     @Environment(AppStore.self) private var store
@@ -15,10 +15,17 @@ struct WelcomeView: View {
     @State private var page = 0
     @State private var wake = "6:30"
     @State private var length = SunriseLength.ten
+    /// The weekdays with the sunrise (0 = Sunday); the others rest.
+    @State private var days = Set(0...6)
     @State private var asking = false
 
     /// He opens his eyes a little with each screen; on the last he's the icon, as the opening starts.
-    private static let poses: [SunlingPose] = [.asleep, SunlingPose(rise: 0.87, leftLid: 594, rightLid: 584, lidLine: 1), .icon]
+    private static let poses: [SunlingPose] = [
+        .asleep,
+        SunlingPose(rise: 0.87, leftLid: 594, rightLid: 584, lidLine: 1),
+        SunlingPose(rise: 0.94, leftLid: 587, rightLid: 574, lidLine: 1),
+        .icon,
+    ]
 
     var body: some View {
         GeometryReader { g in
@@ -44,14 +51,14 @@ struct WelcomeView: View {
                                     removal: .opacity.animation(.easeIn(duration: 0.18))))
         }
         .environment(\.colorScheme, .dark)
-        .onChange(of: page, initial: true) { _, p in opening.startPose = Self.poses[min(p, 2)] }
+        .onChange(of: page, initial: true) { _, p in opening.startPose = Self.poses[min(p, Self.poses.count - 1)] }
         .onChange(of: cloud.linked) { _, linked in
             // "I already use Sunling": the cloud brings the rest.
             if linked { finish() }
         }
     }
 
-    // MARK: The three screens
+    // MARK: The four screens
 
     @ViewBuilder
     private var top: some View {
@@ -63,6 +70,9 @@ struct WelcomeView: View {
             case 1:
                 title(String(localized: "When do you wake up?"))
                 lead("Your sunrise starts when you wake up, not at 5.")
+            case 2:
+                title(String(localized: "Which days?"))
+                lead("The days of your sunrise. The others are days off, and they don't break your streak.")
             default:
                 title(String(localized: "Notifications"))
                 lead("So you know when your reading minutes are up, even with the app closed, and once a month, to review your phrases.")
@@ -120,10 +130,23 @@ struct WelcomeView: View {
                     .foregroundStyle(.muted)
                     .padding(.top, 8)
                 Spacer(minLength: 16)
+                next(String(localized: "Continue")) { go(2) }
+            }
+        case 2:
+            VStack(alignment: .leading, spacing: 0) {
+                WeekdayPicker(days: $days)
+                Text(restNote)
+                    .font(.reading(15, relativeTo: .subheadline))
+                    .foregroundStyle(.muted)
+                    .padding(.top, 12)
+                    .contentTransition(.opacity)
+                    .animation(Motion.fade, value: days)
+                Spacer(minLength: 16)
                 next(String(localized: "Continue")) {
-                    store.startFresh(wake: wake, length: length)
-                    go(2)
+                    store.startFresh(wake: wake, length: length, days: days)
+                    go(3)
                 }
+                .disabled(days.isEmpty)
             }
         default:
             VStack(alignment: .leading, spacing: 0) {
@@ -147,6 +170,14 @@ struct WelcomeView: View {
                     .disabled(asking)
             }
         }
+    }
+
+    /// What the unchosen days will be, and that it can change.
+    private var restNote: String {
+        let off = (0...6).filter { !days.contains($0) }
+        if days.isEmpty { return String(localized: "Choose at least one day.") }
+        if off.isEmpty { return String(localized: "Every day. You can change it later in Schedule.") }
+        return String(localized: "You rest on \(Weekday.plurals(off)). You can change it later in Schedule.")
     }
 
     // MARK: Pieces

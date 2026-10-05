@@ -1,6 +1,7 @@
 # SAVERS
 
-- La app del iPhone es Swift, en `swift/`. La web (`index.html`) sigue en GitHub Pages para la Mac.
+- La app del iPhone es Swift, en `swift/`. La web (`index.html`, GitHub Pages) se bajó el 2026-10-05; queda en el
+  historial de git.
 - Para ver o probar cualquier cambio en `swift/`, usa el skill `/probar` (`swift/tools/probar.sh`): escenarios con
   datos inventados, una sola imagen para ver, texto de accesibilidad para tocar. Capturas del panel del simulador
   solo como último recurso, y nunca probar sobre los datos reales.

@@ -24,10 +24,11 @@ struct Schedule: Codable, Equatable, Sendable {
 
     private init() {}
 
-    /// Someone new: Normal every day, with the sunrise as the morning's only block when they wake up, and Rest.
-    static func starter(wake: String) -> Schedule {
+    /// Someone new: Normal on the days they chose (0 = Sunday), with the sunrise as the morning's only block when
+    /// they wake up, and Rest on the others.
+    static func starter(wake: String, days: Set<Int> = Set(0...6)) -> Schedule {
         var s = Schedule()
-        s.week = Dictionary(uniqueKeysWithValues: (0...6).map { (String($0), DayType.normal) })
+        s.week = Dictionary(uniqueKeysWithValues: (0...6).map { (String($0), days.contains($0) ? DayType.normal : DayType.rest) })
         var normal = TypeSchedule()
         normal.order = 0
         normal.steps = [Step(id: "normal-steps-0", title: String(localized: "Sunrise"), time: wake, letters: Letter.allCases.map(\.rawValue))]

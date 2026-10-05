@@ -166,12 +166,12 @@ final class AppStore {
         moreTimeAsked = true
     }
 
-    /// The welcome's answers on a new install: one sunrise block at the hour you wake up, every day, its length,
-    /// and three example phrases to make your own.
-    func startFresh(wake: String, length: SunriseLength) {
+    /// The welcome's answers on a new install: one sunrise block at the hour you wake up on the days you chose
+    /// (0 = Sunday; the others rest), its length, and three example phrases to make your own.
+    func startFresh(wake: String, length: SunriseLength, days: Set<Int>) {
         changeSettings(delay: .zero) { s in
             s.length = length
-            s.schedule = .starter(wake: wake)
+            s.schedule = .starter(wake: wake, days: days)
             if s.affirmations.filled.isEmpty { s.affirmations = AppSettings.exampleAffirmations }
         }
     }

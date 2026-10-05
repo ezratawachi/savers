@@ -13,7 +13,7 @@ enum AIPacket {
         parts.append(String(localized: "## What I want") + "\n\n" + (q.isEmpty ? String(localized: "I don't know yet. Ask me what I want to talk about.") : q))
         parts.append(String(localized: "## My notes (what the app doesn't know)") + "\n\n" + (notes.isEmpty ? String(localized: "No notes.") : notes))
         parts.append(howToWork)
-        parts.append(howItWorks)
+        parts.append(howItWorks(r))
         parts.append(String(localized: "## What each day looks like (worked out by the app, read only)") + "\n\n" + r.aiWeek())
         let dates = r.aiDates()
         if !dates.isEmpty { parts.append(String(localized: "## Dates with changes (read only)") + "\n\n" + dates) }
@@ -35,31 +35,45 @@ enum AIPacket {
     }
 
     /// Each language names its own configuration words (`AIWord`).
-    private static var howItWorks: String {
-        String(localized: """
+    private static func howItWorks(_ r: Routine) -> String {
+        let steps = String(localized: """
         ## How the app works
 
         - My sunrise is six short steps each morning, to start the day with myself before the world. It's always all six: when time is short, they get shorter, they don't get dropped.
           - Breathe: a few minutes still, to breathe, meditate or pray.
           - Affirm: out loud, a few phrases I believe about who I choose to be. Nothing over the top like "I'm amazing": for someone who doesn't believe it, it makes things worse.
           - Imagine: today's most important thing, the likely obstacle and what I'll do if it comes up ("if X happens, I'll do Y"). The path, not just the goal reached.
-          - Move: a few minutes of movement at home, or the gym.
+          - Move: a few minutes of movement at home.
           - Read: a few pages of something that helps me grow.
           - Write: give thanks for something specific and jot down an idea from what I read.
         - It's a method of its own, with these names. Even if it looks like others you know, don't call it by another name or use their acronyms.
         - Rest counts too: a rest day doesn't break my sunrises in a row.
-        - Each weekday is Normal, Gym or Rest. Saturday is Shabbat and doesn't change.
-        - Normal and Gym each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep). Some blocks hold steps, in order.
+        - Each weekday is one of my kinds of day. The ones with a sunrise each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep); the ones of rest have no hours. Some blocks hold steps, in order: most go in the sunrise's block, but a step can be in a later one (for example Read at night).
+        """)
+        let rules = String(localized: """
         - Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.
-        - Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine up to a minute per question, Write 1 or 2, Move 2 or 8 at home or however long the gym lasts). The schedule below has the real ones.
+        - Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine up to a minute per question, Write 1 or 2, Move 2 or 8 at home). The schedule below has the real ones.
         - The bedtime block is in "The night before": it's when I go to sleep the night before that day. "windDown" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.
         - A time or some minutes can be different on one weekday ("hoursByDay", "minutesByDay") or on one date ("dates", from today up to a year ahead).
-        - Blocks can't be added, removed or renamed, and steps can't move from one block to another. If that would suit me, tell me in the conversation, not in the change block.
+        - Blocks can't be added, removed or renamed, and steps can't move from one block to another. Kinds of day can't be created, renamed or removed either. If that would suit me, tell me in the conversation, not in the change block.
         """)
+        return [steps, kindsLine(r), rules].joined(separator: "\n")
+    }
+
+    /// "- My kinds of day with a sunrise: Normal and Gym. Of rest: Rest and Shabbat."
+    private static func kindsLine(_ r: Routine) -> String {
+        let sunrise = AppLanguage.list(r.types.filter(\.hasSunrise).map(\.name))
+        let rest = r.types.filter { !$0.hasSunrise }.map(\.name)
+        let first = String(localized: "- My kinds of day with a sunrise: \(sunrise).")
+        return rest.isEmpty ? first : first + " " + String(localized: "Of rest: \(AppLanguage.list(rest)).")
     }
 
     private static func changeBlock(_ r: Routine) -> String {
-        let block = r.aiBlocks(r.firstSunrise).first { !$0.step.letterKeys.isEmpty }?.name ?? String(localized: "Sunrise")
+        let first = r.firstSunrise
+        let block = r.aiBlocks(first).first { !$0.step.letterKeys.isEmpty }?.name ?? String(localized: "Sunrise")
+        // The example names your own kinds: another with a sunrise for a weekday, one of rest for a date.
+        let other = r.types.last { $0.hasSunrise && $0 != first } ?? first
+        let rest = r.types.first { !$0.hasSunrise } ?? other
         return String(localized: """
         ## The change block
 
@@ -74,9 +88,9 @@ enum AIPacket {
 
         ```sunling
         {
-          "normal": {"hours": {"\(block)": "5:45"}, "minutes": {"read": 15}},
-          "week": {"thursday": "gym"},
-          "dates": {"YYYY-MM-DD": {"type": "rest"}}
+          "\(AIText.key(first.name))": {"hours": {"\(block)": "5:45"}, "minutes": {"read": 15}},
+          "week": {"thursday": "\(other.name)"},
+          "dates": {"YYYY-MM-DD": {"type": "\(rest.name)"}}
         }
         ```
 
@@ -96,7 +110,7 @@ extension Routine {
                 (AIWord.questions, .array(settings.visualization.items.filled.map(Self.aiItem))),
                 (AIWord.note, .string(settings.visualization.note)),
             ])),
-            (AIWord.week, .object((0...5).map { (AIWord.weekday($0), .string(weekType($0).name)) })),
+            (AIWord.week, .object((0...6).map { (AIWord.weekday($0), .string(weekType($0).name)) })),
             (AIWord.windDown, .number(windDown)),
         ]
         for kind in types where kind.hasSunrise && settings.schedule?.type(kind) != nil {
@@ -114,14 +128,14 @@ extension Routine {
         let blocks = aiBlocks(kind)
         var out: [(String, OrderedJSON)] = [(AIWord.hours, .object(blocks.map { ($0.name, .string($0.step.time ?? "")) }))]
         let perDay: [(String, OrderedJSON)] = blocks.compactMap { b in
-            let own = (0...5).compactMap { w in ownTime(b.step, weekday: w).map { (AIWord.weekday(w), OrderedJSON.string($0)) } }
+            let own = (0...6).compactMap { w in ownTime(b.step, weekday: w).map { (AIWord.weekday(w), OrderedJSON.string($0)) } }
             return own.isEmpty ? nil : (b.name, .object(own))
         }
         if !perDay.isEmpty { out.append((AIWord.hoursByDay, .object(perDay))) }
         let letters = [Letter.silencio, .lectura]
         out.append((AIWord.minutes, .object(letters.map { ($0.aiKey, .number(usualMinutes(kind, $0, weekday: nil))) })))
         let minsPerDay: [(String, OrderedJSON)] = letters.compactMap { l in
-            let own = (0...5).compactMap { w in ownMinutes(kind, l, weekday: w).map { (AIWord.weekday(w), OrderedJSON.number($0)) } }
+            let own = (0...6).compactMap { w in ownMinutes(kind, l, weekday: w).map { (AIWord.weekday(w), OrderedJSON.number($0)) } }
             return own.isEmpty ? nil : (l.aiKey, .object(own))
         }
         if !minsPerDay.isEmpty { out.append((AIWord.minutesByDay, .object(minsPerDay))) }
@@ -269,7 +283,7 @@ extension Routine {
             anyHour
                 ? String(localized: "The time next to each step is when I checked it off in the app (it can be after doing it).")
                 : String(localized: "The app didn't save yet what time I check off each step."),
-            String(localized: "Saturdays and rest days only show up if I did my sunrise anyway."),
+            String(localized: "Days of rest only show up if I did my sunrise anyway."),
         ].joined(separator: " ")
         return head + "\n\n" + lines.joined(separator: "\n")
     }

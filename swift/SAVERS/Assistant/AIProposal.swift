@@ -17,7 +17,8 @@ struct AIProposal: Identifiable {
     private var newWeek: [Int: DayType] = [:]
 
     init(text: String, routine: Routine) throws(Failure) {
-        guard let block = Self.block(in: text) else { throw .noBlock }
+        let kinds = Set(routine.types.map { AIText.key($0.name) })
+        guard let block = Self.block(in: text, kinds: kinds) else { throw .noBlock }
         r = routine
         read(block)
         changes.sort { ($0.order, $0.id) < ($1.order, $1.id) }
@@ -31,14 +32,16 @@ struct AIProposal: Identifiable {
 
     // MARK: Finding the block
 
-    /// The configuration's words in either language, as `AIText.key` leaves them.
+    /// The configuration's words in either language, as `AIText.key` leaves them; the kinds' names come too.
     private static let topKeys: Set<String> = ["leeren", "readon", "readin", "afirmaciones", "affirmations", "visualizacion", "visualization",
-                                               "semana", "week", "prepararte", "winddown", "normal", "gym", "fechas", "dates"]
+                                               "semana", "week", "prepararte", "winddown", "fechas", "dates"]
 
     /// The ```sunling block (```savers before), or else the last JSON object in the text that looks like one.
-    static func block(in text: String) -> [String: JSONValue]? {
-        if let m = text.firstMatch(of: /```[ \t]*(?:sunling|savers)[ \t]*\n([\s\S]*?)```/), let o = object(String(m.1)) { return o }
-        return objects(in: text).reversed().lazy.compactMap(object).first
+    /// `kinds` are the names of your kinds, as `AIText.key` leaves them.
+    static func block(in text: String, kinds: Set<String>) -> [String: JSONValue]? {
+        let ours = topKeys.union(kinds)
+        if let m = text.firstMatch(of: /```[ \t]*(?:sunling|savers)[ \t]*\n([\s\S]*?)```/), let o = object(String(m.1), ours) { return o }
+        return objects(in: text).reversed().lazy.compactMap { object($0, ours) }.first
     }
 
     /// Every outermost {…} in the text, minding quotes.
@@ -69,7 +72,7 @@ struct AIProposal: Identifiable {
     }
 
     /// Parsed, forgiving curly quotes and trailing commas; unwrapped from {"changes": …}; nil if it isn't ours.
-    private static func object(_ raw: String) -> [String: JSONValue]? {
+    private static func object(_ raw: String, _ ours: Set<String>) -> [String: JSONValue]? {
         var s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         var value = try? JSONDecoder().decode(JSONValue.self, from: Data(s.utf8))
         if value == nil {
@@ -79,7 +82,7 @@ struct AIProposal: Identifiable {
         }
         guard case .object(var o)? = value else { return nil }
         if o.count == 1, let (k, v) = o.first, ["cambios", "changes", "sunling", "savers", "cambiossavers"].contains(AIText.key(k)), case .object(let inner) = v { o = inner }
-        return o.keys.contains { topKeys.contains(AIText.key($0)) } ? o : nil
+        return o.keys.contains { ours.contains(AIText.key($0)) } ? o : nil
     }
 
     // MARK: Reading it
@@ -102,8 +105,12 @@ struct AIProposal: Identifiable {
             case "prepararte", "winddown": readWindDown(v)
             case "fechas", "dates": readDates(v)
             default:
-                if let kind = r.types.first(where: { $0.hasSunrise && AIText.key($0.name) == AIText.key(k) }) {
-                    readKind(kind, v)
+                if let kind = r.types.first(where: { AIText.key($0.name) == AIText.key(k) }) {
+                    if kind.hasSunrise {
+                        readKind(kind, v)
+                    } else {
+                        problem(String(localized: "\(kind.name) is a day of rest: it has no hours."))
+                    }
                 } else {
                     problem(String(localized: "\(AIText.quoted(k)) can't be changed from the app."))
                 }
@@ -215,8 +222,7 @@ struct AIProposal: Identifiable {
         guard case .object(let o) = v else { return problem(String(localized: "\"\(AIWord.week)\" has to say what each day is.")) }
         for (k, x) in o.sorted(by: { (AIText.weekday($0.key) ?? 9) < (AIText.weekday($1.key) ?? 9) }) {
             guard let w = AIText.weekday(k) else { problem(String(localized: "\(AIText.quoted(k)) isn't a weekday.")); continue }
-            guard w != 6 else { problem(String(localized: "Saturday is Shabbat and doesn't change.")); continue }
-            guard let t = AIText.dayType(x, in: r) else { problem(String(localized: "\(AIText.quoted(x.text ?? "")) isn't a kind of day (\(Weekday.names[w])): use normal, gym or rest.")); continue }
+            guard let t = AIText.dayType(x, in: r) else { problem(String(localized: "\(AIText.quoted(x.text ?? "")) isn't a kind of day (\(Weekday.names[w])). The kinds are: \(kindNames).")); continue }
             let old = r.weekType(w)
             if t != old {
                 add(.weekType(w, t), Weekday.names[w].capitalizedFirst, String(localized: "Every week"), "\(old.name) → \(t.name)")
@@ -234,7 +240,10 @@ struct AIProposal: Identifiable {
         }
     }
 
-    // MARK: Normal and Gym
+    /// "Normal, Gym, Rest, Shabbat"
+    private var kindNames: String { r.types.map(\.name).joined(separator: ", ") }
+
+    // MARK: Kinds with a sunrise
 
     private mutating func readKind(_ kind: DayType, _ v: JSONValue) {
         guard r.settings.schedule?.type(kind) != nil else { return problem(String(localized: "There's no \(kind.name) schedule in the app.")) }
@@ -280,7 +289,7 @@ struct AIProposal: Identifiable {
                 continue
             }
             for (day, y) in perDay {
-                guard let w = AIText.weekday(day), w != 6 else {
+                guard let w = AIText.weekday(day) else {
                     problem(String(localized: "\(AIText.quoted(day)) isn't a day that can be changed (\(b.name) in \(kind.name))."))
                     continue
                 }
@@ -335,7 +344,7 @@ struct AIProposal: Identifiable {
                 continue
             }
             for (day, y) in perDay {
-                guard let w = AIText.weekday(day), w != 6 else {
+                guard let w = AIText.weekday(day) else {
                     problem(String(localized: "\(AIText.quoted(day)) isn't a day that can be changed (\(l.name) in \(kind.name))."))
                     continue
                 }
@@ -362,7 +371,6 @@ struct AIProposal: Identifiable {
             guard DayKey.isValid(ds), DayKey.of(DayKey.date(ds)) == ds else { problem(String(localized: "\(AIText.quoted(ds)) isn't a date (it's written YYYY-MM-DD).")); continue }
             guard ds >= r.today else { problem(String(localized: "\(DayKey.long(ds)) has passed: only dates from today on can be changed.")); continue }
             guard ds <= last else { problem(String(localized: "\(DayKey.long(ds)) is more than a year away: only dates up to a year ahead can be changed.")); continue }
-            guard DayKey.weekday(ds) != 6 else { problem(String(localized: "\(DayKey.long(ds)) is a Saturday (Shabbat) and doesn't change.")); continue }
             let title = DayKey.long(ds)
             if x == .null {
                 if r.aiDateKeys().contains(ds) { add(.dateReset(ds), title, String(localized: "That date"), String(localized: "Goes back to the usual")) }
@@ -376,10 +384,11 @@ struct AIProposal: Identifiable {
             var type = r.days[ds]?.type == nil ? newWeek[DayKey.weekday(ds)] ?? was : was
             if let raw = d.first(where: { ["tipo", "type"].contains(AIText.key($0.key)) })?.value {
                 if let t = AIText.dayType(raw, in: r) {
-                    if t != was { add(.dateType(ds, t), title, String(localized: "That date"), "\(was.name) → \(t.name)") }
+                    // Against what the date will be with this block's week, not only what it is now.
+                    if t != type { add(.dateType(ds, t), title, String(localized: "That date"), "\(type.name) → \(t.name)") }
                     type = t
                 } else {
-                    problem(String(localized: "\(AIText.quoted(raw.text ?? "")) isn't a kind of day (\(title)): use normal, gym or rest."))
+                    problem(String(localized: "\(AIText.quoted(raw.text ?? "")) isn't a kind of day (\(title)). The kinds are: \(kindNames)."))
                 }
             }
             let sameType = type == was

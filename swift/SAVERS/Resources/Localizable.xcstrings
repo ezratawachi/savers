@@ -61,12 +61,12 @@
         }
       }
     },
-    "## How the app works\n\n- My sunrise is six short steps each morning, to start the day with myself before the world. It's always all six: when time is short, they get shorter, they don't get dropped.\n  - Breathe: a few minutes still, to breathe, meditate or pray.\n  - Affirm: out loud, a few phrases I believe about who I choose to be. Nothing over the top like \"I'm amazing\": for someone who doesn't believe it, it makes things worse.\n  - Imagine: today's most important thing, the likely obstacle and what I'll do if it comes up (\"if X happens, I'll do Y\"). The path, not just the goal reached.\n  - Move: a few minutes of movement at home, or the gym.\n  - Read: a few pages of something that helps me grow.\n  - Write: give thanks for something specific and jot down an idea from what I read.\n- It's a method of its own, with these names. Even if it looks like others you know, don't call it by another name or use their acronyms.\n- Rest counts too: a rest day doesn't break my sunrises in a row.\n- Each weekday is Normal, Gym or Rest. Saturday is Shabbat and doesn't change.\n- Normal and Gym each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep). Some blocks hold steps, in order.\n- Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.\n- Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine up to a minute per question, Write 1 or 2, Move 2 or 8 at home or however long the gym lasts). The schedule below has the real ones.\n- The bedtime block is in \"The night before\": it's when I go to sleep the night before that day. \"windDown\" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.\n- A time or some minutes can be different on one weekday (\"hoursByDay\", \"minutesByDay\") or on one date (\"dates\", from today up to a year ahead).\n- Blocks can't be added, removed or renamed, and steps can't move from one block to another. If that would suit me, tell me in the conversation, not in the change block." : {
+    "## How the app works\n\n- My sunrise is six short steps each morning, to start the day with myself before the world. It's always all six: when time is short, they get shorter, they don't get dropped.\n  - Breathe: a few minutes still, to breathe, meditate or pray.\n  - Affirm: out loud, a few phrases I believe about who I choose to be. Nothing over the top like \"I'm amazing\": for someone who doesn't believe it, it makes things worse.\n  - Imagine: today's most important thing, the likely obstacle and what I'll do if it comes up (\"if X happens, I'll do Y\"). The path, not just the goal reached.\n  - Move: a few minutes of movement at home.\n  - Read: a few pages of something that helps me grow.\n  - Write: give thanks for something specific and jot down an idea from what I read.\n- It's a method of its own, with these names. Even if it looks like others you know, don't call it by another name or use their acronyms.\n- Rest counts too: a rest day doesn't break my sunrises in a row.\n- Each weekday is one of my kinds of day. The ones with a sunrise each have their own schedule of blocks with a time (for example Get up, Sunrise, Shower, Asleep); the ones of rest have no hours. Some blocks hold steps, in order: most go in the sunrise's block, but a step can be in a later one (for example Read at night)." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "## Cómo funciona la app\n\n- Mi amanecer son seis pasos cortos cada mañana, para empezar el día conmigo antes que con el mundo. Son siempre los seis: si falta tiempo, se acortan, no se quitan.\n  - Respira: unos minutos quieto, para respirar, meditar o rezar.\n  - Afirma: en voz alta, pocas frases que me crea sobre quién elijo ser. Nada exagerado como \"soy increíble\": a quien no se lo cree lo hace sentir peor.\n  - Imagina: lo más importante de hoy, el obstáculo probable y qué haré si pasa (\"si pasa X, hago Y\"). El camino, no solo la meta cumplida.\n  - Muévete: unos minutos de movimiento en casa, o el gym.\n  - Lee: unas páginas de algo que me haga crecer.\n  - Escribe: agradecer algo concreto y anotar una idea de lo que leí.\n- Es un método propio con estos nombres. Aunque se parezca a otros que conoces, no lo llames con otro nombre ni uses sus siglas.\n- Descansar también cuenta: un día de descanso no corta mis amaneceres seguidos.\n- Cada día de la semana es Normal, Gym o Descanso. El sábado es Shabbat y no se cambia.\n- Normal y Gym tienen su propio horario de bloques con hora (por ejemplo Te paras, Amanecer, Baño, Dormido). Algunos bloques tienen pasos dentro, en orden.\n- La hora de cada paso es la hora de su bloque más los minutos de los pasos que van antes. Para mover un paso, se mueve su bloque o se cambian minutos.\n- Solo Respira y Lee tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de los otros pasos salen de su contenido (Afirma unos 25 segundos por frase, Imagina hasta un minuto por pregunta, Escribe 1 o 2, Muévete 2 u 8 en casa o lo que dura el gym). El horario de abajo tiene los reales.\n- \"Dormido\" está en \"La noche anterior\": es la hora de dormir de la noche antes de ese día. \"Prepararte\" son los minutos antes de Dormido en que me llega el aviso para prepararme: de 15 a 90, de 5 en 5, el mismo todas las noches.\n- Una hora o unos minutos pueden ser distintos un día de la semana (\"horasPorDia\", \"minutosPorDia\") o una fecha (\"fechas\", desde hoy hasta un año adelante).\n- No se pueden agregar, quitar ni renombrar bloques, ni mover pasos de un bloque a otro. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios."
+            "value" : "## Cómo funciona la app\n\n- Mi amanecer son seis pasos cortos cada mañana, para empezar el día conmigo antes que con el mundo. Son siempre los seis: si falta tiempo, se acortan, no se quitan.\n  - Respira: unos minutos quieto, para respirar, meditar o rezar.\n  - Afirma: en voz alta, pocas frases que me crea sobre quién elijo ser. Nada exagerado como \"soy increíble\": a quien no se lo cree lo hace sentir peor.\n  - Imagina: lo más importante de hoy, el obstáculo probable y qué haré si pasa (\"si pasa X, hago Y\"). El camino, no solo la meta cumplida.\n  - Muévete: unos minutos de movimiento en casa.\n  - Lee: unas páginas de algo que me haga crecer.\n  - Escribe: agradecer algo concreto y anotar una idea de lo que leí.\n- Es un método propio con estos nombres. Aunque se parezca a otros que conoces, no lo llames con otro nombre ni uses sus siglas.\n- Descansar también cuenta: un día de descanso no corta mis amaneceres seguidos.\n- Cada día de la semana es uno de mis tipos de día. Los que tienen amanecer tienen cada uno su propio horario de bloques con hora (por ejemplo Te paras, Amanecer, Baño, Dormido); los de descanso no tienen horas. Algunos bloques tienen pasos dentro, en orden: casi todos van en el bloque del amanecer, pero un paso puede ir en uno más tarde (por ejemplo Lee en la noche)."
           }
         }
       }
@@ -101,12 +101,12 @@
         }
       }
     },
-    "## The change block\n\nWhen I ask you to, at the end of your reply put a code block marked `sunling` with a JSON that has **only what changes**, in the same shape as my configuration. Whatever you leave out stays the same.\n\n- Morning times are written \"5:20\"; afternoon and evening ones with pm: \"8:50 pm\".\n- To bring a weekday's or a date's time or minutes back to the usual, set them to null. To remove all of a date's changes: \"YYYY-MM-DD\": null.\n- The affirmations and the Imagine questions go complete and in their final order, even if only one changes.\n- Use the block names exactly as they are in my configuration.\n\nExample of the shape (not a proposal):\n\n```sunling\n{\n  \"normal\": {\"hours\": {\"%@\": \"5:45\"}, \"minutes\": {\"read\": 15}},\n  \"week\": {\"thursday\": \"gym\"},\n  \"dates\": {\"YYYY-MM-DD\": {\"type\": \"rest\"}}\n}\n```\n\nI copy your reply and paste it into the app, which shows me each change before applying it." : {
+    "## The change block\n\nWhen I ask you to, at the end of your reply put a code block marked `sunling` with a JSON that has **only what changes**, in the same shape as my configuration. Whatever you leave out stays the same.\n\n- Morning times are written \"5:20\"; afternoon and evening ones with pm: \"8:50 pm\".\n- To bring a weekday's or a date's time or minutes back to the usual, set them to null. To remove all of a date's changes: \"YYYY-MM-DD\": null.\n- The affirmations and the Imagine questions go complete and in their final order, even if only one changes.\n- Use the block names exactly as they are in my configuration.\n\nExample of the shape (not a proposal):\n\n```sunling\n{\n  \"%@\": {\"hours\": {\"%@\": \"5:45\"}, \"minutes\": {\"read\": 15}},\n  \"week\": {\"thursday\": \"%@\"},\n  \"dates\": {\"YYYY-MM-DD\": {\"type\": \"%@\"}}\n}\n```\n\nI copy your reply and paste it into the app, which shows me each change before applying it." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "## El bloque de cambios\n\nCuando yo te lo pida, al final de tu respuesta pon un bloque de código marcado `sunling` con un JSON que tenga **solo lo que cambia**, con la misma forma que mi configuración. Lo que no pongas se queda igual.\n\n- Las horas de la mañana se escriben \"5:20\"; las de la tarde y la noche, con pm: \"8:50 pm\".\n- Para que la hora o los minutos de un día de la semana o de una fecha vuelvan a ser como siempre, ponles null. Para quitar todos los cambios de una fecha: \"AAAA-MM-DD\": null.\n- Las afirmaciones y las preguntas de visualización van completas y en su orden final, aunque cambie una sola.\n- Usa los nombres de los bloques tal como están en mi configuración.\n\nEjemplo de la forma (no es una propuesta):\n\n```sunling\n{\n  \"normal\": {\"horas\": {\"%@\": \"5:45\"}, \"minutos\": {\"lee\": 15}},\n  \"semana\": {\"jueves\": \"gym\"},\n  \"fechas\": {\"AAAA-MM-DD\": {\"tipo\": \"descanso\"}}\n}\n```\n\nYo copio tu respuesta y la pego en la app, que me muestra cada cambio antes de aplicarlo."
+            "value" : "## El bloque de cambios\n\nCuando yo te lo pida, al final de tu respuesta pon un bloque de código marcado `sunling` con un JSON que tenga **solo lo que cambia**, con la misma forma que mi configuración. Lo que no pongas se queda igual.\n\n- Las horas de la mañana se escriben \"5:20\"; las de la tarde y la noche, con pm: \"8:50 pm\".\n- Para que la hora o los minutos de un día de la semana o de una fecha vuelvan a ser como siempre, ponles null. Para quitar todos los cambios de una fecha: \"AAAA-MM-DD\": null.\n- Las afirmaciones y las preguntas de visualización van completas y en su orden final, aunque cambie una sola.\n- Usa los nombres de los bloques tal como están en mi configuración.\n\nEjemplo de la forma (no es una propuesta):\n\n```sunling\n{\n  \"%1$@\": {\"horas\": {\"%2$@\": \"5:45\"}, \"minutos\": {\"lee\": 15}},\n  \"semana\": {\"jueves\": \"%3$@\"},\n  \"fechas\": {\"AAAA-MM-DD\": {\"tipo\": \"%4$@\"}}\n}\n```\n\nYo copio tu respuesta y la pego en la app, que me muestra cada cambio antes de aplicarlo."
           }
         }
       }
@@ -261,12 +261,12 @@
         }
       }
     },
-    "%@ is a Saturday (Shabbat) and doesn't change." : {
+    "%@ is a day of rest: it has no hours." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ es sábado (Shabbat) y no se cambia."
+            "value" : "%@ es un día de descanso: no tiene horas."
           }
         }
       }
@@ -311,12 +311,12 @@
         }
       }
     },
-    "%@ isn't a kind of day (%@): use normal, gym or rest." : {
+    "%@ isn't a kind of day (%@). The kinds are: %@." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ no es un tipo de día (%2$@): usa normal, gym o descanso."
+            "value" : "%1$@ no es un tipo de día (%2$@). Los tipos son: %3$@."
           }
         }
       }
@@ -1131,6 +1131,26 @@
         }
       }
     },
+    "- Each step's time is its block's time plus the minutes of the steps before it. To move a step, its block moves or minutes change.\n- Only Breathe and Read have minutes that can be changed: from 1 to 60, or 75, 90, 105 or 120. The other steps' minutes come from their content (Affirm about 25 seconds per phrase, Imagine up to a minute per question, Write 1 or 2, Move 2 or 8 at home). The schedule below has the real ones.\n- The bedtime block is in \"The night before\": it's when I go to sleep the night before that day. \"windDown\" is how many minutes before bedtime the reminder to get ready arrives: from 15 to 90, in steps of 5, the same every night.\n- A time or some minutes can be different on one weekday (\"hoursByDay\", \"minutesByDay\") or on one date (\"dates\", from today up to a year ahead).\n- Blocks can't be added, removed or renamed, and steps can't move from one block to another. Kinds of day can't be created, renamed or removed either. If that would suit me, tell me in the conversation, not in the change block." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "- La hora de cada paso es la hora de su bloque más los minutos de los pasos que van antes. Para mover un paso, se mueve su bloque o se cambian minutos.\n- Solo Respira y Lee tienen minutos que se pueden cambiar: de 1 a 60, o 75, 90, 105 o 120. Los de los otros pasos salen de su contenido (Afirma unos 25 segundos por frase, Imagina hasta un minuto por pregunta, Escribe 1 o 2, Muévete 2 u 8 en casa). El horario de abajo tiene los reales.\n- \"Dormido\" está en \"La noche anterior\": es la hora de dormir de la noche antes de ese día. \"Prepararte\" son los minutos antes de Dormido en que me llega el aviso para prepararme: de 15 a 90, de 5 en 5, el mismo todas las noches.\n- Una hora o unos minutos pueden ser distintos un día de la semana (\"horasPorDia\", \"minutosPorDia\") o una fecha (\"fechas\", desde hoy hasta un año adelante).\n- No se pueden agregar, quitar ni renombrar bloques, ni mover pasos de un bloque a otro. Tampoco se pueden crear, renombrar ni quitar tipos de día. Si eso me convendría, dímelo en la conversación, no en el bloque de cambios."
+          }
+        }
+      }
+    },
+    "- My kinds of day with a sunrise: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "- Mis tipos de día con amanecer: %@."
+          }
+        }
+      }
+    },
     "10, 20 or 30 minutes, always the six steps: when time is short they get shorter, never fewer. You change each step's minutes in Schedule." : {
       "localizations" : {
         "es" : {
@@ -1711,6 +1731,16 @@
         }
       }
     },
+    "Choose at least one day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige por lo menos un día."
+          }
+        }
+      }
+    },
     "Choose who you'll be and what matters today." : {
       "localizations" : {
         "es" : {
@@ -1877,6 +1907,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Días"
+          }
+        }
+      }
+    },
+    "Days of rest only show up if I did my sunrise anyway." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los días de descanso solo aparecen si hice mi amanecer igual."
           }
         }
       }
@@ -2057,6 +2097,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fin de la lectura"
+          }
+        }
+      }
+    },
+    "Every day. You can change it later in Schedule." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los días. Puedes cambiarlo después en Horario."
           }
         }
       }
@@ -3451,6 +3501,16 @@
         }
       }
     },
+    "Of rest: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De descanso: %@."
+          }
+        }
+      }
+    },
     "Off" : {
       "localizations" : {
         "es" : {
@@ -3917,26 +3977,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Igual que %@"
-          }
-        }
-      }
-    },
-    "Saturday is Shabbat and doesn't change." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El sábado es Shabbat y no se cambia."
-          }
-        }
-      }
-    },
-    "Saturdays and rest days only show up if I did my sunrise anyway." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los sábados y los días de descanso solo aparecen si hice mi amanecer igual."
           }
         }
       }
@@ -4537,6 +4577,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La app todavía no guardaba a qué hora marco cada paso."
+          }
+        }
+      }
+    },
+    "The days of your sunrise. The others are days off, and they don't break your streak." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los días de tu amanecer. Los demás son de descanso y no cortan tu racha."
           }
         }
       }
@@ -5301,6 +5351,16 @@
         }
       }
     },
+    "Which days?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué días?"
+          }
+        }
+      }
+    },
     "Wind down" : {
       "localizations" : {
         "es" : {
@@ -5507,6 +5567,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "You rest on %@. You can change it later in Schedule." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descansas %@. Puedes cambiarlo después en Horario."
           }
         }
       }
