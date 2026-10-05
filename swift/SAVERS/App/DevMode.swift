@@ -10,6 +10,9 @@ final class DevMode {
     private(set) var on = UserDefaults.standard.bool(forKey: DevMode.key)
     /// Changes on every enter, exit or fresh start, so the app builds its world again.
     private(set) var generation = 0
+    /// Asked to start from zero: the test app is emptied when its next world is built, after the one running
+    /// has stopped and saved, so nothing it had is written back.
+    @ObservationIgnored private var wipe = false
 
     private static let key = "savers:devMode"
     private static let suite = "savers.dev"
@@ -17,6 +20,11 @@ final class DevMode {
 
     func world() -> AppWorld {
         guard on else { return .real() }
+        if wipe {
+            try? FileManager.default.removeItem(at: Self.folder)
+            UserDefaults(suiteName: Self.suite)?.removePersistentDomain(forName: Self.suite)
+            wipe = false
+        }
         return AppWorld(persistence: Persistence(folder: Self.folder), prefs: LocalPrefs(defaults: UserDefaults(suiteName: Self.suite)!), sandbox: true)
     }
 
@@ -24,10 +32,9 @@ final class DevMode {
 
     func exit() { set(false) }
 
-    /// The test app back to a new install: its folder and prefs are emptied.
+    /// The test app back to a new install: its folder and prefs are emptied once it has stopped (`world()`).
     func startOver() {
-        try? FileManager.default.removeItem(at: Self.folder)
-        UserDefaults(suiteName: Self.suite)?.removePersistentDomain(forName: Self.suite)
+        wipe = true
         generation += 1
     }
 
