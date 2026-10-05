@@ -102,10 +102,10 @@ alguien de España empezarían en lunes. Es otro tema.
 
 ## Las sesiones
 
-- [ ] **1. El modelo.** Por fuera, tu app se ve igual salvo los cambios ya decididos.
+- [x] **1. El modelo.** *(Hecha el 2026-10-05, commit bd0aa00.)* Por fuera, tu app se ve igual salvo los cambios ya decididos.
 
   **Antes de tocar nada**
-  - [ ] Pedirte un respaldo desde Ajustes. (Pedido; falta que confirmes antes de instalar.)
+  - [x] Pedirte un respaldo desde Ajustes.
   - [x] Con `/probar`, guardar cómo se ven hoy un lunes, un miércoles (Gym), un sábado y un domingo, para comparar
     al final.
 
@@ -141,7 +141,7 @@ alguien de España empezarían en lunes. Es otro tema.
   - [x] Actualizar los escenarios de `App/Scenario.swift` (`shabbat` sigue existiendo como escenario de tu sábado).
   - [x] Comparar con lo guardado al principio y repasar `/probar` mañana, hechas, sin-savers, shabbat e historial,
     en español e inglés.
-  - [ ] Instalar en el iPhone.
+  - [x] Instalar en el iPhone. (Xcode había perdido tu Apple ID; lo volviste a agregar.)
 
   **Notas para la sesión 2**
   - La hoja del día usa `SegmentedChoice`: con 4 tipos (Normal, Gym, Descanso, Shabbat) cabe justo; con más hay
