@@ -97,7 +97,9 @@ Las tres pestañas:
 
 ## En curso
 
-- Nada abierto.
+- **En pausa desde el 2026-10-06**: la app se borró del iPhone y la rutina de launchd quedó apagada
+  (`launchctl disable`). Para volver: `launchctl enable gui/$(id -u)/com.ezratawachi.savers-renovar`,
+  `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.ezratawachi.savers-renovar.plist` y `app/renovar.sh ya`.
 
 ## Para después
 
@@ -120,6 +122,6 @@ Las tres pestañas:
 - Al escribir o revisar código en `swift/`, carga `swiftui-pro`; si el cambio toca movimiento, gestos, hojas o
   tipografía, también `apple-design`.
 - Tras compilar, `python3 swift/tools/traducciones.py` dice qué traducción falta.
-- Instalar en el iPhone: `app/renovar.sh ya` (firma gratis de 7 días; launchd la renueva sola). Si falla con
+- Instalar en el iPhone: `app/renovar.sh ya` (firma gratis de 7 días; launchd la renueva sola, hoy apagada por la pausa). Si falla con
   "No Accounts", revisar que Xcode tenga el Apple ID en Settings › Accounts.
 - La web (`index.html`, GitHub Pages) se bajó el 2026-10-05; queda en el historial de git.
